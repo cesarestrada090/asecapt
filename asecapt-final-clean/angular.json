@@ -29,6 +29,21 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/assets/img",
+                "output": "img"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/assets/css",
+                "output": "css"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/assets/js",
+                "output": "js"
               }
             ],
             "styles": [
