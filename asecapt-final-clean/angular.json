@@ -49,6 +49,11 @@
                 "glob": "**/*",
                 "input": "src/assets/fonts",
                 "output": "fonts"
+              },
+              {
+                "glob": "*.html",
+                "input": "src/assets",
+                "output": "/"
               }
             ],
             "styles": [
