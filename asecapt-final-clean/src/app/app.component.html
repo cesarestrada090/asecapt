@@ -44,10 +44,14 @@
                                         <!-- end logo -->
                                     </div>
 
-                                    <div class="navbar-toggler bg-primary"></div>
+                                    <div class="navbar-toggler bg-primary" (click)="toggleMobileMenu()">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
 
                                     <!-- start menu area -->
-                                <ul class="navbar-nav ms-auto" id="nav" style="display: block;">
+                                <ul class="navbar-nav ms-auto" id="nav" [class.show]="isMobileMenuOpen">
                                     <li><a href="/" style="color: #273044; font-weight: 600;">Inicio</a></li>
                                     <li class="has-sub">
                                         <a href="#!" style="color: #273044; font-weight: 600;">Nosotros</a>
