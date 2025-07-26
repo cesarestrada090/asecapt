@@ -35,42 +35,8 @@ public class SecurityConfig {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .authorizeHttpRequests(authorize -> authorize
-                // Public endpoints
-                .requestMatchers(
-                  "/v1/app/auth/**",
-                  "/v1/app/user/**",
-                  "/v1/app/user-type/**",
-                  "/v1/app/file-upload/**",
-                  "/v1/app/achievements/**",
-                  "/v1/app/support/**",
-                  "/v1/app/public/**",
-                  "/health/**",
-                  "/v1/logs/tail"
-                ).permitAll()
-                // OpenAPI/Swagger endpoints - All possible patterns
-                .requestMatchers(
-                  "/swagger-ui/**",
-                  "/swagger-ui.html",
-                  "/v3/api-docs",
-                  "/v3/api-docs/**",
-                  "/v3/api-docs.yaml",
-                  "/v1/app/v3/api-docs",
-                  "/v1/app/v3/api-docs/**",
-                  "/v1/app/swagger-ui.html",
-                  "/v1/app/swagger-ui/**",
-                  "/swagger-resources",
-                  "/swagger-resources/**",
-                  "/webjars/**",
-                  "/swagger-config",
-                  "/api-docs",
-                  "/api-docs/**",
-                  "/docs/**"
-                ).permitAll()
-                // All other requests require authentication
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
+                .anyRequest().permitAll()
+            );
         return http.build();
     }
 
@@ -99,4 +65,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-} 
+}
