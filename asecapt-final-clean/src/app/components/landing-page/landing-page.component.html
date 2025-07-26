@@ -183,285 +183,38 @@
             <h2 class="h1 mb-0">Nuestras Especialidades</h2>
         </div>
         <div class="row g-xxl-5 mt-n2-6">
-            <div class="col-md-6 col-xl-4 mt-2-6">
+            <div *ngFor="let course of courses" class="col-md-6 col-xl-4 mt-2-6">
                 <div class="card card-style1 p-0 h-100">
-                    <div class="card-img rounded-0">
+                    <div class="card-img rounded-0" [ngClass]="course.categoryClass ? 'border-color-' + course.categoryClass : ''">
                         <div class="image-hover" style="height: 220px; overflow: hidden;">
-                            <img class="rounded-top" src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?auto=format&fit=crop&w=400&h=220&q=80" alt="Hemoterapia" style="width: 100%; height: 220px; object-fit: cover;">
+                            <img class="rounded-top" [src]="course.image" [alt]="course.title" style="width: 100%; height: 220px; object-fit: cover;">
                         </div>
-                        <a href="courses-list.html" class="course-tag">Salud</a>
+                        <a href="courses-list.html" [class]="'course-tag ' + course.categoryClass">{{course.category}}</a>
                         <a href="#!"><i class="far fa-heart"></i></a>
                     </div>
                     <div class="card-body position-relative pt-0 px-1-9 pb-1-9">
                         <div class="card-author d-flex">
                             <div class="avatar">
-                                <img class="rounded-circle" src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=150&q=80" alt="Dr. Elena Vargas">
+                                <img class="rounded-circle" [src]="course.instructor.avatar" [alt]="course.instructor.name">
                             </div>
-                            <h4 class="mb-0 h6">Dr. Elena Vargas</h4>
+                            <h4 class="mb-0 h6">{{course.instructor.name}}</h4>
                         </div>
                         <div class="pt-6">
-                            <h3 class="h4 mb-4"><a href="course-details.html">Especialidad en Hemoterapia y Banco de Sangre</a></h3>
+                            <h3 class="h4 mb-4"><a href="course-details.html">{{course.title}}</a></h3>
                             <div class="d-flex justify-content-between align-items-center">
-                                <div class="display-30"><i class="ti-agenda me-2"></i>20 Módulos</div>
-                                <div class="display-30"><i class="ti-user me-2"></i>45</div>
-                                <div class="display-30"><i class="fas fa-star me-1 display-32 text-warning"></i>4.9(23)</div>
+                                <div class="display-30"><i class="ti-agenda me-2"></i>{{course.modules}} Módulos</div>
+                                <div class="display-30"><i class="ti-user me-2"></i>{{course.students}}</div>
+                                <div class="display-30"><i class="fas fa-star me-1 display-32 text-warning"></i>{{course.rating}}({{course.reviews}})</div>
                             </div>
                             <div class="dotted-seprator pt-4 mt-4 d-flex justify-content-between align-items-center">
-                                <span class="badge-soft">especialización</span>
-                                <h5 class="text-primary mb-0">Consultar</h5>
+                                <span [class]="'badge-soft ' + course.categoryClass">{{course.type}}</span>
+                                <h5 [class]="course.categoryClass ? 'text-' + course.categoryClass + ' mb-0' : 'text-primary mb-0'">{{course.price}}</h5>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 col-xl-4 mt-2-6">
-                <div class="card card-style1 p-0 h-100">
-                    <div class="card-img rounded-0 border-color-secondary">
-                        <div class="image-hover" style="height: 220px; overflow: hidden;">
-                            <img class="rounded-top" src="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?auto=format&fit=crop&w=400&h=220&q=80" alt="SSOMA" style="width: 100%; height: 220px; object-fit: cover;">
-                        </div>    
-                        <a href="courses-list.html" class="course-tag secondary">Seguridad</a>
-                        <a href="#!"><i class="far fa-heart"></i></a>
-                    </div>
-                    <div class="card-body position-relative pt-0 px-1-9 pb-1-9">
-                        <div class="card-author d-flex">
-                            <div class="avatar">
-                                <img class="rounded-circle" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" alt="Ing. Carlos Mendoza">
-                            </div>
-                            <h4 class="mb-0 h6">Ing. Carlos Mendoza</h4>
-                        </div>
-                        <div class="pt-6">
-                            <h3 class="h4 mb-4"><a href="course-details.html">Especialización en SSOMA</a></h3>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="display-30"><i class="ti-agenda me-2"></i>18 Módulos</div>
-                                <div class="display-30"><i class="ti-user me-2"></i>68</div>
-                                <div class="display-30"><i class="fas fa-star me-1 display-32 text-warning"></i>4.8(41)</div>
-                            </div>
-                            <div class="dotted-seprator pt-4 mt-4 d-flex justify-content-between align-items-center">
-                                <span class="badge-soft secondary">especialización</span>
-                                <h5 class="text-secondary mb-0">Consultar</h5>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-xl-4 mt-2-6">
-                <div class="card card-style1 p-0 h-100">
-                    <div class="card-img rounded-0">
-                        <div class="image-hover" style="height: 220px; overflow: hidden;">
-                            <img class="rounded-top" src="https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=400&h=220&q=80" alt="Gerencia Hospitalaria" style="width: 100%; height: 220px; object-fit: cover;">
-                        </div>    
-                        <a href="courses-list.html" class="course-tag">Administración</a>
-                        <a href="#!"><i class="far fa-heart"></i></a>
-                    </div>
-                    <div class="card-body position-relative pt-0 px-1-9 pb-1-9">
-                        <div class="card-author d-flex">
-                            <div class="avatar">
-                                <img class="rounded-circle" src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=150&q=80" alt="Dr. Ana Jiménez">
-                            </div>
-                            <h4 class="mb-0 h6">Dr. Ana Jiménez</h4>
-                        </div>
-                        <div class="pt-6">
-                            <h3 class="h4 mb-4"><a href="course-details.html">Diplomado en Gerencia Hospitalaria y Salud Pública</a></h3>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="display-30"><i class="ti-agenda me-2"></i>24 Módulos</div>
-                                <div class="display-30"><i class="ti-user me-2"></i>89</div>
-                                <div class="display-30"><i class="fas fa-star me-1 display-32 text-warning"></i>5.0(67)</div>
-                            </div>
-                            <div class="dotted-seprator pt-4 mt-4 d-flex justify-content-between align-items-center">
-                                <span class="badge-soft">diplomado</span>
-                                <h5 class="text-primary mb-0">Consultar</h5>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-xl-4 mt-2-6">
-                <div class="card card-style1 p-0 h-100">
-                    <div class="card-img rounded-0 border-color-secondary">
-                        <div class="image-hover" style="height: 220px; overflow: hidden;">
-                            <img class="rounded-top" src="https://images.unsplash.com/photo-1559757175-0eb30cd8c063?auto=format&fit=crop&w=400&h=220&q=80" alt="Urgencias Obstétricas" style="width: 100%; height: 220px; object-fit: cover;">
-                        </div>
-                        <a href="courses-list.html" class="course-tag secondary">Medicina</a>
-                        <a href="#!"><i class="far fa-heart"></i></a>
-                    </div>
-                    <div class="card-body position-relative pt-0 px-1-9 pb-1-9">
-                        <div class="card-author d-flex">
-                            <div class="avatar">
-                                <img class="rounded-circle" src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=150&q=80" alt="Dra. Patricia Herrera">
-                            </div>
-                            <h4 class="mb-0 h6">Dra. Patricia Herrera</h4>
-                        </div>
-                        <div class="pt-6">
-                            <h3 class="h4 mb-4"><a href="course-details.html">Especialización en Urgencias Obstétricas y Ginecológicas</a></h3>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="display-30"><i class="ti-agenda me-2"></i>16 Módulos</div>
-                                <div class="display-30"><i class="ti-user me-2"></i>156</div>
-                                <div class="display-30"><i class="fas fa-star me-1 display-32 text-warning"></i>4.7(89)</div>
-                            </div>
-                            <div class="dotted-seprator pt-4 mt-4 d-flex justify-content-between align-items-center">
-                                <span class="badge-soft secondary">especialización</span>
-                                <h5 class="text-secondary mb-0">Consultar</h5>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-xl-4 mt-2-6">
-                <div class="card card-style1 p-0 h-100">
-                    <div class="card-img rounded-0">
-                        <div class="image-hover" style="height: 220px; overflow: hidden;">
-                            <img class="rounded-top" src="https://images.unsplash.com/photo-1559757175-0eb30cd8c063?auto=format&fit=crop&w=400&h=220&q=80" alt="Crecimiento e Inmunizaciones" style="width: 100%; height: 220px; object-fit: cover;">
-                        </div>    
-                        <a href="courses-list.html" class="course-tag">Pediatría</a>
-                        <a href="#!"><i class="far fa-heart"></i></a>
-                    </div>
-                    <div class="card-body position-relative pt-0 px-1-9 pb-1-9">
-                        <div class="card-author d-flex">
-                            <div class="avatar">
-                                <img class="rounded-circle" src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=150&q=80" alt="Dr. Ricardo Morales">
-                            </div>
-                            <h4 class="mb-0 h6">Dr. Ricardo Morales</h4>
-                        </div>
-                        <div class="pt-6">
-                            <h3 class="h4 mb-4"><a href="course-details.html">Especialización en Crecimiento e Inmunizaciones en el Niño</a></h3>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="display-30"><i class="ti-agenda me-2"></i>14 Módulos</div>
-                                <div class="display-30"><i class="ti-user me-2"></i>203</div>
-                                <div class="display-30"><i class="fas fa-star me-1 display-32 text-warning"></i>4.6(128)</div>
-                            </div>
-                            <div class="dotted-seprator pt-4 mt-4 d-flex justify-content-between align-items-center">
-                                <span class="badge-soft">especialización</span>
-                                <h5 class="text-primary mb-0">Consultar</h5>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-xl-4 mt-2-6">
-                <div class="card card-style1 p-0 h-100">
-                    <div class="card-img rounded-0 border-color-secondary">
-                        <div class="image-hover" style="height: 220px; overflow: hidden;">
-                            <img class="rounded-top" src="https://images.unsplash.com/photo-1505576399279-565b52d4ac71?auto=format&fit=crop&w=400&h=220&q=80" alt="Nutrición Clínica" style="width: 100%; height: 220px; object-fit: cover;">
-                        </div>    
-                        <a href="courses-list.html" class="course-tag secondary">Nutrición</a>
-                        <a href="#!"><i class="far fa-heart"></i></a>
-                    </div>
-                    <div class="card-body position-relative pt-0 px-1-9 pb-1-9">
-                        <div class="card-author d-flex">
-                            <div class="avatar">
-                                <img class="rounded-circle" src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=150&q=80" alt="Lic. María Santos">
-                            </div>
-                            <h4 class="mb-0 h6">Lic. María Santos</h4>
-                        </div>
-                        <div class="pt-6">
-                            <h3 class="h4 mb-4"><a href="course-details.html">Especialización en Nutrición Clínica</a></h3>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="display-30"><i class="ti-agenda me-2"></i>15 Módulos</div>
-                                <div class="display-30"><i class="ti-user me-2"></i>134</div>
-                                <div class="display-30"><i class="fas fa-star me-1 display-32 text-warning"></i>4.8(76)</div>
-                            </div>
-                            <div class="dotted-seprator pt-4 mt-4 d-flex justify-content-between align-items-center">
-                                <span class="badge-soft secondary">especialización</span>
-                                <h5 class="text-secondary mb-0">Consultar</h5>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-xl-4 mt-2-6">
-                <div class="card card-style1 p-0 h-100">
-                    <div class="card-img rounded-0">
-                        <div class="image-hover" style="height: 220px; overflow: hidden;">
-                            <img class="rounded-top" src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=400&h=220&q=80" alt="Salud Ocupacional" style="width: 100%; height: 220px; object-fit: cover;">
-                        </div>    
-                        <a href="courses-list.html" class="course-tag">Salud Laboral</a>
-                        <a href="#!"><i class="far fa-heart"></i></a>
-                    </div>
-                    <div class="card-body position-relative pt-0 px-1-9 pb-1-9">
-                        <div class="card-author d-flex">
-                            <div class="avatar">
-                                <img class="rounded-circle" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" alt="Dr. Luis Castro">
-                            </div>
-                            <h4 class="mb-0 h6">Dr. Luis Castro</h4>
-                        </div>
-                        <div class="pt-6">
-                            <h3 class="h4 mb-4"><a href="course-details.html">Especialización en Salud Ocupacional</a></h3>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="display-30"><i class="ti-agenda me-2"></i>18 Módulos</div>
-                                <div class="display-30"><i class="ti-user me-2"></i>187</div>
-                                <div class="display-30"><i class="fas fa-star me-1 display-32 text-warning"></i>4.9(92)</div>
-                            </div>
-                            <div class="dotted-seprator pt-4 mt-4 d-flex justify-content-between align-items-center">
-                                <span class="badge-soft">especialización</span>
-                                <h5 class="text-primary mb-0">Consultar</h5>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-xl-4 mt-2-6">
-                <div class="card card-style1 p-0 h-100">
-                    <div class="card-img rounded-0 border-color-secondary">
-                        <div class="image-hover" style="height: 220px; overflow: hidden;">
-                            <img class="rounded-top" src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=400&h=220&q=80" alt="Estrategias Didácticas" style="width: 100%; height: 220px; object-fit: cover;">
-                        </div>    
-                        <a href="courses-list.html" class="course-tag secondary">Educación</a>
-                        <a href="#!"><i class="far fa-heart"></i></a>
-                    </div>
-                    <div class="card-body position-relative pt-0 px-1-9 pb-1-9">
-                        <div class="card-author d-flex">
-                            <div class="avatar">
-                                <img class="rounded-circle" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80" alt="Mg. Carmen López">
-                            </div>
-                            <h4 class="mb-0 h6">Mg. Carmen López</h4>
-                        </div>
-                        <div class="pt-6">
-                            <h3 class="h4 mb-4"><a href="course-details.html">Especialización en Estrategias Didácticas en Lenguas Extranjeras</a></h3>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="display-30"><i class="ti-agenda me-2"></i>16 Módulos</div>
-                                <div class="display-30"><i class="ti-user me-2"></i>156</div>
-                                <div class="display-30"><i class="fas fa-star me-1 display-32 text-warning"></i>4.8(84)</div>
-                            </div>
-                            <div class="dotted-seprator pt-4 mt-4 d-flex justify-content-between align-items-center">
-                                <span class="badge-soft secondary">especialización</span>
-                                <h5 class="text-secondary mb-0">Consultar</h5>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-xl-4 mt-2-6">
-                <div class="card card-style1 p-0 h-100">
-                    <div class="card-img rounded-0">
-                        <div class="image-hover" style="height: 220px; overflow: hidden;">
-                            <img class="rounded-top" src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=400&h=220&q=80" alt="Liderazgo Educativo" style="width: 100%; height: 220px; object-fit: cover;">
-                        </div>    
-                        <a href="courses-list.html" class="course-tag">Liderazgo</a>
-                        <a href="#!"><i class="far fa-heart"></i></a>
-                    </div>
-                    <div class="card-body position-relative pt-0 px-1-9 pb-1-9">
-                        <div class="card-author d-flex">
-                            <div class="avatar">
-                                <img class="rounded-circle" src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&q=80" alt="Mg. Isabel Torres">
-                            </div>
-                            <h4 class="mb-0 h6">Mg. Isabel Torres</h4>
-                        </div>
-                        <div class="pt-6">
-                            <h3 class="h4 mb-4"><a href="course-details.html">Especialización en Liderazgo Educativo</a></h3>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="display-30"><i class="ti-agenda me-2"></i>12 Módulos</div>
-                                <div class="display-30"><i class="ti-user me-2"></i>98</div>
-                                <div class="display-30"><i class="fas fa-star me-1 display-32 text-warning"></i>4.9(52)</div>
-                            </div>
-                            <div class="dotted-seprator pt-4 mt-4 d-flex justify-content-between align-items-center">
-                                <span class="badge-soft">especialización</span>
-                                <h5 class="text-primary mb-0">Consultar</h5>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
         </div>
     </div>
 </section>

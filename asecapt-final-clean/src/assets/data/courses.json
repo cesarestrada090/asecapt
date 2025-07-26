@@ -1,0 +1,157 @@
+{
+  "courses": [
+    {
+      "id": 1,
+      "title": "Especialidad en Hemoterapia y Banco de Sangre",
+      "category": "Salud",
+      "categoryClass": "",
+      "image": "https://images.unsplash.com/photo-1615461066841-6116e61058f4?auto=format&fit=crop&w=400&h=220&q=80",
+      "instructor": {
+        "name": "Dr. Elena Vargas",
+        "avatar": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=150&q=80"
+      },
+      "modules": 20,
+      "students": 45,
+      "rating": 4.9,
+      "reviews": 23,
+      "price": "Consultar",
+      "type": "especialización"
+    },
+    {
+      "id": 2,
+      "title": "Especialización en SSOMA",
+      "category": "Seguridad",
+      "categoryClass": "secondary",
+      "image": "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?auto=format&fit=crop&w=400&h=220&q=80",
+      "instructor": {
+        "name": "Ing. Carlos Mendoza",
+        "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
+      },
+      "modules": 18,
+      "students": 68,
+      "rating": 4.8,
+      "reviews": 41,
+      "price": "Consultar",
+      "type": "especialización"
+    },
+    {
+      "id": 3,
+      "title": "Diplomado en Gerencia Hospitalaria y Salud Pública",
+      "category": "Administración",
+      "categoryClass": "",
+      "image": "https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=400&h=220&q=80",
+      "instructor": {
+        "name": "Dr. Ana Jiménez",
+        "avatar": "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=150&q=80"
+      },
+      "modules": 24,
+      "students": 89,
+      "rating": 5.0,
+      "reviews": 67,
+      "price": "Consultar",
+      "type": "diplomado"
+    },
+    {
+      "id": 4,
+      "title": "Especialización en Urgencias Obstétricas y Ginecológicas",
+      "category": "Medicina",
+      "categoryClass": "secondary",
+      "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=400&h=220&q=80",
+      "instructor": {
+        "name": "Dra. Patricia Herrera",
+        "avatar": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=150&q=80"
+      },
+      "modules": 16,
+      "students": 156,
+      "rating": 4.7,
+      "reviews": 89,
+      "price": "Consultar",
+      "type": "especialización"
+    },
+    {
+      "id": 5,
+      "title": "Especialización en Crecimiento e Inmunizaciones en el Niño",
+      "category": "Pediatría",
+      "categoryClass": "",
+      "image": "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?auto=format&fit=crop&w=400&h=220&q=80",
+      "instructor": {
+        "name": "Dr. Ricardo Morales",
+        "avatar": "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=150&q=80"
+      },
+      "modules": 14,
+      "students": 203,
+      "rating": 4.6,
+      "reviews": 128,
+      "price": "Consultar",
+      "type": "especialización"
+    },
+    {
+      "id": 6,
+      "title": "Especialización en Nutrición Clínica",
+      "category": "Nutrición",
+      "categoryClass": "secondary",
+      "image": "https://images.unsplash.com/photo-1505576399279-565b52d4ac71?auto=format&fit=crop&w=400&h=220&q=80",
+      "instructor": {
+        "name": "Lic. María Santos",
+        "avatar": "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=150&q=80"
+      },
+      "modules": 15,
+      "students": 134,
+      "rating": 4.8,
+      "reviews": 76,
+      "price": "Consultar",
+      "type": "especialización"
+    },
+    {
+      "id": 7,
+      "title": "Especialización en Salud Ocupacional",
+      "category": "Salud Laboral",
+      "categoryClass": "",
+      "image": "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=400&h=220&q=80",
+      "instructor": {
+        "name": "Dr. Luis Castro",
+        "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
+      },
+      "modules": 18,
+      "students": 187,
+      "rating": 4.9,
+      "reviews": 92,
+      "price": "Consultar",
+      "type": "especialización"
+    },
+    {
+      "id": 8,
+      "title": "Especialización en Estrategias Didácticas en Lenguas Extranjeras",
+      "category": "Educación",
+      "categoryClass": "secondary",
+      "image": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=400&h=220&q=80",
+      "instructor": {
+        "name": "Mg. Carmen López",
+        "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80"
+      },
+      "modules": 16,
+      "students": 156,
+      "rating": 4.8,
+      "reviews": 84,
+      "price": "Consultar",
+      "type": "especialización"
+    },
+    {
+      "id": 9,
+      "title": "Especialización en Liderazgo Educativo",
+      "category": "Liderazgo",
+      "categoryClass": "",
+      "image": "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=400&h=220&q=80",
+      "instructor": {
+        "name": "Dr. Roberto Silva",
+        "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80"
+      },
+      "modules": 20,
+      "students": 98,
+      "rating": 4.9,
+      "reviews": 54,
+      "price": "Consultar",
+      "type": "especialización"
+    }
+  ]
+} 

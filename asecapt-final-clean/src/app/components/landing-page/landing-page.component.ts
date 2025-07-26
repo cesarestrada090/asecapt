@@ -1,16 +1,32 @@
-import { Component, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { CoursesService, Course } from '../../services/courses.service';
 
 declare var $: any;
 
 @Component({
   selector: 'app-landing-page',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, CommonModule],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.css'
 })
-export class LandingPageComponent implements AfterViewInit, OnDestroy {
+export class LandingPageComponent implements AfterViewInit, OnDestroy, OnInit {
+  courses: Course[] = [];
+
+  constructor(private coursesService: CoursesService) {}
+
+  ngOnInit() {
+    this.loadCourses();
+  }
+
+  loadCourses() {
+    this.coursesService.getCourses().subscribe(data => {
+      // Mostrar todos los 9 cursos en el landing page
+      this.courses = data.courses;
+    });
+  }
 
   ngAfterViewInit() {
     // Initialize Owl Carousel for banner after view is initialized
