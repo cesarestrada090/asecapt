@@ -17,7 +17,7 @@ public class HealthController {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "UP");
         response.put("timestamp", LocalDateTime.now());
-        response.put("service", "FITECH API");
+        response.put("service", "ASECAPT API");
         response.put("version", "1.0");
         return ResponseEntity.ok(response);
     }

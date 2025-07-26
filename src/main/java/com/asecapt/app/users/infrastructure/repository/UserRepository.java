@@ -22,14 +22,4 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     
     List<User> findByTypeAndPersonLastNameContainingIgnoreCase(Integer type, String lastName);
     
-    @Query("SELECT DISTINCT u FROM User u " +
-           "JOIN u.person.fitnessGoalTypes fgt " +
-           "WHERE u.type = 1 AND fgt.id IN :fitnessGoalIds")
-    List<User> findTrainersByFitnessGoalIds(@Param("fitnessGoalIds") List<Integer> fitnessGoalIds);
-    
-    @Query("SELECT u FROM User u " +
-           "JOIN FETCH u.person p " +
-           "LEFT JOIN FETCH p.fitnessGoalTypes " +
-           "WHERE u.id = :userId")
-    Optional<User> findByIdWithPersonAndGoals(@Param("userId") Integer userId);
 }

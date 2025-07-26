@@ -15,9 +15,6 @@ public class ServiceDistrict {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "service_id", nullable = false)
-
     @Column(name = "district_name", nullable = false, length = 100)
     private String districtName;
 
@@ -50,4 +47,4 @@ public class ServiceDistrict {
         this.state = state;
         this.country = country;
     }
-} 
+}

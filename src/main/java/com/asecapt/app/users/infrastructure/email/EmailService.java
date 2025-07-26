@@ -32,12 +32,12 @@ public class EmailService {
     public void sendVerificationEmail(String toEmail, String token) throws IOException {
         Email from = new Email(fromEmail);
         Email to = new Email(toEmail);
-        String subject = "Verifica tu cuenta de FiTech";
+        String subject = "Verifica tu cuenta de Asecapt";
         
         String verificationLink = String.format("%s/verify-email?token=%s", appUrl, token);
         String htmlContent = String.format("""
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #333;">¡Bienvenido a FiTech!</h2>
+                <h2 style="color: #333;">¡Bienvenido a Asecapt!</h2>
                 <p>Gracias por registrarte. Para completar tu registro, por favor verifica tu dirección de correo electrónico haciendo clic en el siguiente botón:</p>
                 <div style="text-align: center; margin: 30px 0;">
                     <a href="%s" style="background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
@@ -68,12 +68,12 @@ public class EmailService {
     public void sendTestEmail(String toEmail) throws IOException {
         Email from = new Email(fromEmail);
         Email to = new Email(toEmail);
-        String subject = "Prueba de Email - FiTech";
+        String subject = "Prueba de Email - ASECAPT";
         
         String htmlContent = """
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #333;">¡Prueba de Email Exitosa!</h2>
-                <p>Este es un email de prueba para verificar la configuración de SendGrid en FiTech.</p>
+                <p>Este es un email de prueba para verificar la configuración de SendGrid en Asecapt.</p>
                 <div style="text-align: center; margin: 30px 0;">
                     <p style="color: #4CAF50; font-size: 1.2em;">✅ Si recibes este email, la configuración está correcta.</p>
                 </div>
@@ -115,7 +115,7 @@ public class EmailService {
         String htmlContent = String.format("""
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px;">
                 <div style="background: linear-gradient(135deg, #1976d2 0%%, #1565c0 100%%); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-                    <h2 style="margin: 0; font-size: 1.5rem;">Nueva Consulta de Soporte - FiTech</h2>
+                    <h2 style="margin: 0; font-size: 1.5rem;">Nueva Consulta de Soporte - ASECAPT</h2>
                     <p style="margin: 8px 0 0 0; opacity: 0.9;">Fecha: %s</p>
                 </div>
                 
@@ -174,7 +174,7 @@ public class EmailService {
                 
                 <div style="background: #f5f5f5; padding: 16px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e0e0e0;">
                     <p style="margin: 0; color: #666; font-size: 0.8rem;">
-                        Este email fue generado automáticamente por el sistema de soporte de FiTech
+                        Este email fue generado automáticamente por el sistema de soporte de ASECAPT
                     </p>
                 </div>
             </div>

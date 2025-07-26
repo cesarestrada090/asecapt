@@ -15,7 +15,7 @@ public class ClientProfileService {
     private UserRepository userRepository;
 
     public ClientProfileDTO getClientProfile(Long clientId) {
-        User user = userRepository.findByIdWithPersonAndGoals(clientId.intValue())
+        User user = userRepository.findById(clientId.intValue())
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
         Person person = user.getPerson();

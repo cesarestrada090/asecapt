@@ -9,7 +9,6 @@ import com.asecapt.app.users.application.exception.InvalidPasswordException;
 import com.asecapt.app.users.application.exception.StorageException;
 import com.asecapt.app.users.application.exception.StorageFileNotFoundException;
 import com.asecapt.app.users.application.exception.UserNotFoundException;
-import com.fitech.app.users.application.exception.*;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
