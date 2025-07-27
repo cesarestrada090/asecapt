@@ -1,0 +1,47 @@
+/* About component styles */
+
+/* Mantener la jerarquía de z-index sin interferir con los estilos globales */
+:host {
+  display: block;
+}
+
+/* 
+  Compensar la altura del header dinámico:
+  - En estado fixedHeader: header relativo
+  - En estado scrollHeader: header fijo con z-index 99
+*/
+.page-title-section {
+  position: relative;
+  z-index: 1; /* Asegurar que esté por debajo del header */
+}
+
+/* Cuando el header está en modo scroll (fijo), ajustar el espaciado */
+:host .page-title-section {
+  margin-top: 0;
+  padding-top: 180px !important;
+}
+
+/* Media queries para responsive */
+@media screen and (max-width: 1199px) {
+  :host .page-title-section {
+    padding-top: 175px !important;
+  }
+}
+
+@media screen and (max-width: 991px) {
+  :host .page-title-section {
+    padding-top: 150px !important;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  :host .page-title-section {
+    padding-top: 140px !important;
+  }
+}
+
+@media screen and (max-width: 575px) {
+  :host .page-title-section {
+    padding-top: 140px !important;
+  }
+} 
