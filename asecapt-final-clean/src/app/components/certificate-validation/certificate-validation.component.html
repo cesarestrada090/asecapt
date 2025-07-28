@@ -1,0 +1,209 @@
+<!-- Sección de banner -->
+<section class="page-title-section bg-img cover-background"
+         data-overlay-dark="6"
+         data-background="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1600&q=80"
+         style="background-image: url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1600&q=80');">
+  <div class="container">
+    <div class="row text-center">
+      <div class="col-md-12">
+        <h1 class="text-white">🎓 Validación de Certificados</h1>
+        <p class="text-white-50 mb-0">Verifica la autenticidad de tu certificado ASECAPT</p>
+      </div>
+      <div class="col-md-12">
+        <ul class="breadcrumb justify-content-center">
+          <li><a routerLink="/">Inicio</a></li>
+          <li><span>Validación de Certificados</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Sección de búsqueda -->
+<section class="search-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="search-card">
+          <div class="text-center mb-4">
+            <i class="fas fa-certificate text-primary" style="font-size: 48px; margin-bottom: 20px;"></i>
+            <h3>Buscar Certificado</h3>
+            <p class="text-muted">Ingresa tu número de documento de identidad para verificar tu certificado</p>
+          </div>
+
+          <form class="search-form" (ngSubmit)="onSearch()">
+            <div class="row">
+              <div class="col-md-8">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Ingresa tu número de DNI o documento de identidad"
+                  [(ngModel)]="documentNumber"
+                  name="documentNumber"
+                  required>
+              </div>
+              <div class="col-md-4">
+                <button
+                  type="submit"
+                  class="btn btn-search w-100"
+                  [disabled]="isSearching || !documentNumber.trim()">
+                  <span *ngIf="isSearching" class="loading-spinner me-2"></span>
+                  {{ isSearching ? 'Buscando...' : 'Buscar' }}
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <!-- Resultados de búsqueda -->
+          <div *ngIf="searchResult" class="result-card"
+               [ngClass]="searchResult.found ? 'result-success' : 'result-error'">
+
+            <!-- Certificado encontrado -->
+            <div *ngIf="searchResult.found">
+              <div class="d-flex align-items-center mb-3">
+                <i class="fas fa-check-circle text-success me-3" style="font-size: 24px;"></i>
+                <div>
+                  <h5 class="mb-1 text-success">¡Certificado Válido!</h5>
+                  <p class="mb-0 text-muted">El certificado fue encontrado en nuestra base de datos</p>
+                </div>
+              </div>
+
+              <div class="certificate-info">
+                <div class="info-row">
+                  <span class="info-label">Estudiante:</span>
+                  <span class="info-value">{{ searchResult.certificate.studentName }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Curso:</span>
+                  <span class="info-value">{{ searchResult.certificate.courseTitle }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Fecha de Finalización:</span>
+                  <span class="info-value">{{ searchResult.certificate.completionDate }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Número de Certificado:</span>
+                  <span class="info-value">{{ searchResult.certificate.certificateNumber }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Instructor:</span>
+                  <span class="info-value">{{ searchResult.certificate.instructor }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Certificado no encontrado -->
+            <div *ngIf="!searchResult.found">
+              <div class="d-flex align-items-center mb-3">
+                <i class="fas fa-times-circle text-danger me-3" style="font-size: 24px;"></i>
+                <div>
+                  <h5 class="mb-1 text-danger">Certificado No Encontrado</h5>
+                  <p class="mb-0 text-muted">No se encontró ningún certificado asociado a este documento</p>
+                </div>
+              </div>
+
+              <div class="alert alert-warning">
+                <p class="mb-2"><strong>Posibles causas:</strong></p>
+                <ul class="mb-0">
+                  <li>El número de documento no coincide con nuestros registros</li>
+                  <li>El certificado aún está en proceso de emisión</li>
+                  <li>El curso no ha sido completado satisfactoriamente</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="text-center mt-3">
+              <button class="btn btn-outline-secondary" (click)="resetSearch()">
+                <i class="fas fa-redo me-2"></i>Nueva Búsqueda
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Sección de proceso -->
+<section class="process-section">
+  <div class="container">
+    <div class="row text-center mb-5">
+      <div class="col-12">
+        <h2>¿Cómo validar tu certificado?</h2>
+        <p class="text-muted">Sigue estos simples pasos para verificar la autenticidad de tu certificado</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4">
+        <div class="process-step">
+          <div class="step-icon">
+            <i class="fas fa-id-card"></i>
+          </div>
+          <h5>1. Ingresa tu DNI</h5>
+          <p class="text-muted">Escribe tu número de documento de identidad en el campo de búsqueda</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="process-step">
+          <div class="step-icon">
+            <i class="fas fa-search"></i>
+          </div>
+          <h5>2. Buscar</h5>
+          <p class="text-muted">Haz clic en el botón "Buscar" para consultar nuestra base de datos</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="process-step">
+          <div class="step-icon">
+            <i class="fas fa-certificate"></i>
+          </div>
+          <h5>3. Verificar</h5>
+          <p class="text-muted">Revisa los detalles de tu certificado y confirma su autenticidad</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Sección de contacto -->
+<section class="contact-section">
+  <div class="container">
+    <div class="row text-center mb-5">
+      <div class="col-12">
+        <h2>¿Necesitas ayuda?</h2>
+        <p class="text-muted">Si tienes problemas para validar tu certificado, contáctanos</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="contact-card">
+          <div class="contact-icon">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <h5>Email</h5>
+          <p class="text-muted">Envíanos un correo electrónico</p>
+          <a href="mailto:asociacion.esp.asecapt&#64;gmail.com" class="btn btn-outline-primary">
+            asociacion.esp.asecapt&#64;gmail.com
+          </a>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="contact-card">
+          <div class="contact-icon">
+            <i class="fas fa-phone"></i>
+          </div>
+          <h5>Teléfono</h5>
+          <p class="text-muted">Llámanos directamente</p>
+          <a href="tel:+51948090763" class="btn btn-outline-primary">
+            +51 948 090 763
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

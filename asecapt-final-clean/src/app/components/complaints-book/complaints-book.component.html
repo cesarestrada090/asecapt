@@ -1,0 +1,402 @@
+<!-- Banner Section -->
+<section class="page-title-section bg-img cover-background"
+         data-overlay-dark="6"
+         data-background="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1600&q=80"
+         style="background-image: url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1600&q=80');">
+  <div class="container">
+    <div class="row text-center">
+      <div class="col-md-12">
+        <h1 class="text-white">📋 Libro de Reclamaciones</h1>
+        <p class="text-white-50 mb-0">Presenta tu reclamo o consulta el estado de uno existente</p>
+      </div>
+      <div class="col-md-12">
+        <ul class="breadcrumb justify-content-center">
+          <li><a routerLink="/">Inicio</a></li>
+          <li><span>Libro de Reclamaciones</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Main Section -->
+<section class="main-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="main-card">
+          <!-- Tabs -->
+          <ul class="nav nav-tabs nav-tabs-custom" role="tablist">
+            <li class="nav-item" role="presentation" style="flex: 1;">
+              <button
+                class="nav-link w-100"
+                [class.active]="activeTab === 'new'"
+                (click)="setActiveTab('new')"
+                type="button">
+                <i class="fas fa-plus-circle me-2"></i>Nuevo Reclamo
+              </button>
+            </li>
+            <li class="nav-item" role="presentation" style="flex: 1;">
+              <button
+                class="nav-link w-100"
+                [class.active]="activeTab === 'track'"
+                (click)="setActiveTab('track')"
+                type="button">
+                <i class="fas fa-search me-2"></i>Seguimiento
+              </button>
+            </li>
+          </ul>
+
+          <!-- Tab Content -->
+          <div class="tab-content">
+            <!-- Nuevo Reclamo Tab -->
+            <div *ngIf="activeTab === 'new'" class="tab-pane active">
+              <div class="text-center mb-4">
+                <i class="fas fa-file-alt text-primary" style="font-size: 48px; margin-bottom: 20px; color: #667eea !important;"></i>
+                <h3>Presentar Nuevo Reclamo</h3>
+                <p class="text-muted">Complete el formulario para registrar su reclamo, queja o sugerencia</p>
+              </div>
+
+              <!-- Success Message -->
+              <div *ngIf="submitSuccess" class="success-card">
+                <div class="success-icon">
+                  <i class="fas fa-check"></i>
+                </div>
+                <h4 class="text-success mb-3">¡Reclamo Registrado Exitosamente!</h4>
+                <p class="mb-3">Su reclamo ha sido registrado con el código:</p>
+                <h5 class="text-dark fw-bold">{{ submittedId }}</h5>
+                <p class="text-muted mt-3">Guarde este código para hacer seguimiento de su reclamo</p>
+                <button class="btn btn-outline-custom mt-3" (click)="setActiveTab('track')">
+                  <i class="fas fa-search me-2"></i>Hacer Seguimiento
+                </button>
+              </div>
+
+              <!-- Form -->
+              <form *ngIf="!submitSuccess" (ngSubmit)="onSubmitComplaint()">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Tipo de Registro *</label>
+                      <select class="form-select" [(ngModel)]="complaintForm.type" name="type" required>
+                        <option value="reclamo">Reclamo</option>
+                        <option value="queja">Queja</option>
+                        <option value="sugerencia">Sugerencia</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Documento de Identidad *</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Número de DNI o documento"
+                        [(ngModel)]="complaintForm.document"
+                        name="document"
+                        required>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Nombres y Apellidos *</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Nombre completo"
+                        [(ngModel)]="complaintForm.name"
+                        name="name"
+                        required>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Correo Electrónico *</label>
+                      <input
+                        type="email"
+                        class="form-control"
+                        placeholder="correo&#64;ejemplo.com"
+                        [(ngModel)]="complaintForm.email"
+                        name="email"
+                        required>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Teléfono</label>
+                      <input
+                        type="tel"
+                        class="form-control"
+                        placeholder="+51 999 999 999"
+                        [(ngModel)]="complaintForm.phone"
+                        name="phone">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Descripción *</label>
+                  <textarea
+                    class="form-control"
+                    placeholder="Describa detalladamente su reclamo, queja o sugerencia..."
+                    [(ngModel)]="complaintForm.description"
+                    name="description"
+                    required></textarea>
+                </div>
+
+                <div class="text-center">
+                  <button
+                    type="submit"
+                    class="btn btn-primary-custom"
+                    [disabled]="isSubmitting || !isValidForm()">
+                    <span *ngIf="isSubmitting" class="loading-spinner me-2"></span>
+                    <i *ngIf="!isSubmitting" class="fas fa-paper-plane me-2"></i>
+                    {{ isSubmitting ? 'Enviando...' : 'Enviar Reclamo' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Seguimiento Tab -->
+            <div *ngIf="activeTab === 'track'" class="tab-pane active">
+              <div class="text-center mb-4">
+                <i class="fas fa-search text-primary" style="font-size: 48px; margin-bottom: 20px; color: #667eea !important;"></i>
+                <h3>Seguimiento de Reclamo</h3>
+                <p class="text-muted">Ingrese el código de su reclamo para conocer su estado</p>
+              </div>
+
+              <!-- Search Form -->
+              <div class="search-section">
+                <form (ngSubmit)="onSearchComplaint()">
+                  <div class="row align-items-end">
+                    <div class="col-md-8">
+                      <label class="form-label">Código de Reclamo</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Ej: LR-20241201-001"
+                        [(ngModel)]="searchId"
+                        name="searchId"
+                        required>
+                    </div>
+                    <div class="col-md-4">
+                      <button
+                        type="submit"
+                        class="btn btn-primary-custom w-100"
+                        [disabled]="isSearching || !searchId.trim()">
+                        <span *ngIf="isSearching" class="loading-spinner me-2"></span>
+                        <i *ngIf="!isSearching" class="fas fa-search me-2"></i>
+                        {{ isSearching ? 'Buscando...' : 'Buscar' }}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Search Results -->
+              <div *ngIf="searchResult" class="result-card result-found">
+                <div class="d-flex align-items-center mb-3">
+                  <i class="fas fa-file-alt text-success me-3" style="font-size: 24px;"></i>
+                  <div>
+                    <h5 class="mb-1 text-success">Reclamo Encontrado</h5>
+                    <p class="mb-0 text-muted">Detalles de su reclamo registrado</p>
+                  </div>
+                </div>
+
+                <div class="complaint-details">
+                  <div class="detail-row">
+                    <span class="detail-label">Código:</span>
+                    <span class="detail-value">{{ searchResult.id }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Tipo:</span>
+                    <span class="detail-value text-capitalize">{{ searchResult.type }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Fecha:</span>
+                    <span class="detail-value">{{ searchResult.date | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Estado:</span>
+                    <span class="detail-value">
+                      <span class="status-badge" [ngClass]="getStatusClass(searchResult.status)">
+                        {{ getStatusText(searchResult.status) }}
+                      </span>
+                    </span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Solicitante:</span>
+                    <span class="detail-value">{{ searchResult.name }}</span>
+                  </div>
+                </div>
+
+                <div class="mt-4">
+                  <h6 class="fw-bold">Descripción:</h6>
+                  <p class="text-muted">{{ searchResult.description }}</p>
+                </div>
+
+                <div *ngIf="searchResult.response" class="mt-4 p-3" style="background: #e0f2fe; border-left: 4px solid #0288d1; border-radius: 8px;">
+                  <h6 class="fw-bold text-info">Respuesta de ASECAPT:</h6>
+                  <p class="mb-0">{{ searchResult.response }}</p>
+                </div>
+
+                <div class="text-center mt-4">
+                  <button class="btn btn-outline-custom" (click)="resetSearch()">
+                    <i class="fas fa-redo me-2"></i>Nueva Búsqueda
+                  </button>
+                </div>
+              </div>
+
+              <!-- No Results -->
+              <div *ngIf="searchResult === null && searchId && !isSearching" class="result-card result-not-found">
+                <div class="d-flex align-items-center mb-3">
+                  <i class="fas fa-exclamation-triangle text-danger me-3" style="font-size: 24px;"></i>
+                  <div>
+                    <h5 class="mb-1 text-danger">Reclamo No Encontrado</h5>
+                    <p class="mb-0 text-muted">No se encontró ningún reclamo con ese código</p>
+                  </div>
+                </div>
+
+                <div class="alert alert-warning">
+                  <p class="mb-2"><strong>Verifique que:</strong></p>
+                  <ul class="mb-0">
+                    <li>El código esté escrito correctamente</li>
+                    <li>El reclamo haya sido registrado en nuestro sistema</li>
+                    <li>No hayan transcurrido más de 30 días desde el registro</li>
+                  </ul>
+                </div>
+
+                <div class="text-center mt-3">
+                  <button class="btn btn-outline-custom" (click)="resetSearch()">
+                    <i class="fas fa-redo me-2"></i>Intentar de Nuevo
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Information Section -->
+<section class="info-section">
+  <div class="container">
+    <div class="row text-center mb-5">
+      <div class="col-12">
+        <h2>Tipos de Registro</h2>
+        <p class="text-muted">Conozca la diferencia entre los tipos de registro disponibles</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <div class="info-card">
+          <div class="info-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <h5>Reclamo</h5>
+          <p class="text-muted">Manifestación de inconformidad relacionada con nuestros servicios o productos, cuya atención puede ser objeto de algún cargo.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <div class="info-card">
+          <div class="info-icon">
+            <i class="fas fa-frown"></i>
+          </div>
+          <h5>Queja</h5>
+          <p class="text-muted">Manifestación de inconformidad no relacionada directamente con nuestros servicios o productos, sino con el proceso de atención al cliente.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <div class="info-card">
+          <div class="info-icon">
+            <i class="fas fa-lightbulb"></i>
+          </div>
+          <h5>Sugerencia</h5>
+          <p class="text-muted">Propuesta de mejora de nuestros servicios o productos, proceso de atención al cliente o cualquier otro aspecto de nuestra organización.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Legal Section -->
+<section class="legal-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="legal-card">
+          <h3 class="text-center mb-4">Marco Legal</h3>
+          <div class="row">
+            <div class="col-md-6">
+              <h6 class="fw-bold">Decreto Supremo N° 006-2019-JUS</h6>
+              <p class="small text-muted">Aprueba el Texto Único Ordenado de la Ley N° 29571, Código de Protección y Defensa del Consumidor.</p>
+            </div>
+            <div class="col-md-6">
+              <h6 class="fw-bold">Artículo 150° del Código</h6>
+              <p class="small text-muted">Establece que todo proveedor tiene la obligación de contar con un libro de reclamaciones físico o virtual.</p>
+            </div>
+          </div>
+          <div class="text-center mt-4">
+            <p class="small text-muted mb-0">
+              <strong>ASECAPT</strong> cumple con todas las disposiciones legales vigentes para la atención de reclamos y quejas de usuarios.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact Section -->
+<section class="main-section">
+  <div class="container">
+    <div class="row text-center mb-5">
+      <div class="col-12">
+        <h2 class="text-white">¿Necesita ayuda adicional?</h2>
+        <p class="text-white-50">Nuestro equipo está disponible para asistirle</p>
+      </div>
+    </div>
+
+    <div class="row contact-grid justify-content-center">
+      <div class="col-md-4">
+        <div class="contact-item">
+          <div class="contact-item-icon">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <h6>Email</h6>
+          <p class="text-muted small">asociacion.esp.asecapt&#64;gmail.com</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="contact-item">
+          <div class="contact-item-icon">
+            <i class="fas fa-phone"></i>
+          </div>
+          <h6>Teléfono</h6>
+          <p class="text-muted small">+51 948 090 763</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="contact-item">
+          <div class="contact-item-icon">
+            <i class="fas fa-map-marker-alt"></i>
+          </div>
+          <h6>Dirección</h6>
+          <p class="text-muted small">Alfonso Ugarte 464, Piso 2<br>Centro Cívico Trujillo, La Libertad</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

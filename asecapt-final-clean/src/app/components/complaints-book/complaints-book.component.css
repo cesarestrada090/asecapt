@@ -1,0 +1,395 @@
+/* Complaints Book component styles */
+
+/* Mantener la jerarquía de z-index sin interferir con los estilos globales */
+:host {
+  display: block;
+}
+
+/* 
+  Compensar la altura del header dinámico:
+  - En estado fixedHeader: header relativo
+  - En estado scrollHeader: header fijo con z-index 99
+*/
+.page-title-section {
+  position: relative;
+  z-index: 1; /* Asegurar que esté por debajo del header */
+}
+
+/* Cuando el header está en modo scroll (fijo), ajustar el espaciado */
+:host .page-title-section {
+  margin-top: 0;
+  padding-top: 180px !important;
+}
+
+/* Media queries para responsive */
+@media screen and (max-width: 1199px) {
+  :host .page-title-section {
+    padding-top: 175px !important;
+  }
+}
+
+@media screen and (max-width: 991px) {
+  :host .page-title-section {
+    padding-top: 150px !important;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  :host .page-title-section {
+    padding-top: 140px !important;
+  }
+}
+
+@media screen and (max-width: 575px) {
+  :host .page-title-section {
+    padding-top: 140px !important;
+  }
+}
+
+/* Estilos específicos del componente */
+.main-section {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 80px 0;
+  min-height: 70vh;
+}
+
+.main-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+/* Tabs */
+.nav-tabs-custom {
+  background: #f8fafc;
+  border-bottom: none;
+  padding: 0;
+}
+
+.nav-tabs-custom .nav-link {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-weight: 600;
+  padding: 20px 40px;
+  border-radius: 0;
+  transition: all 0.3s ease;
+}
+
+.nav-tabs-custom .nav-link.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.nav-tabs-custom .nav-link:hover:not(.active) {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+/* Tab content */
+.tab-content {
+  padding: 40px;
+}
+
+/* Forms */
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.form-control {
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 15px 20px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-select {
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 15px 20px;
+  font-size: 16px;
+}
+
+.form-select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+textarea.form-control {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Buttons */
+.btn-primary-custom {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  padding: 15px 30px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary-custom:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-outline-custom {
+  border: 2px solid #667eea;
+  color: #667eea;
+  background: transparent;
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-custom:hover {
+  background: #667eea;
+  color: white;
+}
+
+/* Search section */
+.search-section {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+/* Results */
+.result-card {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  margin-top: 25px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.result-found {
+  border-left: 5px solid #10b981;
+}
+
+.result-not-found {
+  border-left: 5px solid #ef4444;
+}
+
+.complaint-details {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 25px;
+  margin-top: 20px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #374151;
+  flex: 0 0 150px;
+}
+
+.detail-value {
+  color: #6b7280;
+  flex: 1;
+  text-align: right;
+}
+
+/* Status badges */
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-info {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-success {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.badge-secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* Success message */
+.success-card {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border: 2px solid #10b981;
+  border-radius: 15px;
+  padding: 30px;
+  text-align: center;
+  margin-top: 25px;
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: #10b981;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: white;
+  font-size: 32px;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #f3f4f6;
+  border-radius: 50%;
+  border-top-color: #667eea;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Info sections */
+.info-section {
+  background: white;
+  padding: 80px 0;
+}
+
+.info-card {
+  background: #f8fafc;
+  border-radius: 15px;
+  padding: 30px;
+  height: 100%;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.info-icon {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: white;
+  font-size: 28px;
+}
+
+/* Legal section */
+.legal-section {
+  background: #f1f5f9;
+  padding: 60px 0;
+}
+
+.legal-card {
+  background: white;
+  border-radius: 15px;
+  padding: 40px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+/* Contact section */
+.contact-grid {
+  gap: 20px;
+}
+
+.contact-item {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+.contact-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.contact-item-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+  color: white;
+  font-size: 24px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .nav-tabs-custom .nav-link {
+    padding: 15px 20px;
+    font-size: 14px;
+  }
+  
+  .tab-content {
+    padding: 30px 20px;
+  }
+  
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .detail-value {
+    text-align: left;
+  }
+}

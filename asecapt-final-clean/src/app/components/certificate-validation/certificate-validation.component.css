@@ -1,0 +1,202 @@
+/* Certificate Validation component styles */
+
+/* Mantener la jerarquía de z-index sin interferir con los estilos globales */
+:host {
+  display: block;
+}
+
+/* 
+  Compensar la altura del header dinámico:
+  - En estado fixedHeader: header relativo
+  - En estado scrollHeader: header fijo con z-index 99
+*/
+.page-title-section {
+  position: relative;
+  z-index: 1; /* Asegurar que esté por debajo del header */
+}
+
+/* Cuando el header está en modo scroll (fijo), ajustar el espaciado */
+:host .page-title-section {
+  margin-top: 0;
+  padding-top: 180px !important;
+}
+
+/* Media queries para responsive */
+@media screen and (max-width: 1199px) {
+  :host .page-title-section {
+    padding-top: 175px !important;
+  }
+}
+
+@media screen and (max-width: 991px) {
+  :host .page-title-section {
+    padding-top: 150px !important;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  :host .page-title-section {
+    padding-top: 140px !important;
+  }
+}
+
+@media screen and (max-width: 575px) {
+  :host .page-title-section {
+    padding-top: 140px !important;
+  }
+}
+
+/* Estilos específicos del componente */
+.search-section {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 80px 0;
+}
+
+.search-card {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  padding: 40px;
+  margin-bottom: 30px;
+}
+
+.search-form .form-control {
+  border: 2px solid #e3e6f0;
+  border-radius: 10px;
+  padding: 15px 20px;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.search-form .form-control:focus {
+  border-color: #5a67d8;
+  box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.1);
+}
+
+.btn-search {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  padding: 15px 40px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-search:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.btn-search:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.result-card {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  padding: 30px;
+  margin-top: 30px;
+}
+
+.result-success {
+  border-left: 5px solid #10b981;
+}
+
+.result-error {
+  border-left: 5px solid #ef4444;
+}
+
+.certificate-info {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 25px;
+  margin-top: 20px;
+}
+
+.certificate-info .info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.certificate-info .info-row:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.info-value {
+  color: #6b7280;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #f3f4f6;
+  border-radius: 50%;
+  border-top-color: #667eea;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.process-section {
+  background: white;
+  padding: 80px 0;
+}
+
+.process-step {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.step-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: white;
+  font-size: 32px;
+}
+
+.contact-section {
+  background: #f8fafc;
+  padding: 60px 0;
+}
+
+.contact-card {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+.contact-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: white;
+  font-size: 24px;
+}
