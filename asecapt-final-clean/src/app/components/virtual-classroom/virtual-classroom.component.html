@@ -1,0 +1,218 @@
+<!-- Banner Section -->
+<section class="page-title-section bg-img cover-background"
+         data-overlay-dark="6"
+         data-background="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=80"
+         style="background-image: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=80');">
+  <div class="container">
+    <div class="row text-center">
+      <div class="col-md-12">
+        <h1 class="text-white">💻 Aula Virtual ASECAPT</h1>
+        <p class="text-white-50 mb-0">Plataforma educativa exclusiva para estudiantes</p>
+      </div>
+      <div class="col-md-12">
+        <ul class="breadcrumb justify-content-center">
+          <li><a routerLink="/">Inicio</a></li>
+          <li><span>Aula Virtual</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Login Section -->
+<section class="login-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <div class="login-container">
+          <div class="login-header">
+            <div class="login-logo">
+              <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h2 class="login-title">Acceso al Aula Virtual</h2>
+            <p class="login-subtitle">Ingresa con tus credenciales de estudiante</p>
+          </div>
+
+          <!-- Error Message -->
+          <div *ngIf="loginError" class="error-message">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            {{ loginError }}
+          </div>
+
+          <!-- Login Form -->
+          <form (ngSubmit)="onLogin()">
+            <div class="form-group">
+              <label class="form-label">Usuario / Email</label>
+              <input
+                type="email"
+                class="form-control"
+                placeholder="estudiante&#64;asecapt.com"
+                [(ngModel)]="loginForm.username"
+                name="username"
+                required
+                [disabled]="isLoading">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Contraseña</label>
+              <div class="password-input-container">
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  class="form-control"
+                  placeholder="Ingresa tu contraseña"
+                  [(ngModel)]="loginForm.password"
+                  name="password"
+                  required
+                  [disabled]="isLoading">
+                <button
+                  type="button"
+                  class="password-toggle"
+                  (click)="togglePasswordVisibility()"
+                  [disabled]="isLoading">
+                  <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              class="btn-login"
+              [disabled]="!isValidForm() || isLoading">
+              <span *ngIf="isLoading" class="loading-spinner me-2"></span>
+              <i *ngIf="!isLoading" class="fas fa-sign-in-alt me-2"></i>
+              {{ isLoading ? 'Verificando credenciales...' : 'Ingresar al Aula' }}
+            </button>
+          </form>
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+  <div class="container">
+    <div class="row text-center mb-5">
+      <div class="col-12">
+        <h2>Características del Aula Virtual</h2>
+        <p class="text-muted">Herramientas profesionales para tu aprendizaje</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-play-circle"></i>
+          </div>
+          <h5 class="feature-title">Clases en Vivo</h5>
+          <p class="feature-description">Participa en clases interactivas con instructores expertos en tiempo real</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-book-open"></i>
+          </div>
+          <h5 class="feature-title">Material Digital</h5>
+          <p class="feature-description">Accede a libros, presentaciones y recursos educativos descargables</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-tasks"></i>
+          </div>
+          <h5 class="feature-title">Evaluaciones</h5>
+          <p class="feature-description">Realiza exámenes y tareas con retroalimentación inmediata</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-comments"></i>
+          </div>
+          <h5 class="feature-title">Foros de Discusión</h5>
+          <p class="feature-description">Interactúa con compañeros y resuelve dudas en comunidad</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h5 class="feature-title">Seguimiento</h5>
+          <p class="feature-description">Monitorea tu progreso y rendimiento académico detallado</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-mobile-alt"></i>
+          </div>
+          <h5 class="feature-title">Acceso Móvil</h5>
+          <p class="feature-description">Estudia desde cualquier dispositivo, en cualquier momento</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Information Section -->
+<section class="info-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-6 mb-4">
+        <div class="info-card">
+          <h3 class="info-title">Para Estudiantes Activos</h3>
+          <p class="mb-4">El aula virtual está disponible exclusivamente para estudiantes matriculados en nuestros programas de capacitación.</p>
+          <ul class="info-list">
+            <li><i class="fas fa-check"></i> Acceso 24/7 a contenidos</li>
+            <li><i class="fas fa-check"></i> Soporte técnico especializado</li>
+            <li><i class="fas fa-check"></i> Certificados digitales</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-lg-6 mb-4">
+        <div class="info-card">
+          <h3 class="info-title">Requisitos del Sistema</h3>
+          <p class="mb-4">Para una experiencia óptima, asegúrate de cumplir con estos requisitos mínimos:</p>
+          <ul class="info-list">
+            <li><i class="fas fa-wifi"></i> Conexión a internet estable</li>
+            <li><i class="fas fa-desktop"></i> Navegador web actualizado</li>
+            <li><i class="fas fa-download"></i> Capacidad de descarga de archivos</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-12 text-center">
+        <div class="info-card">
+          <h4 class="mb-3">¿No tienes acceso aún?</h4>
+          <p class="mb-4">Matricúlate en nuestros programas de capacitación y obtén acceso inmediato al aula virtual.</p>
+          <div class="row justify-content-center">
+            <div class="col-md-4 mb-3">
+              <a routerLink="/courses-grid" class="btn btn-primary w-100">
+                <i class="fas fa-graduation-cap me-2"></i>Ver Programas
+              </a>
+            </div>
+            <div class="col-md-4 mb-3">
+              <a href="mailto:asociacion.esp.asecapt&#64;gmail.com" class="btn btn-outline-primary w-100">
+                <i class="fas fa-envelope me-2"></i>Contactar
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

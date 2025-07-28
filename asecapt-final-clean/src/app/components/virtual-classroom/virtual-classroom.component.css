@@ -1,0 +1,329 @@
+/* Virtual Classroom component styles */
+
+/* Mantener la jerarquía de z-index sin interferir con los estilos globales */
+:host {
+  display: block;
+}
+
+/* 
+  Compensar la altura del header dinámico:
+  - En estado fixedHeader: header relativo
+  - En estado scrollHeader: header fijo con z-index 99
+*/
+.page-title-section {
+  position: relative;
+  z-index: 1; /* Asegurar que esté por debajo del header */
+}
+
+/* Cuando el header está en modo scroll (fijo), ajustar el espaciado */
+:host .page-title-section {
+  margin-top: 0;
+  padding-top: 180px !important;
+}
+
+/* Media queries para responsive */
+@media screen and (max-width: 1199px) {
+  :host .page-title-section {
+    padding-top: 175px !important;
+  }
+}
+
+@media screen and (max-width: 991px) {
+  :host .page-title-section {
+    padding-top: 150px !important;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  :host .page-title-section {
+    padding-top: 140px !important;
+  }
+}
+
+@media screen and (max-width: 575px) {
+  :host .page-title-section {
+    padding-top: 140px !important;
+  }
+}
+
+/* Login Section */
+.login-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  padding: 80px 0;
+}
+
+.login-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  padding: 60px 50px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.login-logo {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 25px;
+  color: white;
+  font-size: 32px;
+}
+
+.login-title {
+  color: #1a202c;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.login-subtitle {
+  color: #718096;
+  font-size: 16px;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 25px;
+  position: relative;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.form-control {
+  width: 100%;
+  padding: 15px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.password-input-container {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #718096;
+  cursor: pointer;
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+  color: #667eea;
+}
+
+/* Login Button */
+.btn-login {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-login:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+.btn-login:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff40;
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error Message */
+.error-message {
+  background: #fed7d7;
+  border: 1px solid #feb2b2;
+  color: #c53030;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Demo Credentials */
+.demo-credentials {
+  background: #e6fffa;
+  border: 1px solid #81e6d9;
+  color: #234e52;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 25px;
+  font-size: 14px;
+}
+
+.demo-credentials h6 {
+  color: #1a202c;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.demo-credentials code {
+  background: #234e52;
+  color: #81e6d9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+/* Features Section */
+.features-section {
+  background: white;
+  padding: 80px 0;
+}
+
+.feature-card {
+  background: #f7fafc;
+  border-radius: 15px;
+  padding: 30px;
+  text-align: center;
+  height: 100%;
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.feature-icon {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: white;
+  font-size: 28px;
+}
+
+.feature-title {
+  color: #1a202c;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.feature-description {
+  color: #718096;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Info Section */
+.info-section {
+  background: #f1f5f9;
+  padding: 60px 0;
+}
+
+.info-card {
+  background: white;
+  border-radius: 15px;
+  padding: 40px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.info-title {
+  color: #1a202c;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.info-list {
+  list-style: none;
+  padding: 0;
+}
+
+.info-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+}
+
+.info-list li:last-child {
+  border-bottom: none;
+}
+
+.info-list li i {
+  color: #667eea;
+  margin-right: 12px;
+  width: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 40px 30px;
+    margin: 20px;
+  }
+  
+  .login-title {
+    font-size: 24px;
+  }
+  
+  .form-control {
+    padding: 12px 16px;
+  }
+} 
