@@ -51,17 +51,18 @@
                                     </div>
 
                                     <!-- start menu area -->
-                                <ul class="navbar-nav ms-auto" id="nav" [class.show]="isMobileMenuOpen" (click)="isMobileMenuOpen = false">
-                                    <li><a routerLink="/" style="color: #273044; font-weight: 600;">Inicio</a></li>
+                                <ul class="navbar-nav ms-auto" id="nav" [class.show]="isMobileMenuOpen">
+                                    <li><a routerLink="/" (click)="closeMobileMenu()" style="color: #273044; font-weight: 600;">Inicio</a></li>
                                     <li>
-                                        <a routerLink="/about" style="color: #273044; font-weight: 600;">Nosotros</a>
+                                        <a routerLink="/about" (click)="closeMobileMenu()" style="color: #273044; font-weight: 600;">Nosotros</a>
 
                                     </li>
-                                    <li><a routerLink="/courses-grid" style="color: #273044; font-weight: 600;">Programas</a>
+                                    <li><a routerLink="/courses-grid" (click)="closeMobileMenu()" style="color: #273044; font-weight: 600;">Programas</a>
 
                                     </li>
-                                    <li><a routerLink="/certificate-validation" style="color: #273044; font-weight: 600;">🎓 Valida tu Certificado</a></li>
-                                    <li><a routerLink="/complaints-book" style="color: #273044; font-weight: 600;">Libro de Reclamaciones</a></li>
+                                    <li><a routerLink="/certificate-validation" (click)="closeMobileMenu()" style="color: #273044; font-weight: 600;">🎓 Valida tu Certificado</a></li>
+                                    <li><a routerLink="/complaints-book" (click)="closeMobileMenu()" style="color: #273044; font-weight: 600;">Libro de Reclamaciones</a></li>
+                                    <li><a routerLink="/virtual-classroom" (click)="closeMobileMenu()" style="color: #273044; font-weight: 600;">💻 Aula Virtual</a></li>
                                     </ul>
                                     <!-- end menu area -->
 
@@ -69,7 +70,7 @@
                                     <div class="attr-nav align-items-xl-center ms-xl-auto main-font">
                                         <ul>
                                             <li class="search"><a href="#!"><i class="fas fa-search"></i></a></li>
-                                            <li class="d-none d-xl-inline-block"><a routerLink="/virtual-classroom" class="butn md text-white"><i class="fas fa-laptop icon-arrow before"></i><span class="label">Aula Virtual</span><i class="fas fa-laptop icon-arrow after"></i></a></li>
+                                            <li class="d-none d-xl-inline-block"><a routerLink="/virtual-classroom" (click)="closeMobileMenu()" class="butn md text-white"><i class="fas fa-laptop icon-arrow before"></i><span class="label">Aula Virtual</span><i class="fas fa-laptop icon-arrow after"></i></a></li>
                                         </ul>
                                     </div>
                                     <!-- end attribute navigation -->
@@ -80,6 +81,9 @@
                 </div>
             </div>
         </header>
+
+    <!-- Overlay para cerrar menú móvil -->
+    <div class="mobile-menu-overlay" [class.show]="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
 
     <!-- DYNAMIC CONTENT - Each component will render here -->
     <router-outlet></router-outlet>
@@ -134,8 +138,8 @@
                         <div class="ps-md-1-6 ps-lg-1-9">
                             <h3 class="text-primary h5 mb-2-2">Acerca de</h3>
                             <ul class="footer-list">
-                                <li><a routerLink="/about">Quiénes Somos</a></li>
-                                <li><a routerLink="/courses-grid">Cursos</a></li>
+                                <li><a routerLink="/about" (click)="closeMobileMenu()">Quiénes Somos</a></li>
+                                <li><a routerLink="/courses-grid" (click)="closeMobileMenu()">Cursos</a></li>
                             </ul>
                         </div>
                     </div>

@@ -1,1 +1,75 @@
 /* App component styles */
+
+/* Control del menú móvil */
+.navbar-nav {
+  transition: all 0.3s ease;
+}
+
+/* Solo aplicar reglas de visibilidad en móviles */
+@media (max-width: 991px) {
+  /* Forzar visibilidad del menú móvil */
+  .navbar-nav.show {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateX(0) !important;
+  }
+
+  /* Ocultar menú cuando no está abierto */
+  .navbar-nav:not(.show) {
+    display: none !important;
+  }
+}
+
+/* Overlay para cerrar menú al hacer click fuera */
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  /* Solo mostrar en móviles */
+  display: none;
+}
+
+/* Mostrar overlay solo en pantallas pequeñas */
+@media (max-width: 991px) {
+  .mobile-menu-overlay {
+    display: block;
+  }
+}
+
+.mobile-menu-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Asegurar que el menú esté por encima del overlay */
+@media (max-width: 991px) {
+  .navbar-nav.show {
+    z-index: 1001 !important;
+    position: relative;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    margin: 10px;
+  }
+  
+  /* Asegurar que el header esté por encima del overlay */
+  header {
+    z-index: 1002 !important;
+    position: relative;
+  }
+}
+
+/* Ocultar Aula Virtual del menú en desktop */
+@media (min-width: 992px) {
+  .navbar-nav li:last-child {
+    display: none !important;
+  }
+}
