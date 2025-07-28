@@ -5,7 +5,7 @@
   display: block;
 }
 
-/* 
+/*
   Compensar la altura del header dinámico:
   - En estado fixedHeader: header relativo
   - En estado scrollHeader: header fijo con z-index 99
@@ -189,8 +189,8 @@
 }
 
 .contact-icon {
-  width: 60px;
-  height: 60px;
+  width: 90px;
+  height: 90px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 50%;
   display: flex;
@@ -198,5 +198,14 @@
   justify-content: center;
   margin: 0 auto 20px;
   color: white;
-  font-size: 24px;
+  font-size: 40px;
+  padding: 10px;
+  box-sizing: content-box;
+  overflow: visible;
+}
+
+.contact-icon i {
+  font-size: 2.5rem;
+  color: #fff;
+  line-height: 1;
 }

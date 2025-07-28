@@ -51,10 +51,10 @@
                                     </div>
 
                                     <!-- start menu area -->
-                                <ul class="navbar-nav ms-auto" id="nav" [class.show]="isMobileMenuOpen">
-                                    <li><a href="/" style="color: #273044; font-weight: 600;">Inicio</a></li>
+                                <ul class="navbar-nav ms-auto" id="nav" [class.show]="isMobileMenuOpen" (click)="isMobileMenuOpen = false">
+                                    <li><a routerLink="/" style="color: #273044; font-weight: 600;">Inicio</a></li>
                                     <li>
-                                        <a routerLink="/about" href="#!" style="color: #273044; font-weight: 600;">Nosotros</a>
+                                        <a routerLink="/about" style="color: #273044; font-weight: 600;">Nosotros</a>
 
                                     </li>
                                     <li><a routerLink="/courses-grid" style="color: #273044; font-weight: 600;">Programas</a>
