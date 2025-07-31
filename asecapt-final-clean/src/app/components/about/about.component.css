@@ -44,4 +44,84 @@
   :host .page-title-section {
     padding-top: 140px !important;
   }
+}
+
+/* Mejorar la visualización de los programas especializados en móviles */
+@media screen and (max-width: 767px) {
+  /* Centrar los elementos de programas especializados */
+  .inner-box,
+  .inner-box2 {
+    text-align: center !important;
+    margin: 0 auto !important;
+    max-width: 300px;
+  }
+  
+  /* Centrar las imágenes de los estudiantes */
+  .inner-box .info-box,
+  .inner-box2 .info-box {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+  
+  /* Centrar específicamente el contenido interno */
+  .inner-box .info-box > div,
+  .inner-box2 .info-box > div {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    width: 100% !important;
+  }
+  
+  /* Centrar las imágenes */
+  .inner-box .mb-3,
+  .inner-box2 .mb-3 {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+  
+  .inner-box img,
+  .inner-box2 img {
+    margin: 0 auto !important;
+    display: block !important;
+  }
+  
+  /* Centrar los textos */
+  .inner-box h5,
+  .inner-box2 h5,
+  .inner-box span,
+  .inner-box2 span {
+    text-align: center !important;
+    width: 100% !important;
+  }
+  
+  /* Mejorar el espaciado entre elementos */
+  .col-md-6 {
+    margin-bottom: 30px;
+  }
+  
+  /* Centrar el texto de los programas */
+  .box-info-text {
+    text-align: center !important;
+    display: block !important;
+    margin-bottom: 15px !important;
+  }
+}
+
+/* Ajustes adicionales para pantallas muy pequeñas */
+@media screen and (max-width: 575px) {
+  .inner-box,
+  .inner-box2 {
+    max-width: 280px;
+    padding: 20px 15px;
+  }
+  
+  .box-info-text {
+    font-size: 14px;
+    line-height: 1.4;
+  }
 } 
