@@ -12,6 +12,23 @@ interface QRCode {
   type?: string;
 }
 
+interface Certificate {
+  id: string;
+  studentName: string;
+  studentDNI: string;
+  studentEmail: string;
+  courseName: string;
+  courseType: 'curso' | 'diplomado' | 'especializacion';
+  completionDate: Date;
+  issueDate: Date;
+  certificateNumber: string;
+  verificationURL: string;
+  pdfFile?: File;
+  pdfDataURL?: string;
+  qrCode?: QRCode;
+  createdAt: Date;
+}
+
 interface Student {
   id: string;
   name: string;
@@ -43,19 +60,26 @@ export class AdminPanelComponent {
   activeSection: string = 'qr';
   sidebarOpen: boolean = false;
 
-  // Datos del formulario para generar QR
-  qrForm = {
-    title: '',
-    content: '',
-    type: 'text' // text, url, email, phone
+  // Datos del formulario para certificados
+  certificateForm = {
+    studentName: '',
+    studentDNI: '',
+    studentEmail: '',
+    courseName: '',
+    courseType: 'curso' as 'curso' | 'diplomado' | 'especializacion',
+    completionDate: '',
+    issueDate: new Date().toISOString().split('T')[0], // Fecha actual por defecto
+    pdfFile: null as File | null
   };
 
-  // Lista de QRs generados
-  generatedQRs: QRCode[] = [];
-  filteredQRs: QRCode[] = [];
+  // Lista de certificados generados
+  generatedCertificates: Certificate[] = [];
+  filteredCertificates: Certificate[] = [];
   
   // Estados
   isGenerating: boolean = false;
+  isUploadingPDF: boolean = false;
+  pdfPreviewURL: string | null = null;
 
   // Formularios de búsqueda
   searchForm = {
@@ -155,55 +179,67 @@ export class AdminPanelComponent {
   filteredCourses: Course[] = [];
 
   constructor(private router: Router) {
-    // Cargar QRs guardados del localStorage
-    this.loadSavedQRs();
+    // Cargar certificados guardados del localStorage
+    this.loadSavedCertificates();
     // Inicializar listas filtradas
-    this.filteredQRs = [...this.generatedQRs];
+    this.filteredCertificates = [...this.generatedCertificates];
     this.filteredStudents = [...this.mockStudents];
     this.filteredCourses = [...this.mockCourses];
   }
 
-  // Generar nuevo QR
-  generateQR() {
-    if (!this.qrForm.title.trim() || !this.qrForm.content.trim()) {
+  // Generar nuevo certificado con QR
+  generateCertificate() {
+    if (!this.isValidCertificateForm()) {
       return;
     }
 
     this.isGenerating = true;
 
-    // Simular generación de QR
+    // Simular generación de certificado
     setTimeout(() => {
-      const newQR: QRCode = {
+      const certificateNumber = this.generateCertificateNumber();
+      const verificationURL = `https://asecapt.com/verify/${certificateNumber}`;
+      
+      // Crear QR para la URL de verificación
+      const qrCode: QRCode = {
         id: this.generateId(),
-        title: this.qrForm.title,
-        content: this.formatContent(),
+        title: `Certificado - ${this.certificateForm.studentName}`,
+        content: verificationURL,
         createdAt: new Date(),
         qrDataURL: this.generateQRDataURL(),
-        type: this.qrForm.type
+        type: 'url'
       };
 
-      this.generatedQRs.unshift(newQR);
-      this.filteredQRs = [...this.generatedQRs];
-      this.saveQRsToStorage();
-      this.resetForm();
+      const newCertificate: Certificate = {
+        id: this.generateId(),
+        studentName: this.certificateForm.studentName,
+        studentDNI: this.certificateForm.studentDNI,
+        studentEmail: this.certificateForm.studentEmail,
+        courseName: this.certificateForm.courseName,
+        courseType: this.certificateForm.courseType,
+        completionDate: new Date(this.certificateForm.completionDate),
+        issueDate: new Date(this.certificateForm.issueDate),
+        certificateNumber: certificateNumber,
+        verificationURL: verificationURL,
+        pdfDataURL: this.pdfPreviewURL || undefined,
+        qrCode: qrCode,
+        createdAt: new Date()
+      };
+
+      this.generatedCertificates.unshift(newCertificate);
+      this.filteredCertificates = [...this.generatedCertificates];
+      this.saveCertificatesToStorage();
+      this.resetCertificateForm();
       this.isGenerating = false;
     }, 1500);
   }
 
-  // Formatear contenido según el tipo
-  formatContent(): string {
-    const content = this.qrForm.content.trim();
-    
-    switch (this.qrForm.type) {
-      case 'url':
-        return content.startsWith('http') ? content : `https://${content}`;
-      case 'email':
-        return `mailto:${content}`;
-      case 'phone':
-        return `tel:${content}`;
-      default:
-        return content;
-    }
+  // Generar número de certificado único
+  generateCertificateNumber(): string {
+    const year = new Date().getFullYear();
+    const month = String(new Date().getMonth() + 1).padStart(2, '0');
+    const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    return `ASECAPT-${year}${month}-${randomNum}`;
   }
 
   // Generar QR simulado (en producción usarías una librería como qrcode.js)
@@ -230,30 +266,68 @@ export class AdminPanelComponent {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
   }
 
-  // Resetear formulario
-  resetForm() {
-    this.qrForm = {
-      title: '',
-      content: '',
-      type: 'text'
+  // Resetear formulario de certificado
+  resetCertificateForm() {
+    this.certificateForm = {
+      studentName: '',
+      studentDNI: '',
+      studentEmail: '',
+      courseName: '',
+      courseType: 'curso',
+      completionDate: '',
+      issueDate: new Date().toISOString().split('T')[0],
+      pdfFile: null
     };
+    this.pdfPreviewURL = null;
   }
 
-  // Descargar QR
-  downloadQR(qr: QRCode) {
-    const link = document.createElement('a');
-    link.download = `QR_${qr.title.replace(/\s+/g, '_')}.svg`;
-    link.href = qr.qrDataURL;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  // Validar formulario de certificado
+  isValidCertificateForm(): boolean {
+    return !!(
+      this.certificateForm.studentName.trim() &&
+      this.certificateForm.studentDNI.trim() &&
+      this.certificateForm.studentEmail.trim() &&
+      this.certificateForm.courseName.trim() &&
+      this.certificateForm.completionDate &&
+      this.certificateForm.issueDate &&
+      this.pdfPreviewURL
+    );
   }
 
-  // Eliminar QR
-  deleteQR(qrId: string) {
-    this.generatedQRs = this.generatedQRs.filter(qr => qr.id !== qrId);
-    this.filteredQRs = this.filteredQRs.filter(qr => qr.id !== qrId);
-    this.saveQRsToStorage();
+  // Manejar selección de archivo PDF
+  onPDFFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      this.certificateForm.pdfFile = file;
+      this.isUploadingPDF = true;
+      
+      // Crear preview URL para el PDF
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.pdfPreviewURL = e.target?.result as string;
+        this.isUploadingPDF = false;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // Descargar QR del certificado
+  downloadCertificateQR(certificate: Certificate) {
+    if (certificate.qrCode) {
+      const link = document.createElement('a');
+      link.download = `QR_${certificate.certificateNumber}.svg`;
+      link.href = certificate.qrCode.qrDataURL;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
+  // Eliminar certificado
+  deleteCertificate(certificateId: string) {
+    this.generatedCertificates = this.generatedCertificates.filter(cert => cert.id !== certificateId);
+    this.filteredCertificates = this.filteredCertificates.filter(cert => cert.id !== certificateId);
+    this.saveCertificatesToStorage();
   }
 
 
@@ -264,45 +338,42 @@ export class AdminPanelComponent {
     this.router.navigate(['/virtual-classroom']);
   }
 
-  // Guardar QRs en localStorage
-  private saveQRsToStorage() {
-    localStorage.setItem('asecapt_qrs', JSON.stringify(this.generatedQRs));
+  // Guardar certificados en localStorage
+  private saveCertificatesToStorage() {
+    localStorage.setItem('asecapt_certificates', JSON.stringify(this.generatedCertificates));
   }
 
-  // Cargar QRs del localStorage
-  private loadSavedQRs() {
-    const saved = localStorage.getItem('asecapt_qrs');
+  // Cargar certificados del localStorage
+  private loadSavedCertificates() {
+    const saved = localStorage.getItem('asecapt_certificates');
     if (saved) {
-      this.generatedQRs = JSON.parse(saved).map((qr: any) => ({
-        ...qr,
-        createdAt: new Date(qr.createdAt)
+      this.generatedCertificates = JSON.parse(saved).map((cert: any) => ({
+        ...cert,
+        createdAt: new Date(cert.createdAt),
+        completionDate: new Date(cert.completionDate),
+        issueDate: new Date(cert.issueDate)
       }));
-      this.filteredQRs = [...this.generatedQRs];
+      this.filteredCertificates = [...this.generatedCertificates];
     }
   }
 
-  // Validar formulario
-  isValidForm(): boolean {
-    return this.qrForm.title.trim().length > 0 && this.qrForm.content.trim().length > 0;
-  }
-
-  // Obtener texto de placeholder dinámico
-  getPlaceholderText(): string {
-    switch (this.qrForm.type) {
-      case 'url':
-        return 'Ej: https://asecapt.com/certificado/123';
-      case 'email':
-        return 'Ej: estudiante@asecapt.com';
-      case 'phone':
-        return 'Ej: +51 948 090 763';
+  // Obtener texto para el tipo de curso
+  getCourseTypeText(type: string): string {
+    switch (type) {
+      case 'curso':
+        return 'Curso';
+      case 'diplomado':
+        return 'Diplomado';
+      case 'especializacion':
+        return 'Especialización';
       default:
-        return 'Ej: Certificado de Especialización válido hasta 2025';
+        return 'Curso';
     }
   }
 
   // TrackBy para optimizar ngFor
-  trackByQRId(index: number, qr: QRCode): string {
-    return qr.id;
+  trackByQRId(index: number, item: QRCode | Certificate): string {
+    return item.id;
   }
 
   // === NAVEGACIÓN DEL DASHBOARD ===
@@ -321,8 +392,8 @@ export class AdminPanelComponent {
   // Obtener título de la sección actual
   getSectionTitle(): string {
     switch (this.activeSection) {
-      case 'qr': return 'Generador de QR';
-      case 'qr-search': return 'Buscar QRs';
+      case 'qr': return 'Generador de Certificados';
+      case 'qr-search': return 'Buscar Certificados';
       case 'students': return 'Alumnos Matriculados';
       case 'courses': return 'Gestión de Cursos';
       default: return 'Dashboard';
@@ -332,8 +403,8 @@ export class AdminPanelComponent {
   // Obtener descripción de la sección actual
   getSectionDescription(): string {
     switch (this.activeSection) {
-      case 'qr': return 'Crea y gestiona códigos QR';
-      case 'qr-search': return 'Encuentra QRs por título o contenido';
+      case 'qr': return 'Genera certificados con QR de verificación';
+      case 'qr-search': return 'Busca certificados por estudiante, curso o número';
       case 'students': return 'Administra estudiantes matriculados';
       case 'courses': return 'Gestiona cursos y programas';
       default: return 'Panel de administración ASECAPT';
@@ -342,27 +413,28 @@ export class AdminPanelComponent {
 
   // === BÚSQUEDAS ===
 
-  // Buscar QRs
-  searchQRs() {
+  // Buscar certificados
+  searchCertificates() {
     const query = this.searchForm.qrQuery.toLowerCase();
     const type = this.searchForm.qrType;
 
-    this.filteredQRs = this.generatedQRs.filter(qr => {
+    this.filteredCertificates = this.generatedCertificates.filter(cert => {
       const matchesQuery = !query || 
-        qr.title.toLowerCase().includes(query) || 
-        qr.content.toLowerCase().includes(query);
+        cert.studentName.toLowerCase().includes(query) || 
+        cert.certificateNumber.toLowerCase().includes(query) ||
+        cert.courseName.toLowerCase().includes(query);
       
-      const matchesType = !type || qr.type === type;
+      const matchesType = !type || cert.courseType === type;
 
       return matchesQuery && matchesType;
     });
   }
 
-  // Limpiar búsqueda de QRs
-  clearQRSearch() {
+  // Limpiar búsqueda de certificados
+  clearCertificateSearch() {
     this.searchForm.qrQuery = '';
     this.searchForm.qrType = '';
-    this.filteredQRs = [...this.generatedQRs];
+    this.filteredCertificates = [...this.generatedCertificates];
   }
 
   // Buscar estudiantes

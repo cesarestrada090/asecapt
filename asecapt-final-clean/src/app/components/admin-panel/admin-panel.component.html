@@ -16,14 +16,14 @@
             <ul class="nav-list">
                 <li class="nav-item" [class.active]="activeSection === 'qr'">
                     <a (click)="setActiveSection('qr')" class="nav-link">
-                        <i class="fas fa-qrcode"></i>
-                        <span>Generador QR</span>
+                        <i class="fas fa-certificate"></i>
+                        <span>Generar Certificados</span>
                     </a>
                 </li>
                 <li class="nav-item" [class.active]="activeSection === 'qr-search'">
                     <a (click)="setActiveSection('qr-search')" class="nav-link">
                         <i class="fas fa-search"></i>
-                        <span>Buscar QRs</span>
+                        <span>Buscar Certificados</span>
                     </a>
                 </li>
                 <li class="nav-item" [class.active]="activeSection === 'students'">
@@ -81,105 +81,211 @@
                     <div class="col-lg-4">
                         <div class="dashboard-card">
                             <div class="card-header">
-                                <h5><i class="fas fa-qrcode me-2"></i>Generar QR</h5>
+                                <h5><i class="fas fa-certificate me-2"></i>Generar Certificado con QR</h5>
                             </div>
                             <div class="card-body">
-                                <form (ngSubmit)="generateQR()" #qrFormRef="ngForm">
+                                <form (ngSubmit)="generateCertificate()" #certificateFormRef="ngForm">
+                                    <!-- Datos del Estudiante -->
+                                    <h6 class="text-primary mb-3"><i class="fas fa-user me-1"></i>Datos del Estudiante</h6>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label for="studentName">Nombre Completo</label>
+                                                <input 
+                                                    type="text" 
+                                                    class="form-control" 
+                                                    id="studentName"
+                                                    [(ngModel)]="certificateForm.studentName"
+                                                    name="studentName"
+                                                    placeholder="Ej: Juan Carlos Pérez"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label for="studentDNI">DNI</label>
+                                                <input 
+                                                    type="text" 
+                                                    class="form-control" 
+                                                    id="studentDNI"
+                                                    [(ngModel)]="certificateForm.studentDNI"
+                                                    name="studentDNI"
+                                                    placeholder="12345678"
+                                                    required>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div class="form-group mb-3">
-                                        <label for="title">Título del QR</label>
+                                        <label for="studentEmail">Email del Estudiante</label>
                                         <input 
-                                            type="text" 
+                                            type="email" 
                                             class="form-control" 
-                                            id="title"
-                                            [(ngModel)]="qrForm.title"
-                                            name="title"
-                                            placeholder="Ej: Certificado Juan Pérez"
+                                            id="studentEmail"
+                                            [(ngModel)]="certificateForm.studentEmail"
+                                            name="studentEmail"
+                                            placeholder="estudiante@email.com"
                                             required>
                                     </div>
 
+                                    <!-- Datos del Curso -->
+                                    <h6 class="text-primary mb-3 mt-4"><i class="fas fa-graduation-cap me-1"></i>Datos del Curso</h6>
+
                                     <div class="form-group mb-3">
-                                        <label for="type">Tipo de contenido</label>
-                                        <select 
+                                        <label for="courseName">Nombre del Curso</label>
+                                        <input 
+                                            type="text" 
                                             class="form-control" 
-                                            id="type"
-                                            [(ngModel)]="qrForm.type"
-                                            name="type">
-                                            <option value="text">Texto</option>
-                                            <option value="url">URL/Enlace</option>
-                                            <option value="email">Email</option>
-                                            <option value="phone">Teléfono</option>
-                                        </select>
+                                            id="courseName"
+                                            [(ngModel)]="certificateForm.courseName"
+                                            name="courseName"
+                                            placeholder="Ej: Seguridad Industrial"
+                                            required>
                                     </div>
 
-                                    <div class="form-group mb-4">
-                                        <label for="content">Contenido</label>
-                                        <textarea 
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label for="courseType">Tipo de Programa</label>
+                                                <select 
+                                                    class="form-control" 
+                                                    id="courseType"
+                                                    [(ngModel)]="certificateForm.courseType"
+                                                    name="courseType"
+                                                    required>
+                                                    <option value="curso">Curso</option>
+                                                    <option value="diplomado">Diplomado</option>
+                                                    <option value="especializacion">Especialización</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label for="completionDate">Fecha de Culminación</label>
+                                                <input 
+                                                    type="date" 
+                                                    class="form-control" 
+                                                    id="completionDate"
+                                                    [(ngModel)]="certificateForm.completionDate"
+                                                    name="completionDate"
+                                                    required>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label for="issueDate">Fecha de Emisión</label>
+                                        <input 
+                                            type="date" 
                                             class="form-control" 
-                                            id="content"
-                                            [(ngModel)]="qrForm.content"
-                                            name="content"
-                                            rows="3"
-                                            [placeholder]="getPlaceholderText()"
-                                            required></textarea>
+                                            id="issueDate"
+                                            [(ngModel)]="certificateForm.issueDate"
+                                            name="issueDate"
+                                            required>
+                                    </div>
+
+                                    <!-- Upload PDF -->
+                                    <h6 class="text-primary mb-3 mt-4"><i class="fas fa-file-pdf me-1"></i>Certificado PDF</h6>
+                                    
+                                    <div class="form-group mb-4">
+                                        <label for="pdfFile">Subir Certificado (PDF)</label>
+                                        <input 
+                                            type="file" 
+                                            class="form-control" 
+                                            id="pdfFile"
+                                            accept=".pdf"
+                                            (change)="onPDFFileSelected($event)"
+                                            required>
+                                        <small class="form-text text-muted">
+                                            Sube el certificado en formato PDF. Este será el archivo que los usuarios podrán verificar.
+                                        </small>
+                                        
+                                        <!-- PDF Preview -->
+                                        <div *ngIf="isUploadingPDF" class="mt-2">
+                                            <div class="d-flex align-items-center">
+                                                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                                <span>Procesando PDF...</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div *ngIf="pdfPreviewURL && !isUploadingPDF" class="mt-2">
+                                            <div class="alert alert-success">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                PDF subido correctamente
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <button 
                                         type="submit" 
                                         class="btn btn-primary w-100"
-                                        [disabled]="!isValidForm() || isGenerating">
+                                        [disabled]="!isValidCertificateForm() || isGenerating">
                                         <span *ngIf="isGenerating" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                        <i *ngIf="!isGenerating" class="fas fa-plus-circle me-2"></i>
-                                        {{ isGenerating ? 'Generando...' : 'Generar QR' }}
+                                        <i *ngIf="!isGenerating" class="fas fa-certificate me-2"></i>
+                                        {{ isGenerating ? 'Generando Certificado...' : 'Generar Certificado con QR' }}
                                     </button>
                                 </form>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Lista de QRs generados -->
+                    <!-- Lista de Certificados generados -->
                     <div class="col-lg-8">
                         <div class="dashboard-card">
                             <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5><i class="fas fa-list me-2"></i>QRs Generados ({{ generatedQRs.length }})</h5>
-                                <span class="badge bg-primary">Total: {{ generatedQRs.length }}</span>
+                                <h5><i class="fas fa-list me-2"></i>Certificados Generados ({{ generatedCertificates.length }})</h5>
+                                <span class="badge bg-primary">Total: {{ generatedCertificates.length }}</span>
                             </div>
                             
                             <div class="card-body">
-                                <div class="qr-list" *ngIf="generatedQRs.length > 0; else noQRs">
-                                    <div class="qr-item" *ngFor="let qr of generatedQRs; trackBy: trackByQRId">
+                                <div class="qr-list" *ngIf="generatedCertificates.length > 0; else noCertificates">
+                                    <div class="qr-item" *ngFor="let certificate of generatedCertificates; trackBy: trackByQRId">
                                         <div class="qr-preview">
-                                            <img [src]="qr.qrDataURL" [alt]="qr.title" class="qr-image">
+                                            <img [src]="certificate.qrCode?.qrDataURL" [alt]="certificate.certificateNumber" class="qr-image">
                                         </div>
                                         <div class="qr-info">
-                                            <h6>{{ qr.title }}</h6>
-                                            <p class="text-muted mb-1">{{ qr.content }}</p>
+                                            <h6>{{ certificate.studentName }}</h6>
+                                            <p class="text-muted mb-1">
+                                                <strong>{{ getCourseTypeText(certificate.courseType) }}:</strong> {{ certificate.courseName }}
+                                            </p>
+                                            <p class="text-muted mb-1">
+                                                <strong>N° Certificado:</strong> {{ certificate.certificateNumber }}
+                                            </p>
                                             <small class="text-muted">
-                                                <i class="fas fa-clock me-1"></i>
-                                                {{ qr.createdAt | date:'short' }}
+                                                <i class="fas fa-calendar me-1"></i>
+                                                Emitido: {{ certificate.issueDate | date:'shortDate' }}
                                             </small>
                                         </div>
                                         <div class="qr-actions">
                                             <button 
                                                 class="btn btn-sm btn-outline-primary me-2" 
-                                                (click)="downloadQR(qr)"
+                                                (click)="downloadCertificateQR(certificate)"
                                                 title="Descargar QR">
-                                                <i class="fas fa-download"></i>
+                                                <i class="fas fa-qrcode"></i>
+                                            </button>
+                                            <button 
+                                                class="btn btn-sm btn-outline-info me-2" 
+                                                [attr.href]="certificate.verificationURL"
+                                                target="_blank"
+                                                title="Ver URL de verificación">
+                                                <i class="fas fa-external-link-alt"></i>
                                             </button>
                                             <button 
                                                 class="btn btn-sm btn-outline-danger" 
-                                                (click)="deleteQR(qr.id)"
-                                                title="Eliminar QR">
+                                                (click)="deleteCertificate(certificate.id)"
+                                                title="Eliminar Certificado">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </div>
                                     </div>
                                 </div>
 
-                                <ng-template #noQRs>
+                                <ng-template #noCertificates>
                                     <div class="no-content">
-                                        <i class="fas fa-qrcode fa-3x text-muted mb-3"></i>
-                                        <h5>No hay QRs generados</h5>
-                                        <p class="text-muted">Crea tu primer código QR usando el formulario</p>
+                                        <i class="fas fa-certificate fa-3x text-muted mb-3"></i>
+                                        <h5>No hay certificados generados</h5>
+                                        <p class="text-muted">Genera tu primer certificado con QR usando el formulario</p>
                                     </div>
                                 </ng-template>
                             </div>
@@ -188,11 +294,11 @@
                 </div>
             </div>
 
-            <!-- QR SEARCH SECTION -->
+            <!-- CERTIFICATE SEARCH SECTION -->
             <div *ngIf="activeSection === 'qr-search'" class="section-content">
                 <div class="dashboard-card">
                     <div class="card-header">
-                        <h5><i class="fas fa-search me-2"></i>Buscar QRs</h5>
+                        <h5><i class="fas fa-search me-2"></i>Buscar Certificados</h5>
                     </div>
                     <div class="card-body">
                         <div class="row mb-4">
@@ -201,51 +307,61 @@
                                     type="text" 
                                     class="form-control" 
                                     [(ngModel)]="searchForm.qrQuery"
-                                    placeholder="Buscar por título o contenido..."
-                                    (input)="searchQRs()">
+                                    placeholder="Buscar por estudiante, certificado o curso..."
+                                    (input)="searchCertificates()">
                             </div>
                             <div class="col-md-4">
-                                <select class="form-control" [(ngModel)]="searchForm.qrType" (change)="searchQRs()">
+                                <select class="form-control" [(ngModel)]="searchForm.qrType" (change)="searchCertificates()">
                                     <option value="">Todos los tipos</option>
-                                    <option value="text">Texto</option>
-                                    <option value="url">URL</option>
-                                    <option value="email">Email</option>
-                                    <option value="phone">Teléfono</option>
+                                    <option value="curso">Curso</option>
+                                    <option value="diplomado">Diplomado</option>
+                                    <option value="especializacion">Especialización</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <button class="btn btn-outline-primary w-100" (click)="clearQRSearch()">
+                                <button class="btn btn-outline-primary w-100" (click)="clearCertificateSearch()">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
                         </div>
                         
                         <div class="search-results">
-                            <div class="qr-list" *ngIf="filteredQRs.length > 0; else noQRResults">
-                                <div class="qr-item" *ngFor="let qr of filteredQRs">
+                            <div class="qr-list" *ngIf="filteredCertificates.length > 0; else noCertificateResults">
+                                <div class="qr-item" *ngFor="let certificate of filteredCertificates">
                                     <div class="qr-preview">
-                                        <img [src]="qr.qrDataURL" [alt]="qr.title" class="qr-image">
+                                        <img [src]="certificate.qrCode?.qrDataURL" [alt]="certificate.certificateNumber" class="qr-image">
                                     </div>
                                     <div class="qr-info">
-                                        <h6>{{ qr.title }}</h6>
-                                        <p class="text-muted mb-1">{{ qr.content }}</p>
+                                        <h6>{{ certificate.studentName }}</h6>
+                                        <p class="text-muted mb-1">
+                                            <strong>{{ getCourseTypeText(certificate.courseType) }}:</strong> {{ certificate.courseName }}
+                                        </p>
+                                        <p class="text-muted mb-1">
+                                            <strong>N°:</strong> {{ certificate.certificateNumber }}
+                                        </p>
                                         <small class="text-muted">
-                                            <span class="badge bg-secondary me-2">{{ qr.type || 'texto' }}</span>
-                                            {{ qr.createdAt | date:'short' }}
+                                            <span class="badge bg-info me-2">{{ getCourseTypeText(certificate.courseType) }}</span>
+                                            {{ certificate.issueDate | date:'shortDate' }}
                                         </small>
                                     </div>
                                     <div class="qr-actions">
-                                        <button class="btn btn-sm btn-outline-primary" (click)="downloadQR(qr)">
-                                            <i class="fas fa-download"></i>
+                                        <button class="btn btn-sm btn-outline-primary me-1" (click)="downloadCertificateQR(certificate)">
+                                            <i class="fas fa-qrcode"></i>
+                                        </button>
+                                        <button 
+                                            class="btn btn-sm btn-outline-info" 
+                                            [attr.href]="certificate.verificationURL"
+                                            target="_blank">
+                                            <i class="fas fa-external-link-alt"></i>
                                         </button>
                                     </div>
                                 </div>
                             </div>
                             
-                            <ng-template #noQRResults>
+                            <ng-template #noCertificateResults>
                                 <div class="no-content">
                                     <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                                    <h5>No se encontraron QRs</h5>
+                                    <h5>No se encontraron certificados</h5>
                                     <p class="text-muted">Intenta con otros términos de búsqueda</p>
                                 </div>
                             </ng-template>
