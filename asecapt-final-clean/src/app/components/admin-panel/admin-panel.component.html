@@ -1,0 +1,432 @@
+<!-- ADMIN DASHBOARD LAYOUT -->
+<div class="admin-dashboard">
+    <!-- Sidebar -->
+    <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-text">ASECAPT</span>
+                <div class="logo-icon">✒</div>
+            </div>
+            <button class="sidebar-toggle d-lg-none" (click)="toggleSidebar()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item" [class.active]="activeSection === 'qr'">
+                    <a (click)="setActiveSection('qr')" class="nav-link">
+                        <i class="fas fa-qrcode"></i>
+                        <span>Generador QR</span>
+                    </a>
+                </li>
+                <li class="nav-item" [class.active]="activeSection === 'qr-search'">
+                    <a (click)="setActiveSection('qr-search')" class="nav-link">
+                        <i class="fas fa-search"></i>
+                        <span>Buscar QRs</span>
+                    </a>
+                </li>
+                <li class="nav-item" [class.active]="activeSection === 'students'">
+                    <a (click)="setActiveSection('students')" class="nav-link">
+                        <i class="fas fa-user-graduate"></i>
+                        <span>Alumnos</span>
+                    </a>
+                </li>
+                <li class="nav-item" [class.active]="activeSection === 'courses'">
+                    <a (click)="setActiveSection('courses')" class="nav-link">
+                        <i class="fas fa-book"></i>
+                        <span>Cursos</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <button class="btn btn-outline-light btn-sm w-100" (click)="logout()">
+                <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Header -->
+        <div class="content-header">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <button class="sidebar-toggle d-lg-none me-3" (click)="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h4 class="mb-0">{{ getSectionTitle() }}</h4>
+                        <small class="text-muted">{{ getSectionDescription() }}</small>
+                    </div>
+                </div>
+                <div class="user-info">
+                    <span class="user-name">Administrador</span>
+                    <div class="user-avatar">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Body -->
+        <div class="content-body">
+
+            <!-- QR GENERATOR SECTION -->
+            <div *ngIf="activeSection === 'qr'" class="section-content">
+                <div class="row">
+                    <!-- Formulario de generación -->
+                    <div class="col-lg-4">
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-qrcode me-2"></i>Generar QR</h5>
+                            </div>
+                            <div class="card-body">
+                                <form (ngSubmit)="generateQR()" #qrFormRef="ngForm">
+                                    <div class="form-group mb-3">
+                                        <label for="title">Título del QR</label>
+                                        <input 
+                                            type="text" 
+                                            class="form-control" 
+                                            id="title"
+                                            [(ngModel)]="qrForm.title"
+                                            name="title"
+                                            placeholder="Ej: Certificado Juan Pérez"
+                                            required>
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label for="type">Tipo de contenido</label>
+                                        <select 
+                                            class="form-control" 
+                                            id="type"
+                                            [(ngModel)]="qrForm.type"
+                                            name="type">
+                                            <option value="text">Texto</option>
+                                            <option value="url">URL/Enlace</option>
+                                            <option value="email">Email</option>
+                                            <option value="phone">Teléfono</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group mb-4">
+                                        <label for="content">Contenido</label>
+                                        <textarea 
+                                            class="form-control" 
+                                            id="content"
+                                            [(ngModel)]="qrForm.content"
+                                            name="content"
+                                            rows="3"
+                                            [placeholder]="getPlaceholderText()"
+                                            required></textarea>
+                                    </div>
+
+                                    <button 
+                                        type="submit" 
+                                        class="btn btn-primary w-100"
+                                        [disabled]="!isValidForm() || isGenerating">
+                                        <span *ngIf="isGenerating" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        <i *ngIf="!isGenerating" class="fas fa-plus-circle me-2"></i>
+                                        {{ isGenerating ? 'Generando...' : 'Generar QR' }}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de QRs generados -->
+                    <div class="col-lg-8">
+                        <div class="dashboard-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5><i class="fas fa-list me-2"></i>QRs Generados ({{ generatedQRs.length }})</h5>
+                                <span class="badge bg-primary">Total: {{ generatedQRs.length }}</span>
+                            </div>
+                            
+                            <div class="card-body">
+                                <div class="qr-list" *ngIf="generatedQRs.length > 0; else noQRs">
+                                    <div class="qr-item" *ngFor="let qr of generatedQRs; trackBy: trackByQRId">
+                                        <div class="qr-preview">
+                                            <img [src]="qr.qrDataURL" [alt]="qr.title" class="qr-image">
+                                        </div>
+                                        <div class="qr-info">
+                                            <h6>{{ qr.title }}</h6>
+                                            <p class="text-muted mb-1">{{ qr.content }}</p>
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>
+                                                {{ qr.createdAt | date:'short' }}
+                                            </small>
+                                        </div>
+                                        <div class="qr-actions">
+                                            <button 
+                                                class="btn btn-sm btn-outline-primary me-2" 
+                                                (click)="downloadQR(qr)"
+                                                title="Descargar QR">
+                                                <i class="fas fa-download"></i>
+                                            </button>
+                                            <button 
+                                                class="btn btn-sm btn-outline-danger" 
+                                                (click)="deleteQR(qr.id)"
+                                                title="Eliminar QR">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <ng-template #noQRs>
+                                    <div class="no-content">
+                                        <i class="fas fa-qrcode fa-3x text-muted mb-3"></i>
+                                        <h5>No hay QRs generados</h5>
+                                        <p class="text-muted">Crea tu primer código QR usando el formulario</p>
+                                    </div>
+                                </ng-template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR SEARCH SECTION -->
+            <div *ngIf="activeSection === 'qr-search'" class="section-content">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-search me-2"></i>Buscar QRs</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    [(ngModel)]="searchForm.qrQuery"
+                                    placeholder="Buscar por título o contenido..."
+                                    (input)="searchQRs()">
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-control" [(ngModel)]="searchForm.qrType" (change)="searchQRs()">
+                                    <option value="">Todos los tipos</option>
+                                    <option value="text">Texto</option>
+                                    <option value="url">URL</option>
+                                    <option value="email">Email</option>
+                                    <option value="phone">Teléfono</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-primary w-100" (click)="clearQRSearch()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="search-results">
+                            <div class="qr-list" *ngIf="filteredQRs.length > 0; else noQRResults">
+                                <div class="qr-item" *ngFor="let qr of filteredQRs">
+                                    <div class="qr-preview">
+                                        <img [src]="qr.qrDataURL" [alt]="qr.title" class="qr-image">
+                                    </div>
+                                    <div class="qr-info">
+                                        <h6>{{ qr.title }}</h6>
+                                        <p class="text-muted mb-1">{{ qr.content }}</p>
+                                        <small class="text-muted">
+                                            <span class="badge bg-secondary me-2">{{ qr.type || 'texto' }}</span>
+                                            {{ qr.createdAt | date:'short' }}
+                                        </small>
+                                    </div>
+                                    <div class="qr-actions">
+                                        <button class="btn btn-sm btn-outline-primary" (click)="downloadQR(qr)">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <ng-template #noQRResults>
+                                <div class="no-content">
+                                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                                    <h5>No se encontraron QRs</h5>
+                                    <p class="text-muted">Intenta con otros términos de búsqueda</p>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STUDENTS SECTION -->
+            <div *ngIf="activeSection === 'students'" class="section-content">
+                <div class="dashboard-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-user-graduate me-2"></i>Alumnos Matriculados</h5>
+                        <span class="badge bg-success">{{ mockStudents.length }} alumnos</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    [(ngModel)]="searchForm.studentQuery"
+                                    placeholder="Buscar por nombre, email o curso..."
+                                    (input)="searchStudents()">
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-control" [(ngModel)]="searchForm.studentCourse" (change)="searchStudents()">
+                                    <option value="">Todos los cursos</option>
+                                    <option value="Seguridad Industrial">Seguridad Industrial</option>
+                                    <option value="Soldadura">Soldadura</option>
+                                    <option value="Electricidad">Electricidad</option>
+                                    <option value="Mecánica">Mecánica</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-primary w-100" (click)="clearStudentSearch()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="students-list">
+                            <div class="table-responsive" *ngIf="filteredStudents.length > 0; else noStudents">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Nombre</th>
+                                            <th>Email</th>
+                                            <th>Curso</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let student of filteredStudents">
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar me-2">
+                                                        <i class="fas fa-user"></i>
+                                                    </div>
+                                                    <div>
+                                                        <strong>{{ student.name }}</strong>
+                                                        <br><small class="text-muted">{{ student.dni }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ student.email }}</td>
+                                            <td>
+                                                <span class="badge bg-info">{{ student.course }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge" [class]="getStatusBadgeClass(student.status)">
+                                                    {{ student.status }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1" title="Ver detalles">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-success" title="Generar certificado">
+                                                    <i class="fas fa-certificate"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <ng-template #noStudents>
+                                <div class="no-content">
+                                    <i class="fas fa-user-graduate fa-3x text-muted mb-3"></i>
+                                    <h5>No se encontraron alumnos</h5>
+                                    <p class="text-muted">No hay alumnos que coincidan con tu búsqueda</p>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COURSES SECTION -->
+            <div *ngIf="activeSection === 'courses'" class="section-content">
+                <div class="dashboard-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-book me-2"></i>Gestión de Cursos</h5>
+                        <span class="badge bg-warning">{{ mockCourses.length }} cursos</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    [(ngModel)]="searchForm.courseQuery"
+                                    placeholder="Buscar por nombre de curso..."
+                                    (input)="searchCourses()">
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-control" [(ngModel)]="searchForm.courseStatus" (change)="searchCourses()">
+                                    <option value="">Todos</option>
+                                    <option value="activo">Activos</option>
+                                    <option value="inactivo">Inactivos</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-primary w-100" (click)="clearCourseSearch()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="courses-grid">
+                            <div class="row" *ngIf="filteredCourses.length > 0; else noCourses">
+                                <div class="col-md-6 col-lg-4 mb-3" *ngFor="let course of filteredCourses">
+                                    <div class="course-card">
+                                        <div class="course-header">
+                                            <h6>{{ course.name }}</h6>
+                                            <span class="badge" [class]="course.status === 'activo' ? 'bg-success' : 'bg-secondary'">
+                                                {{ course.status }}
+                                            </span>
+                                        </div>
+                                        <div class="course-body">
+                                            <p class="text-muted small">{{ course.description }}</p>
+                                            <div class="course-stats">
+                                                <div class="stat">
+                                                    <i class="fas fa-users text-primary"></i>
+                                                    <span>{{ course.enrolledStudents }} alumnos</span>
+                                                </div>
+                                                <div class="stat">
+                                                    <i class="fas fa-clock text-warning"></i>
+                                                    <span>{{ course.duration }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="course-actions">
+                                            <button class="btn btn-sm btn-outline-primary me-1" title="Ver alumnos">
+                                                <i class="fas fa-users"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-info me-1" title="Estadísticas">
+                                                <i class="fas fa-chart-bar"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary" title="Configurar">
+                                                <i class="fas fa-cog"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <ng-template #noCourses>
+                                <div class="no-content">
+                                    <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                                    <h5>No se encontraron cursos</h5>
+                                    <p class="text-muted">No hay cursos que coincidan con tu búsqueda</p>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div> 

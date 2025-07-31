@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -20,6 +20,8 @@ export class VirtualClassroomComponent {
   loginError: string = '';
   showPassword: boolean = false;
 
+  constructor(private router: Router) {}
+
   onLogin() {
     if (this.isValidForm()) {
       this.isLoading = true;
@@ -27,14 +29,14 @@ export class VirtualClassroomComponent {
       
       // Simular proceso de login
       setTimeout(() => {
-        // Simular validación de credenciales
-        if (this.loginForm.username === 'estudiante@asecapt.com' && this.loginForm.password === 'asecapt2024') {
-          // Login exitoso (aquí iría la lógica real)
-          console.log('Login exitoso');
+        // Simular validación de credenciales de administrador
+        if (this.loginForm.username === 'admin@asecapt.com' && this.loginForm.password === 'admin2024') {
+          // Login exitoso - redirigir al panel de administración
+          console.log('Login exitoso - redirigiendo al panel de administración');
           this.isLoading = false;
-          // Redirigir al aula virtual real
+          this.router.navigate(['/admin-panel']);
         } else {
-          this.loginError = 'Usuario o contraseña incorrectos. Credenciales de prueba: estudiante@asecapt.com / asecapt2024';
+          this.loginError = 'Usuario o contraseña incorrectos. Credenciales de administrador: admin@asecapt.com / admin2024';
           this.isLoading = false;
         }
       }, 2000);
