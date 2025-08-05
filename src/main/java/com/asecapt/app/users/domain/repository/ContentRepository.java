@@ -12,26 +12,6 @@ public interface ContentRepository extends JpaRepository<Content, Integer> {
     
     // Search methods
     List<Content> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String title, String description);
-    List<Content> findByTitleContainingIgnoreCase(String title);
-    List<Content> findByDescriptionContainingIgnoreCase(String description);
-    
-    // Filter by type
-    List<Content> findByType(String type);
-    List<Content> findByTypeOrderByTitleAsc(String type);
-    
-    // Filter by required status
-    List<Content> findByIsRequired(Boolean isRequired);
-    
-    // Find by content text
-    List<Content> findByContentContainingIgnoreCase(String content);
-    
-    // Order by date
-    List<Content> findAllByOrderByCreatedAtDesc();
-    List<Content> findByTypeOrderByCreatedAtDesc(String type);
-    
-    // Count methods
-    Long countByType(String type);
-    Long countByIsRequired(Boolean isRequired);
     
     // List modules (contents) by program - keeping existing query
     @Query("SELECT c FROM Content c JOIN ProgramContent pc ON c.id = pc.contentId WHERE pc.programId = :programId ORDER BY pc.orderIndex")

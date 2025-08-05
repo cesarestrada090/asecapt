@@ -160,6 +160,27 @@ public class ProgramService {
         return programContentRepository.findByProgramIdOrderByOrderIndex(programId);
     }
 
+    // === OPTIMIZED METHOD: Get content counts for all programs in single query ===
+    public Map<Integer, Long> getAllProgramContentCounts() {
+        List<Program> allPrograms = programRepository.findAll();
+        Map<Integer, Long> contentCounts = new HashMap<>();
+        
+        // Initialize all programs with count 0
+        for (Program program : allPrograms) {
+            contentCounts.put(program.getId(), 0L);
+        }
+        
+        // Get actual counts using a single query
+        List<Object[]> counts = programContentRepository.countContentsByProgramId();
+        for (Object[] count : counts) {
+            Integer programId = (Integer) count[0];
+            Long contentCount = (Long) count[1];
+            contentCounts.put(programId, contentCount);
+        }
+        
+        return contentCounts;
+    }
+
     public ProgramContent addContentToProgram(Integer programId, AddContentToProgramRequest request) {
         Optional<Program> optionalProgram = programRepository.findById(programId);
         Optional<Content> optionalContent = contentRepository.findById(request.getContentId());

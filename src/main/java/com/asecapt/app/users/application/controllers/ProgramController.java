@@ -22,9 +22,16 @@ public class ProgramController {
     // === PROGRAM CRUD ===
 
     @GetMapping
-    public ResponseEntity<List<Program>> getAllPrograms() {
+    public ResponseEntity<List<Program>> getAllPrograms(@RequestParam(defaultValue = "false") boolean includeCounts) {
         try {
             List<Program> programs = programService.getAllPrograms();
+            
+            // If includeCounts is true, add content counts as a custom response
+            if (includeCounts) {
+                // For now, just return programs - frontend will use separate endpoint
+                // This is for future enhancement
+            }
+            
             return ResponseEntity.ok(programs);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
@@ -125,6 +132,17 @@ public class ProgramController {
         try {
             List<ProgramContent> contents = programService.getProgramContents(id);
             return ResponseEntity.ok(contents);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // === OPTIMIZED ENDPOINT: Get content counts for all programs in single request ===
+    @GetMapping("/content-counts")
+    public ResponseEntity<Map<Integer, Long>> getAllProgramContentCounts() {
+        try {
+            Map<Integer, Long> contentCounts = programService.getAllProgramContentCounts();
+            return ResponseEntity.ok(contentCounts);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }

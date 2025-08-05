@@ -94,7 +94,7 @@ export class CoursesComponent implements OnInit {
   ngOnInit(): void {
     this.loadPrograms();
     this.loadContents();
-    this.loadProgramContentCounts();
+    // Removed duplicate loadProgramContentCounts() - it's called in loadPrograms()
   }
 
   // === DATA LOADING ===
@@ -664,18 +664,29 @@ export class CoursesComponent implements OnInit {
   }
 
   loadProgramContentCounts() {
-    // Load content counts for all programs
-    this.allPrograms.forEach(program => {
-      this.programService.getProgramContents(program.id).subscribe({
-        next: (contents) => {
-          this.programContentCounts.set(program.id, contents.length);
-        },
-        error: (error) => {
-          console.error('Error loading content count for program:', program.id, error);
-          this.programContentCounts.set(program.id, 0);
-        }
+    // OPTIMIZED: Load content counts for all programs in single request
+    this.programService.getAllProgramContentCounts()
+      .pipe(
+        catchError(error => {
+          console.error('Error loading program content counts:', error);
+          // Initialize empty counts on error
+          this.allPrograms.forEach(program => {
+            this.programContentCounts.set(program.id, 0);
+          });
+          return of({});
+        })
+      )
+      .subscribe(counts => {
+        // Clear existing counts
+        this.programContentCounts.clear();
+        
+        // Set counts from server response
+        Object.entries(counts).forEach(([programId, count]) => {
+          this.programContentCounts.set(Number(programId), Number(count));
+        });
+        
+        console.log('✅ Loaded all content counts in single request:', this.programContentCounts);
       });
-    });
   }
 
   // === UI HELPERS ===

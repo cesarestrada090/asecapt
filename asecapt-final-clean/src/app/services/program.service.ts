@@ -188,10 +188,17 @@ export class ProgramService {
 
   // === PROGRAM CONTENT MANAGEMENT ===
 
+  // Get program contents (modules/lessons assigned to a program)
   getProgramContents(programId: number): Observable<ProgramContent[]> {
     return this.http.get<ProgramContent[]>(`${this.apiUrl}/${programId}/program-contents`);
   }
 
+  // === OPTIMIZED: Get content counts for all programs in single request ===
+  getAllProgramContentCounts(): Observable<{[key: number]: number}> {
+    return this.http.get<{[key: number]: number}>(`${this.apiUrl}/content-counts`);
+  }
+
+  // Add content to program
   addContentToProgram(request: AddContentToProgramRequest): Observable<ProgramContent> {
     return this.http.post<ProgramContent>(`${this.apiUrl}/${request.programId}/contents`, request);
   }
