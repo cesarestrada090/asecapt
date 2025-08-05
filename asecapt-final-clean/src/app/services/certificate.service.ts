@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { APP_CONFIG, buildApiUrl, UPLOAD_CONFIG, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../constants';
 
 export interface Certificate {
   id: number;
@@ -69,7 +69,7 @@ export interface UploadResponse {
   providedIn: 'root'
 })
 export class CertificateService {
-  private apiUrl = `${environment.apiUrl}${environment.endpoints.certificates}`;
+  private apiUrl = buildApiUrl(APP_CONFIG.endpoints.certificates);
 
   constructor(private http: HttpClient) { }
 

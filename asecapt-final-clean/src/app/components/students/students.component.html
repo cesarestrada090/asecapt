@@ -1,0 +1,182 @@
+<div class="students">
+  <!-- Search Controls -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="card-title mb-0">
+        <i class="fas fa-user-graduate me-2"></i>Gestión de Estudiantes
+      </h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Buscar Estudiante</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            placeholder="Nombre, email, documento..."
+            [(ngModel)]="searchForm.query"
+            (input)="searchStudents()">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Estado</label>
+          <select class="form-select" [(ngModel)]="searchForm.status" (change)="searchStudents()">
+            <option *ngFor="let status of availableStatuses" [value]="status.value">
+              {{ status.label }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Programa</label>
+          <select class="form-select" [(ngModel)]="searchForm.programId" (change)="searchStudents()">
+            <option *ngFor="let program of availablePrograms" [value]="program.value">
+              {{ program.label }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">&nbsp;</label>
+          <button class="btn btn-outline-secondary w-100" (click)="clearStudentSearch()">
+            <i class="fas fa-times me-1"></i>Limpiar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-number">{{ totalStudents }}</div>
+        <div class="stat-label">Total Estudiantes</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card text-primary">
+        <div class="stat-number">{{ activeEnrollments }}</div>
+        <div class="stat-label">Inscripciones Activas</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card text-success">
+        <div class="stat-number">{{ completedEnrollments }}</div>
+        <div class="stat-label">Completadas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Students Table -->
+  <div class="card">
+    <div class="card-header">
+      <h6 class="card-title mb-0">Lista de Estudiantes</h6>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive" *ngIf="!isLoadingEnrollments && filteredStudents.length > 0">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Estudiante</th>
+              <th>Contacto</th>
+              <th>Inscripciones</th>
+              <th>Completados</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let student of filteredStudents; trackBy: trackByStudentId">
+              <td>
+                <div>
+                  <strong>{{ student.name }}</strong>
+                  <div class="text-muted small">{{ student.document }}</div>
+                </div>
+              </td>
+              <td>
+                <div>
+                  <div class="text-muted small">{{ student.email }}</div>
+                  <div class="text-muted small">{{ student.phone }}</div>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-info">{{ student.enrollments }}</span>
+              </td>
+              <td>
+                <span class="badge bg-success">{{ student.completedCourses }}</span>
+              </td>
+              <td>
+                <span [class]="getStatusBadgeClass(student.status)">
+                  {{ getStatusText(student.status) }}
+                </span>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button 
+                    class="btn btn-outline-primary"
+                    (click)="viewStudentDetails(student)"
+                    title="Ver detalles">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button 
+                    class="btn btn-outline-success"
+                    (click)="viewStudentCertificates(student)"
+                    title="Ver certificados">
+                    <i class="fas fa-certificate"></i>
+                  </button>
+                  <button 
+                    class="btn btn-outline-info"
+                    (click)="editStudent(student)"
+                    title="Editar">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Loading State -->
+      <div class="text-center py-4" *ngIf="isLoadingEnrollments">
+        <div class="spinner-border" role="status"></div>
+        <p class="mt-2 text-muted">Cargando estudiantes...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div class="text-center py-4" *ngIf="!isLoadingEnrollments && filteredStudents.length === 0">
+        <i class="fas fa-user-graduate fa-3x text-muted mb-3"></i>
+        <h5>No se encontraron estudiantes</h5>
+        <p class="text-muted">Prueba ajustando los filtros de búsqueda</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Enrollments -->
+  <div class="card mt-4" *ngIf="filteredEnrollments.length > 0">
+    <div class="card-header">
+      <h6 class="card-title mb-0">Inscripciones Recientes</h6>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6 mb-3" *ngFor="let enrollment of filteredEnrollments.slice(0, 6); trackBy: trackByEnrollmentId">
+          <div class="enrollment-card">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <strong>{{ getStudentName(enrollment) }}</strong>
+                <div class="text-muted small">{{ getProgramName(enrollment) }}</div>
+                <div class="text-muted small">
+                  Inicio: {{ formatDate(enrollment.startDate) }}
+                </div>
+                <div class="text-muted small" *ngIf="enrollment.completionDate">
+                  Completado: {{ formatDate(enrollment.completionDate) }}
+                </div>
+              </div>
+              <span [class]="getStatusBadgeClass(enrollment.status)">
+                {{ getStatusText(enrollment.status) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

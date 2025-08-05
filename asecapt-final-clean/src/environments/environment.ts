@@ -1,35 +1,12 @@
+/**
+ * Angular Environment Configuration
+ * @deprecated Use ../app/constants.ts instead for application configuration
+ */
+import { APP_CONFIG, ENV } from '../app/constants';
+
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8080/api',
-  baseUrl: 'http://localhost:4200',
-  
-  // API Endpoints
-  endpoints: {
-    enrollments: '/enrollments',
-    certificates: '/certificates',
-    verification: '/verify',
-    programs: '/programs',
-    users: '/users'
-  },
-  
-  // QR Configuration
-  qr: {
-    verificationUrlBase: 'https://asecapt.com/verify',
-    size: 300,
-    errorCorrectionLevel: 'M'
-  },
-  
-  // File Upload Configuration
-  upload: {
-    maxFileSize: 10 * 1024 * 1024, // 10MB
-    allowedTypes: ['application/pdf'],
-    uploadPath: '/uploads'
-  },
-  
-  // Certificate Configuration
-  certificate: {
-    numberPrefix: 'ASECAPT',
-    tokenPrefix: 'ASC',
-    validityYears: 5
-  }
+  production: ENV.production,
+  // Legacy compatibility - redirect to constants
+  apiUrl: APP_CONFIG.api.baseUrl,
+  baseUrl: APP_CONFIG.frontend.baseUrl
 }; 

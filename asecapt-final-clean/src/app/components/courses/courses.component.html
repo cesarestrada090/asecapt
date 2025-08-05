@@ -1,0 +1,215 @@
+<div class="courses">
+  <!-- Header with Actions -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-book me-2"></i>Gestión de Cursos
+        </h5>
+        <button class="btn btn-success btn-sm" (click)="createNewCourse()">
+          <i class="fas fa-plus me-1"></i>Nuevo Curso
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Buscar Curso</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            placeholder="Nombre, descripción..."
+            [(ngModel)]="searchForm.query"
+            (input)="searchCourses()">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Estado</label>
+          <select class="form-select" [(ngModel)]="searchForm.status" (change)="searchCourses()">
+            <option *ngFor="let status of availableStatuses" [value]="status.value">
+              {{ status.label }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Tipo</label>
+          <select class="form-select" [(ngModel)]="searchForm.type" (change)="searchCourses()">
+            <option *ngFor="let type of availableTypes" [value]="type.value">
+              {{ type.label }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">&nbsp;</label>
+          <button class="btn btn-outline-secondary w-100" (click)="clearCourseSearch()">
+            <i class="fas fa-times me-1"></i>Limpiar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="row mb-4">
+    <div class="col-md-2">
+      <div class="stat-card">
+        <div class="stat-number">{{ totalCourses }}</div>
+        <div class="stat-label">Total</div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card text-success">
+        <div class="stat-number">{{ activeCourses }}</div>
+        <div class="stat-label">Activos</div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card text-warning">
+        <div class="stat-number">{{ draftCourses }}</div>
+        <div class="stat-label">Borradores</div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card text-info">
+        <div class="stat-number">{{ totalEnrollments }}</div>
+        <div class="stat-label">Inscripciones</div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card text-primary">
+        <div class="stat-number">{{ totalCompletions }}</div>
+        <div class="stat-label">Completados</div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="stat-card text-secondary">
+        <div class="stat-number">{{ averageCompletionRate }}%</div>
+        <div class="stat-label">% Completado</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Courses Grid -->
+  <div class="row" *ngIf="!isLoadingEnrollments && filteredCourses.length > 0">
+    <div class="col-md-6 col-lg-4 mb-3" *ngFor="let course of filteredCourses; trackBy: trackByCourseId">
+      <div class="course-card">
+        <div class="course-header">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <span [class]="getTypeBadgeClass(course.type)">
+                {{ getTypeText(course.type) }}
+              </span>
+              <span [class]="getStatusBadgeClass(course.status)" class="ms-2">
+                {{ getStatusText(course.status) }}
+              </span>
+            </div>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-ellipsis-v"></i>
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" (click)="viewCourseDetails(course)">
+                  <i class="fas fa-eye me-2"></i>Ver Detalles
+                </a></li>
+                <li><a class="dropdown-item" (click)="editCourse(course)">
+                  <i class="fas fa-edit me-2"></i>Editar
+                </a></li>
+                <li><a class="dropdown-item" (click)="duplicateCourse(course)">
+                  <i class="fas fa-copy me-2"></i>Duplicar
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" (click)="viewCourseStudents(course)">
+                  <i class="fas fa-users me-2"></i>Ver Estudiantes
+                </a></li>
+                <li><a class="dropdown-item" (click)="viewCourseCertificates(course)">
+                  <i class="fas fa-certificate me-2"></i>Ver Certificados
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" (click)="archiveCourse(course)">
+                  <i class="fas fa-archive me-2"></i>
+                  {{ course.status === 'archived' ? 'Restaurar' : 'Archivar' }}
+                </a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="course-body">
+          <h5 class="course-title">{{ course.name }}</h5>
+          <p class="course-description text-muted">{{ course.description }}</p>
+          
+          <div class="course-meta">
+            <div class="row text-center">
+              <div class="col-4">
+                <div class="meta-item">
+                  <i class="fas fa-clock text-primary"></i>
+                  <div class="meta-value">{{ course.duration }}</div>
+                  <div class="meta-label">Duración</div>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="meta-item">
+                  <i class="fas fa-users text-info"></i>
+                  <div class="meta-value">{{ course.enrollments }}</div>
+                  <div class="meta-label">Inscritos</div>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="meta-item">
+                  <i class="fas fa-graduation-cap text-success"></i>
+                  <div class="meta-value">{{ course.completions }}</div>
+                  <div class="meta-label">Graduados</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="course-progress mt-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small">Tasa de Completado</span>
+              <span [class]="'small ' + getCompletionRateClass(getCompletionRate(course))">
+                {{ getCompletionRate(course) }}%
+              </span>
+            </div>
+            <div class="progress" style="height: 6px;">
+              <div 
+                class="progress-bar"
+                [class]="getCompletionRateClass(getCompletionRate(course))"
+                [style.width.%]="getCompletionRate(course)">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="course-footer">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="course-price">
+              <strong>{{ course.price }}</strong>
+            </div>
+            <div class="course-instructor text-muted small">
+              {{ course.instructor }}
+            </div>
+          </div>
+          <div class="course-dates text-muted small mt-1">
+            {{ formatDate(course.startDate) }} - {{ formatDate(course.endDate) }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="text-center py-5" *ngIf="isLoadingEnrollments">
+    <div class="spinner-border" role="status"></div>
+    <p class="mt-2 text-muted">Cargando cursos...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="text-center py-5" *ngIf="!isLoadingEnrollments && filteredCourses.length === 0">
+    <i class="fas fa-book fa-3x text-muted mb-3"></i>
+    <h5>No se encontraron cursos</h5>
+    <p class="text-muted">Prueba ajustando los filtros de búsqueda o crea un nuevo curso</p>
+    <button class="btn btn-primary" (click)="createNewCourse()">
+      <i class="fas fa-plus me-1"></i>Crear Primer Curso
+    </button>
+  </div>
+</div> 

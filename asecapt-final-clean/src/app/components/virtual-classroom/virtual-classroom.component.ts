@@ -31,10 +31,10 @@ export class VirtualClassroomComponent {
       setTimeout(() => {
         // Simular validación de credenciales de administrador
         if (this.loginForm.username === 'admin@asecapt.com' && this.loginForm.password === 'admin2024') {
-          // Login exitoso - redirigir al panel de administración
-          console.log('Login exitoso - redirigiendo al panel de administración');
+          // Login exitoso - redirigir al dashboard administrativo
+          console.log('Login exitoso - redirigiendo al dashboard administrativo');
           this.isLoading = false;
-          this.router.navigate(['/admin-panel']);
+          this.router.navigate(['/dashboard']);
         } else {
           this.loginError = 'Usuario o contraseña incorrectos. Credenciales de administrador: admin@asecapt.com / admin2024';
           this.isLoading = false;

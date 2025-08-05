@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { APP_CONFIG, buildApiUrl } from '../constants';
 
 export interface StudentInfo {
   fullName: string;
@@ -54,7 +55,7 @@ export interface CertificateStatusResponse {
   providedIn: 'root'
 })
 export class VerificationService {
-  private apiUrl = 'http://localhost:8080/api/verify'; // TODO: Move to environment
+  private apiUrl = buildApiUrl(APP_CONFIG.endpoints.verification);
 
   constructor(private http: HttpClient) { }
 

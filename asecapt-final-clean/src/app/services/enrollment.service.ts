@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { APP_CONFIG, buildApiUrl } from '../constants';
 
 export interface Student {
   fullName: string;
@@ -58,7 +59,7 @@ export interface CompleteEnrollmentRequest {
   providedIn: 'root'
 })
 export class EnrollmentService {
-  private apiUrl = 'http://localhost:8080/api/enrollments'; // TODO: Move to environment
+  private apiUrl = buildApiUrl(APP_CONFIG.endpoints.enrollments);
 
   constructor(private http: HttpClient) { }
 

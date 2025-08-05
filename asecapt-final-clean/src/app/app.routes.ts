@@ -6,6 +6,8 @@ import { CertificateValidationComponent } from './components/certificate-validat
 import { CertificateVerificationComponent } from './components/certificate-verification/certificate-verification.component';
 import { ComplaintsBookComponent } from './components/complaints-book/complaints-book.component';
 import { VirtualClassroomComponent } from './components/virtual-classroom/virtual-classroom.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
+// Legacy - keeping AdminPanelComponent for compatibility
 import { AdminPanelComponent } from './components/admin-panel/admin-panel.component';
 
 export const routes: Routes = [
@@ -17,6 +19,7 @@ export const routes: Routes = [
   { path: 'verify/:token', component: CertificateVerificationComponent }, // QR verification with token
   { path: 'complaints-book', component: ComplaintsBookComponent },
   { path: 'virtual-classroom', component: VirtualClassroomComponent },
-  { path: 'admin-panel', component: AdminPanelComponent },
+  { path: 'dashboard', component: DashboardComponent }, // New modular dashboard
+  { path: 'admin-panel', component: AdminPanelComponent }, // Legacy admin panel
   { path: '**', redirectTo: '' }
 ];

@@ -1,0 +1,111 @@
+<!-- ADMIN DASHBOARD LAYOUT -->
+<div class="admin-dashboard">
+    <!-- Sidebar -->
+    <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-text">ASECAPT</span>
+                <div class="logo-icon">✒</div>
+            </div>
+            <button class="sidebar-toggle d-lg-none" (click)="toggleSidebar()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item" [class.active]="activeSection === 'generate-certificates'">
+                    <a (click)="setActiveSection('generate-certificates')" class="nav-link">
+                        <i class="fas fa-certificate"></i>
+                        <span>Generar Certificados</span>
+                    </a>
+                </li>
+                <li class="nav-item" [class.active]="activeSection === 'search-certificates'">
+                    <a (click)="setActiveSection('search-certificates')" class="nav-link">
+                        <i class="fas fa-search"></i>
+                        <span>Buscar Certificados</span>
+                    </a>
+                </li>
+                <li class="nav-item" [class.active]="activeSection === 'students'">
+                    <a (click)="setActiveSection('students')" class="nav-link">
+                        <i class="fas fa-user-graduate"></i>
+                        <span>Alumnos</span>
+                    </a>
+                </li>
+                <li class="nav-item" [class.active]="activeSection === 'courses'">
+                    <a (click)="setActiveSection('courses')" class="nav-link">
+                        <i class="fas fa-book"></i>
+                        <span>Cursos</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <button class="btn btn-outline-light btn-sm w-100" (click)="logout()">
+                <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="content-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <button class="sidebar-toggle d-lg-none" (click)="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="page-info">
+                        <h2 class="mb-0">{{ getSectionTitle() }}</h2>
+                        <p class="text-muted mb-0">{{ getSectionDescription() }}</p>
+                    </div>
+                </div>
+                <div class="user-info">
+                    <span class="badge bg-primary">Administrador</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="content-messages" *ngIf="errorMessage || successMessage">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert" *ngIf="errorMessage">
+                <i class="fas fa-exclamation-triangle me-1"></i>{{ errorMessage }}
+                <button type="button" class="btn-close" (click)="clearMessages()"></button>
+            </div>
+            <div class="alert alert-success alert-dismissible fade show" role="alert" *ngIf="successMessage">
+                <i class="fas fa-check-circle me-1"></i>{{ successMessage }}
+                <button type="button" class="btn-close" (click)="clearMessages()"></button>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-body">
+            <!-- Generate Certificates Section -->
+            <div *ngIf="activeSection === 'generate-certificates'">
+                <app-generate-certificates (message)="onMessage($event)"></app-generate-certificates>
+            </div>
+
+            <!-- Search Certificates Section -->
+            <div *ngIf="activeSection === 'search-certificates'">
+                <app-search-certificates (message)="onMessage($event)"></app-search-certificates>
+            </div>
+
+            <!-- Students Section -->
+            <div *ngIf="activeSection === 'students'">
+                <app-students (message)="onMessage($event)"></app-students>
+            </div>
+
+            <!-- Courses Section -->
+            <div *ngIf="activeSection === 'courses'">
+                <app-courses (message)="onMessage($event)"></app-courses>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" 
+         [class.show]="sidebarOpen" 
+         (click)="toggleSidebar()"></div>
+</div> 

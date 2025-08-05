@@ -1,0 +1,142 @@
+/* Courses Component */
+.courses {
+  padding: 0;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.course-card {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  height: 100%;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+
+.course-card:hover {
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  transform: translateY(-4px);
+}
+
+.course-header {
+  margin-bottom: 1rem;
+}
+
+.course-body {
+  flex: 1;
+  margin-bottom: 1rem;
+}
+
+.course-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+
+.course-description {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.course-meta {
+  margin: 1rem 0;
+}
+
+.meta-item {
+  text-align: center;
+}
+
+.meta-item i {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.meta-value {
+  font-weight: bold;
+  color: #495057;
+  font-size: 1.1rem;
+}
+
+.meta-label {
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.course-progress .progress {
+  background-color: #e9ecef;
+}
+
+.course-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.course-price {
+  font-size: 1.1rem;
+  color: #28a745;
+  font-weight: 600;
+}
+
+.course-instructor {
+  font-size: 0.875rem;
+}
+
+.course-dates {
+  font-size: 0.8rem;
+}
+
+/* Progress bar colors */
+.text-success .progress-bar {
+  background-color: #28a745;
+}
+
+.text-warning .progress-bar {
+  background-color: #ffc107;
+}
+
+.text-danger .progress-bar {
+  background-color: #dc3545;
+}
+
+/* Dropdown adjustments */
+.dropdown-toggle::after {
+  display: none;
+} 
