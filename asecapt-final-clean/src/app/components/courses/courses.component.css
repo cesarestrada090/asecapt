@@ -564,6 +564,37 @@
   }
 }
 
+/* Individual Content Toggle Buttons */
+.content-actions .btn {
+  transition: all 0.2s ease;
+}
+
+.content-actions .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Toggle button specific styles */
+.btn-outline-warning:hover {
+  background-color: #ffc107;
+  border-color: #ffc107;
+  color: #000;
+}
+
+.btn-outline-success:hover {
+  background-color: #28a745;
+  border-color: #28a745;
+  color: #fff;
+}
+
+.fa-toggle-on {
+  color: #ffc107;
+}
+
+.fa-toggle-off {
+  color: #6c757d;
+}
+
 /* Course Card Enhancements */
 .course-card .meta-item {
   padding: 0.5rem;

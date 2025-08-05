@@ -438,27 +438,28 @@ export class CoursesComponent implements OnInit {
     this.emitMessage('success', `Mostrando certificados de ${program.title}`);
   }
 
-  toggleProgramContentRequiredStatus(program: Program, event: Event) {
-    // Prevent card click event
-    event.stopPropagation();
+  // Toggle individual content isRequired status
+  toggleContentRequiredStatus(contentId: number) {
+    if (!this.selectedProgram) return;
     
-    this.programService.toggleAllContentRequiredStatus(program.id)
+    this.programService.toggleContentRequiredStatus(this.selectedProgram.id, contentId)
       .pipe(
         catchError(error => {
           console.error('Error toggling content required status:', error);
-          this.emitMessage('error', 'Error cambiando estado de contenidos');
+          this.emitMessage('error', 'Error cambiando estado del contenido');
           return of(null);
         })
       )
-      .subscribe(result => {
-        if (result) {
-          const statusText = result.newStatus === 'required' ? 'obligatorios' : 'opcionales';
-          this.emitMessage('success', `${result.updated} contenidos cambiados a ${statusText}`);
-          
-          // Refresh content counts if we're in details view
-          if (this.selectedProgram && this.selectedProgram.id === program.id) {
-            this.loadProgramContents(program.id);
+      .subscribe(updatedProgramContent => {
+        if (updatedProgramContent) {
+          // Update the local programContents array
+          const index = this.programContents.findIndex(pc => pc.contentId === contentId);
+          if (index > -1) {
+            this.programContents[index] = updatedProgramContent;
           }
+          
+          const statusText = updatedProgramContent.isRequired ? 'obligatorio' : 'opcional';
+          this.emitMessage('success', `Contenido marcado como ${statusText}`);
         }
       });
   }

@@ -110,7 +110,7 @@
 
   <!-- Program Details View -->
   <div *ngIf="isDetailsView() && selectedProgram">
-    
+
     <!-- Program Details Card (Full Width) -->
     <div class="card mb-4">
       <div class="card-header">
@@ -169,12 +169,12 @@
           <div>
             <p class="mb-0 text-muted">Gestiona los módulos y contenidos asignados a este programa</p>
           </div>
-          <button class="btn btn-sm" 
+          <button class="btn btn-sm"
                   [ngClass]="showAddContentForm ? 'btn-outline-secondary' : 'btn-outline-primary'"
                   (click)="toggleAddContentForm()">
             <i class="fas" [ngClass]="showAddContentForm ? 'fa-minus' : 'fa-plus'"></i>
             {{ showAddContentForm ? 'Ocultar Formulario' : 'Agregar Contenido' }}
-            <span *ngIf="!showAddContentForm && unassignedContents.length > 0" 
+            <span *ngIf="!showAddContentForm && unassignedContents.length > 0"
                   class="badge bg-primary ms-2">{{ unassignedContents.length }}</span>
           </button>
         </div>
@@ -184,21 +184,21 @@
           <h6 class="mb-3">
             <i class="fas fa-plus-circle me-2 text-primary"></i>Agregar Contenido al Programa
           </h6>
-          
+
           <!-- No content available message -->
           <div *ngIf="availableContents.length === 0" class="text-center py-3">
             <i class="fas fa-info-circle fa-2x text-muted mb-2"></i>
             <p class="text-muted mb-0">No hay contenidos disponibles para agregar</p>
             <small class="text-muted">Crea primero algunos contenidos antes de agregarlos al programa</small>
           </div>
-          
+
           <!-- All content already assigned message -->
           <div *ngIf="availableContents.length > 0 && unassignedContents.length === 0" class="text-center py-3">
             <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
             <p class="text-muted mb-0">Todos los contenidos disponibles ya están asignados</p>
             <small class="text-muted">Crea más contenidos si necesitas agregar otros módulos</small>
           </div>
-          
+
           <!-- Add content form -->
           <div *ngIf="unassignedContents.length > 0">
             <div class="row align-items-end">
@@ -206,8 +206,8 @@
                 <label class="form-label small">Seleccionar Contenido:</label>
                 <select class="form-select form-select-sm" [(ngModel)]="selectedContentToAdd">
                   <option value="">Elegir contenido...</option>
-                  <option 
-                    *ngFor="let content of unassignedContents; trackBy: trackByContentId" 
+                  <option
+                    *ngFor="let content of unassignedContents; trackBy: trackByContentId"
                     [value]="content.id">
                     {{ content.title }}
                   </option>
@@ -215,8 +215,8 @@
               </div>
               <div class="col-md-3 mb-2">
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" 
-                         [(ngModel)]="newContentIsRequired" 
+                  <input class="form-check-input" type="checkbox"
+                         [(ngModel)]="newContentIsRequired"
                          id="newContentRequired">
                   <label class="form-check-label small" for="newContentRequired">
                     <i class="fas fa-exclamation-circle me-1 text-danger"></i>Obligatorio
@@ -224,7 +224,7 @@
                 </div>
               </div>
               <div class="col-md-3 mb-2">
-                <button 
+                <button
                   class="btn btn-primary btn-sm w-100"
                   [disabled]="!selectedContentToAdd"
                   (click)="addContentToProgramWithOptions()">
@@ -258,10 +258,10 @@
         <div *ngIf="!isLoadingProgramContents && programContents.length > 0">
           <div class="row">
             <div class="col-md-6 mb-3" *ngFor="let pc of programContents; trackBy: trackByProgramContentId">
-              
+
               <!-- Normal View (Click to Edit) -->
-              <div *ngIf="!isEditingProgramContent(pc.contentId)" 
-                   class="content-item-card clickable" 
+              <div *ngIf="!isEditingProgramContent(pc.contentId)"
+                   class="content-item-card clickable"
                    (click)="editProgramContent(pc.contentId)"
                    title="Click para editar">
                 <div class="d-flex justify-content-between align-items-start">
@@ -289,13 +289,19 @@
                     </p>
                   </div>
                   <div class="content-actions">
-                    <button class="btn btn-outline-primary btn-sm me-1" 
+                    <button class="btn btn-outline-primary btn-sm me-1"
                             (click)="$event.stopPropagation(); editProgramContent(pc.contentId)"
                             title="Editar contenido">
                       <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-outline-danger btn-sm" 
-                            (click)="$event.stopPropagation(); removeContentFromProgram(pc.contentId)" 
+                    <button class="btn btn-sm me-1"
+                            [ngClass]="pc.isRequired ? 'btn-outline-warning' : 'btn-outline-success'"
+                            (click)="$event.stopPropagation(); toggleContentRequiredStatus(pc.contentId)"
+                            [title]="pc.isRequired ? 'Marcar como opcional' : 'Marcar como obligatorio'">
+                      <i class="fas" [ngClass]="pc.isRequired ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm"
+                            (click)="$event.stopPropagation(); removeContentFromProgram(pc.contentId)"
                             title="Remover contenido">
                       <i class="fas fa-times"></i>
                     </button>
@@ -304,7 +310,7 @@
               </div>
 
               <!-- Edit Form View -->
-              <div *ngIf="isEditingProgramContent(pc.contentId) && editingContentForm" 
+              <div *ngIf="isEditingProgramContent(pc.contentId) && editingContentForm"
                    class="content-edit-card">
                 <div class="card-header">
                   <h6 class="mb-0">
@@ -316,8 +322,8 @@
                     <!-- Title -->
                     <div class="mb-3">
                       <label class="form-label">Título *</label>
-                      <input type="text" class="form-control" 
-                             [(ngModel)]="editingContentForm.title" 
+                      <input type="text" class="form-control"
+                             [(ngModel)]="editingContentForm.title"
                              name="title" required>
                     </div>
 
@@ -325,14 +331,14 @@
                     <div class="row">
                       <div class="col-md-4 mb-3">
                         <label class="form-label">Número de Tema</label>
-                        <input type="number" class="form-control" 
-                               [(ngModel)]="editingContentForm.topicNumber" 
+                        <input type="number" class="form-control"
+                               [(ngModel)]="editingContentForm.topicNumber"
                                name="topicNumber">
                       </div>
                       <div class="col-md-8 mb-3">
                         <label class="form-label">Tema</label>
-                        <input type="text" class="form-control" 
-                               [(ngModel)]="editingContentForm.topic" 
+                        <input type="text" class="form-control"
+                               [(ngModel)]="editingContentForm.topic"
                                name="topic">
                       </div>
                     </div>
@@ -341,8 +347,8 @@
                     <div class="row">
                       <div class="col-md-6 mb-3">
                         <label class="form-label">Tipo *</label>
-                        <select class="form-select" 
-                                [(ngModel)]="editingContentForm.type" 
+                        <select class="form-select"
+                                [(ngModel)]="editingContentForm.type"
                                 name="type" required>
                           <option value="module">Módulo</option>
                           <option value="lesson">Lección</option>
@@ -353,9 +359,9 @@
                       </div>
                       <div class="col-md-6 mb-3">
                         <label class="form-label">Duración</label>
-                        <input type="text" class="form-control" 
-                               [(ngModel)]="editingContentForm.duration" 
-                               name="duration" 
+                        <input type="text" class="form-control"
+                               [(ngModel)]="editingContentForm.duration"
+                               name="duration"
                                placeholder="ej: 2 horas, 30 min">
                       </div>
                     </div>
@@ -363,27 +369,27 @@
                     <!-- Description -->
                     <div class="mb-3">
                       <label class="form-label">Descripción</label>
-                      <textarea class="form-control" rows="2" 
-                                [(ngModel)]="editingContentForm.description" 
+                      <textarea class="form-control" rows="2"
+                                [(ngModel)]="editingContentForm.description"
                                 name="description"></textarea>
                     </div>
 
                     <!-- Content -->
                     <div class="mb-3">
                       <label class="form-label">Contenido</label>
-                      <textarea class="form-control" rows="3" 
-                                [(ngModel)]="editingContentForm.content" 
-                                name="content" 
+                      <textarea class="form-control" rows="3"
+                                [(ngModel)]="editingContentForm.content"
+                                name="content"
                                 placeholder="Contenido detallado del módulo/lección..."></textarea>
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="d-flex justify-content-end">
-                      <button type="button" class="btn btn-outline-secondary me-2" 
+                      <button type="button" class="btn btn-outline-secondary me-2"
                               (click)="cancelProgramContentEdit()">
                         <i class="fas fa-times me-1"></i>Cancelar
                       </button>
-                      <button type="button" class="btn btn-primary" 
+                      <button type="button" class="btn btn-primary"
                               (click)="saveProgramContentEdit()"
                               [disabled]="isSaving">
                         <i class="fas fa-save me-1"></i>
@@ -428,20 +434,12 @@
                   <li><a class="dropdown-item" (click)="editProgram(program)">
                     <i class="fas fa-edit me-2"></i>Editar
                   </a></li>
-                  <li><a class="dropdown-item" (click)="duplicateProgram(program)">
-                    <i class="fas fa-copy me-2"></i>Duplicar
-                  </a></li>
                   <li><hr class="dropdown-divider"></li>
                   <li><a class="dropdown-item" (click)="viewProgramStudents(program)">
                     <i class="fas fa-users me-2"></i>Ver Estudiantes
                   </a></li>
                   <li><a class="dropdown-item" (click)="viewProgramCertificates(program)">
                     <i class="fas fa-certificate me-2"></i>Ver Certificados
-                  </a></li>
-                  <li><a class="dropdown-item" 
-                         (click)="toggleProgramContentRequiredStatus(program, $event)"
-                         title="Alternar entre obligatorio/opcional para todos los contenidos">
-                    <i class="fas fa-exchange-alt me-2 text-warning"></i>Toggle Obligatorio/Opcional
                   </a></li>
                   <li><hr class="dropdown-divider"></li>
                   <li><a class="dropdown-item" (click)="toggleProgramStatus(program)">

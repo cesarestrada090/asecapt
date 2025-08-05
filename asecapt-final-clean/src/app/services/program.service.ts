@@ -212,12 +212,12 @@ export class ProgramService {
     return this.http.delete<void>(`${this.apiUrl}/${programId}/contents/${contentId}`);
   }
 
-  // === BATCH OPERATIONS ===
+  // === INDIVIDUAL CONTENT OPERATIONS ===
   
-  // Toggle isRequired status for all contents of a program
-  toggleAllContentRequiredStatus(programId: number): Observable<{message: string, updated: number, newStatus: string, totalContents: number, previousRequired: number}> {
-    return this.http.put<{message: string, updated: number, newStatus: string, totalContents: number, previousRequired: number}>(
-      `${this.apiUrl}/${programId}/contents/toggle-required`, {}
+  // Toggle isRequired status for a specific content in a program
+  toggleContentRequiredStatus(programId: number, contentId: number): Observable<ProgramContent> {
+    return this.http.put<ProgramContent>(
+      `${this.apiUrl}/${programId}/contents/${contentId}/toggle-required`, {}
     );
   }
 

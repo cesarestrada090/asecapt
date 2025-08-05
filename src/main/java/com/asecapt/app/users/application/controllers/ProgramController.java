@@ -189,13 +189,19 @@ public class ProgramController {
         }
     }
 
-    // === BATCH OPERATIONS ===
+    // === INDIVIDUAL CONTENT OPERATIONS ===
     
-    @PutMapping("/{id}/contents/toggle-required")
-    public ResponseEntity<Map<String, Object>> toggleAllContentRequiredStatus(@PathVariable Integer id) {
+    @PutMapping("/{programId}/contents/{contentId}/toggle-required")
+    public ResponseEntity<ProgramContent> toggleContentRequiredStatus(
+            @PathVariable Integer programId, 
+            @PathVariable Integer contentId) {
         try {
-            Map<String, Object> result = programService.toggleAllContentRequiredStatus(id);
-            return ResponseEntity.ok(result);
+            ProgramContent updatedProgramContent = programService.toggleContentRequiredStatus(programId, contentId);
+            if (updatedProgramContent != null) {
+                return ResponseEntity.ok(updatedProgramContent);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
