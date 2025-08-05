@@ -4,13 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { EnrollmentService, Enrollment } from '../../services/enrollment.service';
 import { ProgramService, Program, CreateProgramRequest, UpdateProgramRequest, Content, CreateContentRequest, UpdateContentRequest, ProgramContent, AddContentToProgramRequest } from '../../services/program.service';
 import { ContentService } from '../../services/content.service';
+import { AddContentPopupComponent } from '../add-content-popup/add-content-popup.component';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 @Component({
   selector: 'app-courses',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AddContentPopupComponent],
   templateUrl: './courses.component.html',
   styleUrl: './courses.component.css'
 })
@@ -77,6 +78,9 @@ export class CoursesComponent implements OnInit {
   selectedContentToAdd: number | null = null;
   newContentIsRequired: boolean = false;
   showAddContentForm: boolean = false;
+  
+  // === ADD CONTENT POPUP ===
+  showAddContentPopup: boolean = false;
 
   // === INLINE CONTENT EDITING ===
   editingProgramContent: { programContentId: number, content: Content } | null = null;
@@ -250,6 +254,101 @@ export class CoursesComponent implements OnInit {
       this.selectedContentToAdd = null;
       this.newContentIsRequired = false;
     }
+  }
+
+  // === ADD CONTENT POPUP METHODS ===
+  
+  openAddContentPopup() {
+    console.log('🔵 Opening add content popup');
+    console.log('🔵 selectedProgram:', this.selectedProgram);
+    console.log('🔵 unassignedContents:', this.unassignedContents.length);
+    
+    if (!this.selectedProgram) {
+      console.error('❌ No program selected');
+      this.emitMessage('error', 'Debe seleccionar un programa primero');
+      return;
+    }
+    
+    this.showAddContentPopup = true;
+    console.log('🔵 showAddContentPopup set to:', this.showAddContentPopup);
+  }
+
+  closeAddContentPopup() {
+    this.showAddContentPopup = false;
+  }
+
+  onAddExistingContent(event: {contentId: number, isRequired: boolean}) {
+    if (!this.selectedProgram) return;
+
+    const request = {
+      programId: this.selectedProgram.id,
+      contentId: event.contentId,
+      orderIndex: this.programContents.length + 1,
+      isRequired: event.isRequired
+    };
+
+    this.programService.addContentToProgram(request)
+      .pipe(
+        catchError(error => {
+          console.error('Error adding content to program:', error);
+          this.emitMessage('error', 'Error agregando contenido al programa');
+          return of(null);
+        })
+      )
+      .subscribe(programContent => {
+        if (programContent) {
+          this.programContents.push(programContent);
+          this.emitMessage('success', 'Contenido agregado exitosamente');
+          this.closeAddContentPopup();
+          // Reload available contents to update the list
+          this.loadContents();
+        }
+      });
+  }
+
+  onCreateAndAddContent(event: {content: CreateContentRequest, isRequired: boolean}) {
+    if (!this.selectedProgram) return;
+
+    // First create the content
+    this.contentService.createContent(event.content)
+      .pipe(
+        catchError(error => {
+          console.error('Error creating content:', error);
+          this.emitMessage('error', 'Error creando contenido');
+          return of(null);
+        })
+      )
+      .subscribe(newContent => {
+        if (newContent) {
+          // Add to local contents arrays
+          this.allContents.unshift(newContent);
+          this.availableContents = [...this.allContents];
+          
+          // Now add it to the program
+          const request = {
+            programId: this.selectedProgram!.id,
+            contentId: newContent.id,
+            orderIndex: this.programContents.length + 1,
+            isRequired: event.isRequired
+          };
+
+          this.programService.addContentToProgram(request)
+            .pipe(
+              catchError(error => {
+                console.error('Error adding new content to program:', error);
+                this.emitMessage('error', 'Error agregando el nuevo contenido al programa');
+                return of(null);
+              })
+            )
+            .subscribe(programContent => {
+              if (programContent) {
+                this.programContents.push(programContent);
+                this.emitMessage('success', 'Contenido creado y agregado exitosamente');
+                this.closeAddContentPopup();
+              }
+            });
+        }
+      });
   }
 
   removeContentFromProgram(contentId: number) {

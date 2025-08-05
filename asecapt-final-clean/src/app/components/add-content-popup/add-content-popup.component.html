@@ -1,0 +1,157 @@
+<!-- Add Content Modal -->
+<div *ngIf="isVisible" class="modal-overlay" (click)="onClose()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        <i class="fas fa-plus-circle me-2"></i>
+        Agregar Contenido al Programa: {{ selectedProgram?.title }}
+      </h5>
+      <button type="button" class="btn-close" (click)="onClose()" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <!-- Content Option Selection -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <label class="form-label fw-bold">¿Qué deseas hacer?</label>
+          <div class="btn-group w-100" role="group">
+            <input type="radio" class="btn-check" name="contentOption" id="existing" 
+                   value="existing" [(ngModel)]="contentOption" (change)="onContentOptionChange()">
+            <label class="btn btn-outline-primary" for="existing">
+              <i class="fas fa-list me-2"></i>Agregar Contenido Existente
+            </label>
+            
+            <input type="radio" class="btn-check" name="contentOption" id="new" 
+                   value="new" [(ngModel)]="contentOption" (change)="onContentOptionChange()">
+            <label class="btn btn-outline-success" for="new">
+              <i class="fas fa-plus me-2"></i>Crear Nuevo Contenido
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Existing Content Section -->
+      <div *ngIf="contentOption === 'existing'">
+        <div class="card border-primary">
+          <div class="card-header bg-light">
+            <h6 class="mb-0">
+              <i class="fas fa-list me-2 text-primary"></i>Seleccionar Contenido Existente
+            </h6>
+          </div>
+          <div class="card-body">
+            <div *ngIf="availableContents.length === 0" class="text-center py-4">
+              <i class="fas fa-info-circle fa-2x text-muted mb-3"></i>
+              <p class="text-muted mb-0">No hay contenidos disponibles</p>
+              <small class="text-muted">Todos los contenidos ya están asignados a este programa</small>
+            </div>
+            
+            <div *ngIf="availableContents.length > 0">
+              <div class="mb-3">
+                <label class="form-label">Contenido a agregar:</label>
+                <select class="form-select" [(ngModel)]="selectedContentId" required>
+                  <option value="">Seleccionar contenido...</option>
+                  <option *ngFor="let content of availableContents" [value]="content.id">
+                    {{ content.title }} - {{ content.type }}
+                  </option>
+                </select>
+              </div>
+              
+              <!-- Content preview -->
+              <div *ngIf="selectedContentId" class="alert alert-info">
+                <h6>Vista previa del contenido:</h6>
+                <ng-container *ngFor="let content of availableContents">
+                  <div *ngIf="content.id === selectedContentId">
+                    <p><strong>Título:</strong> {{ content.title }}</p>
+                    <p><strong>Tipo:</strong> {{ content.type }}</p>
+                    <p><strong>Duración:</strong> {{ content.duration }}</p>
+                    <p><strong>Descripción:</strong> {{ content.description }}</p>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- New Content Section -->
+      <div *ngIf="contentOption === 'new'">
+        <div class="card border-success">
+          <div class="card-header bg-light">
+            <h6 class="mb-0">
+              <i class="fas fa-plus me-2 text-success"></i>Crear Nuevo Contenido
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-8 mb-3">
+                <label class="form-label">Título *</label>
+                <input type="text" class="form-control" [(ngModel)]="newContentForm.title" 
+                       placeholder="Ingresa el título del contenido" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Tipo *</label>
+                <select class="form-select" [(ngModel)]="newContentForm.type" required>
+                  <option *ngFor="let type of contentTypes" [value]="type.value">
+                    {{ type.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Duración *</label>
+                <input type="text" class="form-control" [(ngModel)]="newContentForm.duration" 
+                       placeholder="Ej: 2 horas, 30 minutos" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Descripción *</label>
+                <input type="text" class="form-control" [(ngModel)]="newContentForm.description" 
+                       placeholder="Descripción breve del contenido" required>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Contenido Detallado</label>
+              <textarea class="form-control" rows="4" [(ngModel)]="newContentForm.content" 
+                       placeholder="Descripción detallada, objetivos de aprendizaje, recursos, etc."></textarea>
+              <small class="form-text text-muted">
+                Describe en detalle qué aprenderán los estudiantes en este contenido
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Required Option -->
+      <div class="card border-warning mt-3">
+        <div class="card-body">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="isRequired" id="contentRequired">
+            <label class="form-check-label" for="contentRequired">
+              <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+              <strong>Marcar como contenido obligatorio</strong>
+            </label>
+          </div>
+          <small class="text-muted">
+            Los contenidos obligatorios deben ser completados para obtener la certificación
+          </small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="onClose()" [disabled]="isLoading">
+        <i class="fas fa-times me-1"></i>Cancelar
+      </button>
+      <button type="button" class="btn btn-primary" (click)="onSubmit()" 
+              [disabled]="!isFormValid() || isLoading">
+        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+        <i *ngIf="!isLoading" class="fas fa-plus me-1"></i>
+        {{ contentOption === 'existing' ? 'Agregar Contenido' : 'Crear y Agregar' }}
+      </button>
+    </div>
+  </div>
+</div> 

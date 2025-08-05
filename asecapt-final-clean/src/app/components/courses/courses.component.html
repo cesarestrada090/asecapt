@@ -189,77 +189,14 @@
             <i class="fas fa-info-circle me-1"></i>
             Click en cualquier contenido para editarlo
           </p>
-          <button class="btn btn-sm"
-                  [ngClass]="showAddContentForm ? 'btn-outline-secondary' : 'btn-outline-primary'"
-                  (click)="toggleAddContentForm()">
-            <i class="fas" [ngClass]="showAddContentForm ? 'fa-minus' : 'fa-plus'"></i>
-            {{ showAddContentForm ? 'Ocultar Formulario' : 'Agregar Contenido' }}
-            <span *ngIf="!showAddContentForm && unassignedContents.length > 0"
-                  class="badge bg-primary ms-2">{{ unassignedContents.length }}</span>
+          <button class="btn btn-sm btn-primary" (click)="openAddContentPopup()">
+            <i class="fas fa-plus me-1"></i>Agregar Contenido
+            <span *ngIf="unassignedContents.length > 0"
+                  class="badge bg-light text-primary ms-2">{{ unassignedContents.length }}</span>
           </button>
         </div>
 
-        <!-- Add Content Section - Collapsible -->
-        <div *ngIf="showAddContentForm" class="add-content-section mb-4 p-3 border rounded bg-light collapse-animation">
-          <h6 class="mb-3">
-            <i class="fas fa-plus-circle me-2 text-primary"></i>Agregar Contenido al Programa
-          </h6>
 
-          <!-- No content available message -->
-          <div *ngIf="availableContents.length === 0" class="text-center py-3">
-            <i class="fas fa-info-circle fa-2x text-muted mb-2"></i>
-            <p class="text-muted mb-0">No hay contenidos disponibles para agregar</p>
-            <small class="text-muted">Crea primero algunos contenidos antes de agregarlos al programa</small>
-          </div>
-
-          <!-- All content already assigned message -->
-          <div *ngIf="availableContents.length > 0 && unassignedContents.length === 0" class="text-center py-3">
-            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
-            <p class="text-muted mb-0">Todos los contenidos disponibles ya están asignados</p>
-            <small class="text-muted">Crea más contenidos si necesitas agregar otros módulos</small>
-          </div>
-
-          <!-- Add content form -->
-          <div *ngIf="unassignedContents.length > 0">
-            <div class="row align-items-end">
-              <div class="col-md-6 mb-2">
-                <label class="form-label small">Seleccionar Contenido:</label>
-                <select class="form-select form-select-sm" [(ngModel)]="selectedContentToAdd">
-                  <option value="">Elegir contenido...</option>
-                  <option
-                    *ngFor="let content of unassignedContents; trackBy: trackByContentId"
-                    [value]="content.id">
-                    {{ content.title }}
-                  </option>
-                </select>
-              </div>
-              <div class="col-md-3 mb-2">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox"
-                         [(ngModel)]="newContentIsRequired"
-                         id="newContentRequired">
-                  <label class="form-check-label small" for="newContentRequired">
-                    <i class="fas fa-exclamation-circle me-1 text-danger"></i>Obligatorio
-                  </label>
-                </div>
-              </div>
-              <div class="col-md-3 mb-2">
-                <button
-                  class="btn btn-primary btn-sm w-100"
-                  [disabled]="!selectedContentToAdd"
-                  (click)="addContentToProgramWithOptions()">
-                  <i class="fas fa-plus me-1"></i>Agregar
-                </button>
-              </div>
-            </div>
-            <div class="col-12 mt-2">
-              <small class="text-muted">
-                <i class="fas fa-info-circle me-1"></i>
-                Selecciona un contenido y marca si es obligatorio para agregarlo al programa
-              </small>
-            </div>
-          </div>
-        </div>
 
         <div *ngIf="isLoadingProgramContents" class="text-center py-4">
           <div class="spinner-border" role="status"></div>
@@ -733,3 +670,15 @@
       </div>
     </div>
   </div>
+
+  <!-- Add Content Popup Component -->
+  <app-add-content-popup
+    [isVisible]="showAddContentPopup"
+    [availableContents]="unassignedContents"
+    [selectedProgram]="selectedProgram"
+    [isLoading]="isSaving"
+    (close)="closeAddContentPopup()"
+    (addExistingContent)="onAddExistingContent($event)"
+    (createNewContent)="onCreateAndAddContent($event)">
+  </app-add-content-popup>
+</div>
