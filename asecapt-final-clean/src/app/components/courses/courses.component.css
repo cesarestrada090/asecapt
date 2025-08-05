@@ -105,6 +105,23 @@
   border-color: #bee5eb;
 }
 
+/* Program Edit Form Styles */
+.form-label.fw-bold {
+  color: #495057;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.card-header h5 .fas.fa-edit {
+  color: #28a745;
+}
+
+.program-edit-form .form-control:focus,
+.program-edit-form .form-select:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
 .stat-card {
   background: white;
   padding: 1.5rem;

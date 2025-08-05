@@ -103,6 +103,10 @@ export class CoursesComponent implements OnInit {
   editingProgramContent: { programContentId: number, content: Content } | null = null;
   editingContentForm: Content | null = null;
 
+  // === INLINE PROGRAM EDITING ===
+  isEditingProgram: boolean = false;
+  editingProgramForm: Program | null = null;
+
   // === VIEW STATES ===
   currentView: string = 'list';
 
@@ -719,13 +723,57 @@ export class CoursesComponent implements OnInit {
   }
 
   editProgram(program: Program) {
-    this.editingProgram = program;
-    this.programFormModel = { ...program };
-    setTimeout(() => {
-      // @ts-ignore
-      const modal = new window.bootstrap.Modal(document.getElementById('programModal'));
-      modal.show();
-    }, 0);
+    if (!program) {
+      this.emitMessage('error', 'Programa no encontrado');
+      return;
+    }
+
+    this.isEditingProgram = true;
+    // Create a copy for editing
+    this.editingProgramForm = { ...program };
+  }
+
+  saveProgramEdit() {
+    if (!this.editingProgramForm || !this.selectedProgram) return;
+
+    this.isSaving = true;
+
+    const updateRequest: UpdateProgramRequest = { 
+      ...this.editingProgramForm, 
+      id: this.selectedProgram.id 
+    };
+
+    this.programService.updateProgram(this.selectedProgram.id, updateRequest)
+      .pipe(
+        catchError(error => {
+          console.error('Error updating program:', error);
+          this.emitMessage('error', 'Error actualizando programa');
+          this.isSaving = false;
+          return of(null);
+        })
+      )
+      .subscribe(updatedProgram => {
+        if (updatedProgram) {
+          // Update the selected program
+          this.selectedProgram = updatedProgram;
+          
+          // Update in the programs list
+          const index = this.allPrograms.findIndex(p => p.id === updatedProgram.id);
+          if (index !== -1) {
+            this.allPrograms[index] = updatedProgram;
+            this.filteredPrograms = [...this.allPrograms];
+          }
+
+          this.emitMessage('success', 'Programa actualizado exitosamente');
+          this.cancelProgramEdit();
+        }
+        this.isSaving = false;
+      });
+  }
+
+  cancelProgramEdit() {
+    this.isEditingProgram = false;
+    this.editingProgramForm = null;
   }
 
   saveProgram() {

@@ -127,48 +127,183 @@
 
     <!-- Program Details Card (Full Width) -->
     <div class="card mb-4">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">
-          <i class="fas fa-book-open me-2 text-primary"></i>{{ selectedProgram.title }}
-        </h5>
-        <div class="d-flex align-items-center">
-          <button class="btn btn-outline-primary btn-sm me-2" (click)="editProgram(selectedProgram)">
-            <i class="fas fa-edit me-1"></i>Editar
-          </button>
-          <span class="badge" [ngClass]="getStatusBadgeClass(selectedProgram.status)">
-            {{ getStatusText(selectedProgram.status) }}
-          </span>
+      
+      <!-- Read View -->
+      <div *ngIf="!isEditingProgram">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            <i class="fas fa-book-open me-2 text-primary"></i>{{ selectedProgram.title }}
+          </h5>
+          <div class="d-flex align-items-center">
+            <button class="btn btn-outline-primary btn-sm me-2" (click)="editProgram(selectedProgram)">
+              <i class="fas fa-edit me-1"></i>Editar
+            </button>
+            <span class="badge" [ngClass]="getStatusBadgeClass(selectedProgram.status)">
+              {{ getStatusText(selectedProgram.status) }}
+            </span>
+          </div>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">{{ selectedProgram.description }}</p>
+
+          <div class="row">
+            <div class="col-md-6">
+              <ul class="list-unstyled">
+                <li><strong>Tipo:</strong> {{ getTypeText(selectedProgram.type) }}</li>
+                <li><strong>Categoría:</strong> {{ selectedProgram.category }}</li>
+                <li><strong>Duración:</strong> {{ selectedProgram.duration }}</li>
+                <li><strong>Créditos:</strong> {{ selectedProgram.credits }}</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <ul class="list-unstyled">
+                <li><strong>Precio:</strong> {{ selectedProgram.price }}</li>
+                <li><strong>Instructor:</strong> {{ selectedProgram.instructor }}</li>
+                <li><strong>Estado:</strong> {{ getStatusText(selectedProgram.status) }}</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-3" *ngIf="selectedProgram.prerequisites">
+            <h6>Prerrequisitos:</h6>
+            <p>{{ selectedProgram.prerequisites }}</p>
+          </div>
+
+          <div class="mt-3" *ngIf="selectedProgram.objectives">
+            <h6>Objetivos:</h6>
+            <p>{{ selectedProgram.objectives }}</p>
+          </div>
         </div>
       </div>
-      <div class="card-body">
-        <p class="text-muted">{{ selectedProgram.description }}</p>
 
-        <div class="row">
-          <div class="col-md-6">
-            <ul class="list-unstyled">
-              <li><strong>Tipo:</strong> {{ getTypeText(selectedProgram.type) }}</li>
-              <li><strong>Categoría:</strong> {{ selectedProgram.category }}</li>
-              <li><strong>Duración:</strong> {{ selectedProgram.duration }}</li>
-              <li><strong>Créditos:</strong> {{ selectedProgram.credits }}</li>
-            </ul>
-          </div>
-          <div class="col-md-6">
-            <ul class="list-unstyled">
-              <li><strong>Precio:</strong> {{ selectedProgram.price }}</li>
-              <li><strong>Instructor:</strong> {{ selectedProgram.instructor }}</li>
-              <li><strong>Estado:</strong> {{ getStatusText(selectedProgram.status) }}</li>
-            </ul>
-          </div>
+      <!-- Edit View -->
+      <div *ngIf="isEditingProgram && editingProgramForm">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-edit me-2 text-success"></i>Editando Programa
+          </h5>
         </div>
+        <div class="card-body">
+          <form class="program-edit-form">
+            <!-- Title and Type -->
+            <div class="row">
+              <div class="col-md-8 mb-3">
+                <label class="form-label fw-bold">Título del Programa *</label>
+                <input type="text" class="form-control" 
+                       [(ngModel)]="editingProgramForm.title" 
+                       name="title" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">Tipo *</label>
+                <select class="form-select" 
+                        [(ngModel)]="editingProgramForm.type" 
+                        name="type" required>
+                  <option *ngFor="let type of availableTypes" [value]="type.value" [disabled]="!type.value">
+                    {{ type.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
 
-        <div class="mt-3" *ngIf="selectedProgram.prerequisites">
-          <h6>Prerrequisitos:</h6>
-          <p>{{ selectedProgram.prerequisites }}</p>
-        </div>
+            <!-- Category and Status -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Categoría</label>
+                <input type="text" class="form-control" 
+                       [(ngModel)]="editingProgramForm.category" 
+                       name="category">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Estado *</label>
+                <select class="form-select" 
+                        [(ngModel)]="editingProgramForm.status" 
+                        name="status" required>
+                  <option *ngFor="let status of availableStatuses" [value]="status.value" [disabled]="!status.value">
+                    {{ status.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
 
-        <div class="mt-3" *ngIf="selectedProgram.objectives">
-          <h6>Objetivos:</h6>
-          <p>{{ selectedProgram.objectives }}</p>
+            <!-- Description -->
+            <div class="mb-3">
+              <label class="form-label fw-bold">Descripción</label>
+              <textarea class="form-control" rows="3" 
+                        [(ngModel)]="editingProgramForm.description" 
+                        name="description"></textarea>
+            </div>
+
+            <!-- Duration, Credits, and Price -->
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">Duración</label>
+                <input type="text" class="form-control" 
+                       [(ngModel)]="editingProgramForm.duration" 
+                       name="duration" 
+                       placeholder="ej: 40 horas">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">Créditos</label>
+                <input type="number" class="form-control" 
+                       [(ngModel)]="editingProgramForm.credits" 
+                       name="credits" min="0">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">Precio</label>
+                <input type="text" class="form-control" 
+                       [(ngModel)]="editingProgramForm.price" 
+                       name="price" 
+                       placeholder="ej: S/. 299">
+              </div>
+            </div>
+
+            <!-- Instructor and Max Students -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Instructor</label>
+                <input type="text" class="form-control" 
+                       [(ngModel)]="editingProgramForm.instructor" 
+                       name="instructor">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Máximo Estudiantes</label>
+                <input type="number" class="form-control" 
+                       [(ngModel)]="editingProgramForm.maxStudents" 
+                       name="maxStudents" min="0">
+              </div>
+            </div>
+
+            <!-- Prerequisites -->
+            <div class="mb-3">
+              <label class="form-label fw-bold">Prerrequisitos</label>
+              <textarea class="form-control" rows="2" 
+                        [(ngModel)]="editingProgramForm.prerequisites" 
+                        name="prerequisites"></textarea>
+            </div>
+
+            <!-- Objectives -->
+            <div class="mb-3">
+              <label class="form-label fw-bold">Objetivos</label>
+              <textarea class="form-control" rows="2" 
+                        [(ngModel)]="editingProgramForm.objectives" 
+                        name="objectives"></textarea>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-end">
+              <button type="button" class="btn btn-outline-secondary me-2" 
+                      (click)="cancelProgramEdit()">
+                <i class="fas fa-times me-1"></i>Cancelar
+              </button>
+              <button type="button" class="btn btn-success" 
+                      (click)="saveProgramEdit()"
+                      [disabled]="isSaving">
+                <i class="fas fa-save me-1"></i>
+                <span *ngIf="isSaving">Guardando...</span>
+                <span *ngIf="!isSaving">Guardar Cambios</span>
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
