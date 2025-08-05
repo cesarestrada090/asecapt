@@ -2,6 +2,8 @@ import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EnrollmentService, Enrollment } from '../../services/enrollment.service';
+import { ProgramService, Program, CreateProgramRequest, UpdateProgramRequest, Content, CreateContentRequest, UpdateContentRequest, ProgramContent, AddContentToProgramRequest } from '../../services/program.service';
+import { ContentService } from '../../services/content.service';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -16,12 +18,19 @@ export class CoursesComponent implements OnInit {
   @Output() message = new EventEmitter<{ type: 'success' | 'error', message: string }>();
 
   // Data lists
-  allEnrollments: Enrollment[] = [];
-  filteredEnrollments: Enrollment[] = [];
+  allPrograms: Program[] = [];
+  filteredPrograms: Program[] = [];
+  allContents: Content[] = [];
+  availableContents: Content[] = [];
+  
+  // Program content counts cache
+  programContentCounts: Map<number, number> = new Map();
 
   // Loading states
-  isLoadingEnrollments: boolean = false;
+  isLoadingPrograms: boolean = false;
+  isLoadingContents: boolean = false;
   isSearching: boolean = false;
+  isSaving: boolean = false;
 
   // Search form
   searchForm = {
@@ -30,200 +39,293 @@ export class CoursesComponent implements OnInit {
     type: ''
   };
 
-  // Mock data for display (until we have proper program service)
-  mockCourses: any[] = [];
-  filteredCourses: any[] = [];
+  // === PROGRAM FORM STATE ===
+  programFormModel: CreateProgramRequest = {
+    title: '',
+    description: '',
+    type: 'course',
+    category: '',
+    status: 'active', // Changed from 'draft' to 'active'
+    duration: '',
+    credits: 0,
+    price: '',
+    startDate: '',
+    endDate: '',
+    instructor: '',
+    maxStudents: 0,
+    prerequisites: '',
+    objectives: ''
+  };
+  editingProgram: Program | null = null;
 
-  constructor(private enrollmentService: EnrollmentService) {}
+  // === CONTENT FORM STATE ===
+  contentFormModel: CreateContentRequest = {
+    title: '',
+    description: '',
+    type: 'module',
+    duration: '',
+    content: '',
+    isRequired: true
+  };
+  editingContent: Content | null = null;
+
+  // === PROGRAM CONTENT MANAGEMENT ===
+  selectedProgram: Program | null = null;
+  programContents: ProgramContent[] = [];
+  isLoadingProgramContents: boolean = false;
+
+  // === VIEW STATES ===
+  currentView: string = 'list';
+
+  constructor(
+    private enrollmentService: EnrollmentService,
+    private programService: ProgramService,
+    private contentService: ContentService
+  ) {}
 
   ngOnInit() {
-    this.loadEnrollments();
-    this.initializeMockData();
+    this.loadPrograms();
+    this.loadContents();
   }
 
   // === DATA LOADING ===
 
-  loadEnrollments() {
-    this.isLoadingEnrollments = true;
-    this.enrollmentService.getAllEnrollments()
+  loadPrograms() {
+    this.isLoadingPrograms = true;
+    this.programService.getAllPrograms()
       .pipe(
         catchError(error => {
-          console.error('Error loading enrollments:', error);
-          this.emitMessage('error', 'Error cargando información de cursos');
+          console.error('Error loading programs:', error);
+          this.emitMessage('error', 'Error cargando programas');
           return of([]);
         })
       )
-      .subscribe(enrollments => {
-        this.allEnrollments = enrollments;
-        this.filteredEnrollments = [...enrollments];
-        this.isLoadingEnrollments = false;
-        this.updateCourseList();
+      .subscribe(programs => {
+        this.allPrograms = programs;
+        this.filteredPrograms = [...programs];
+        this.isLoadingPrograms = false;
+        
+        // Load content counts for each program
+        this.loadProgramContentCounts();
       });
   }
 
-  // === SEARCH ===
+  loadContents() {
+    this.isLoadingContents = true;
+    this.contentService.getAllContents()
+      .pipe(
+        catchError(error => {
+          console.error('Error loading contents:', error);
+          this.emitMessage('error', 'Error cargando contenidos');
+          return of([]);
+        })
+      )
+      .subscribe(contents => {
+        this.allContents = contents;
+        this.availableContents = [...contents];
+        this.isLoadingContents = false;
+      });
+  }
 
-  searchCourses() {
+    // === SEARCH ===
+
+  searchPrograms() {
     if (!this.searchForm.query.trim()) {
-      this.filteredCourses = this.mockCourses.filter(course => {
-        return (!this.searchForm.status || course.status === this.searchForm.status) &&
-               (!this.searchForm.type || course.type === this.searchForm.type);
+      this.filteredPrograms = this.allPrograms.filter(program => {
+        return (!this.searchForm.status || program.status === this.searchForm.status) &&
+               (!this.searchForm.type || program.type === this.searchForm.type);
       });
       return;
     }
 
     this.isSearching = true;
-    
-    // Filter courses based on search criteria
-    this.filteredCourses = this.mockCourses.filter(course => {
-      const matchesStatus = !this.searchForm.status || course.status === this.searchForm.status;
-      const matchesType = !this.searchForm.type || course.type === this.searchForm.type;
-      const matchesQuery = course.name.toLowerCase().includes(this.searchForm.query.toLowerCase()) ||
-                          course.description.toLowerCase().includes(this.searchForm.query.toLowerCase());
-      
-      return matchesStatus && matchesType && matchesQuery;
-    });
-
-    this.isSearching = false;
+    this.programService.searchPrograms(this.searchForm.query, this.searchForm.type, this.searchForm.status)
+      .pipe(
+        catchError(error => {
+          console.error('Error searching programs:', error);
+          this.emitMessage('error', 'Error en la búsqueda de programas');
+          return of([]);
+        })
+      )
+      .subscribe(programs => {
+        this.filteredPrograms = programs;
+        this.isSearching = false;
+      });
   }
 
-  clearCourseSearch() {
+  clearSearch() {
     this.searchForm.query = '';
     this.searchForm.status = '';
     this.searchForm.type = '';
-    this.filteredCourses = [...this.mockCourses];
+    this.filteredPrograms = [...this.allPrograms];
   }
 
-  // === MOCK DATA ===
+    // === PROGRAM CONTENT MANAGEMENT ===
 
-  initializeMockData() {
-    // Generate mock course data for display purposes
-    this.mockCourses = [
-      {
-        id: 1,
-        name: 'Fundamentos de Programación',
-        description: 'Curso básico de programación con Python',
-        type: 'course',
-        category: 'Programación',
-        duration: '40 horas',
-        credits: 3,
-        price: 'S/. 299',
-        status: 'active',
-        enrollments: 15,
-        completions: 12,
-        instructor: 'Prof. García',
-        startDate: '2024-01-15',
-        endDate: '2024-03-15'
-      },
-      {
-        id: 2,
-        name: 'Especialización en Data Science',
-        description: 'Programa especializado en ciencia de datos',
-        type: 'specialization',
-        category: 'Data Science',
-        duration: '120 horas',
-        credits: 8,
-        price: 'S/. 899',
-        status: 'active',
-        enrollments: 8,
-        completions: 5,
-        instructor: 'Prof. López',
-        startDate: '2024-02-01',
-        endDate: '2024-06-01'
-      },
-      {
-        id: 3,
-        name: 'Certificación en Ciberseguridad',
-        description: 'Programa de certificación profesional',
-        type: 'certification',
-        category: 'Seguridad',
-        duration: '80 horas',
-        credits: 5,
-        price: 'S/. 599',
-        status: 'active',
-        enrollments: 12,
-        completions: 8,
-        instructor: 'Prof. Martín',
-        startDate: '2024-01-20',
-        endDate: '2024-04-20'
-      },
-      {
-        id: 4,
-        name: 'Diseño Web Avanzado',
-        description: 'Curso avanzado de diseño y desarrollo web',
-        type: 'course',
-        category: 'Diseño',
-        duration: '60 horas',
-        credits: 4,
-        price: 'S/. 449',
-        status: 'draft',
-        enrollments: 0,
-        completions: 0,
-        instructor: 'Prof. Rivera',
-        startDate: '2024-04-01',
-        endDate: '2024-06-01'
-      }
-    ];
-    this.filteredCourses = [...this.mockCourses];
+  loadProgramContents(programId: number) {
+    this.isLoadingProgramContents = true;
+    this.programService.getProgramContents(programId)
+      .pipe(
+        catchError(error => {
+          console.error('Error loading program contents:', error);
+          this.emitMessage('error', 'Error cargando contenidos del programa');
+          return of([]);
+        })
+      )
+      .subscribe(contents => {
+        this.programContents = contents;
+        this.isLoadingProgramContents = false;
+      });
   }
 
-  updateCourseList() {
-    // Update course statistics based on enrollments
-    const courseStats = new Map();
+  addContentToProgram(contentId: number) {
+    if (!this.selectedProgram) return;
+
+    const request: AddContentToProgramRequest = {
+      programId: this.selectedProgram.id,
+      contentId: contentId,
+      orderIndex: this.programContents.length + 1,
+      isRequired: true
+    };
+
+    this.programService.addContentToProgram(request)
+      .pipe(
+        catchError(error => {
+          console.error('Error adding content to program:', error);
+          this.emitMessage('error', 'Error agregando contenido al programa');
+          return of(null);
+        })
+      )
+      .subscribe(programContent => {
+        if (programContent) {
+          this.programContents.push(programContent);
+          this.emitMessage('success', 'Contenido agregado exitosamente');
+        }
+      });
+  }
+
+  removeContentFromProgram(contentId: number) {
+    if (!this.selectedProgram) return;
+
+    this.programService.removeProgramContent(this.selectedProgram.id, contentId)
+      .pipe(
+        catchError(error => {
+          console.error('Error removing content from program:', error);
+          this.emitMessage('error', 'Error removiendo contenido del programa');
+          return of(null);
+        })
+      )
+      .subscribe(() => {
+        this.programContents = this.programContents.filter(pc => pc.contentId !== contentId);
+        this.emitMessage('success', 'Contenido removido exitosamente');
+      });
+  }
+
+  // === PROGRAM ACTIONS ===
+
+  viewProgramDetails(program: Program) {
+    console.log('🔍 viewProgramDetails called with:', program);
+    console.log('🔍 Current view before:', this.currentView);
     
-    this.allEnrollments.forEach(enrollment => {
-      if (!courseStats.has(enrollment.programId)) {
-        courseStats.set(enrollment.programId, {
-          enrollments: 0,
-          completions: 0
+    this.selectedProgram = program;
+    this.currentView = 'details';
+    
+    console.log('🔍 Selected program set to:', this.selectedProgram);
+    console.log('🔍 Current view after:', this.currentView);
+    console.log('🔍 isDetailsView():', this.isDetailsView());
+    console.log('🔍 selectedProgram exists:', !!this.selectedProgram);
+    
+    this.loadProgramContents(program.id);
+    this.emitMessage('success', `Mostrando detalles de ${program.title}`);
+  }
+
+  createNewProgram() {
+    this.editingProgram = null;
+    this.programFormModel = {
+      title: '',
+      description: '',
+      type: 'course',
+      category: '',
+      status: 'active', // Changed from 'draft' to 'active'
+      duration: '',
+      credits: 0,
+      price: '',
+      startDate: '',
+      endDate: '',
+      instructor: '',
+      maxStudents: 0,
+      prerequisites: '',
+      objectives: ''
+    };
+    setTimeout(() => {
+      // @ts-ignore
+      const modal = new window.bootstrap.Modal(document.getElementById('programModal'));
+      modal.show();
+    }, 0);
+  }
+
+  editProgram(program: Program) {
+    this.editingProgram = program;
+    this.programFormModel = { ...program };
+    setTimeout(() => {
+      // @ts-ignore
+      const modal = new window.bootstrap.Modal(document.getElementById('programModal'));
+      modal.show();
+    }, 0);
+  }
+
+  saveProgram() {
+    this.isSaving = true;
+    
+    if (this.editingProgram) {
+      // Update existing program
+      const updateRequest: UpdateProgramRequest = { ...this.programFormModel, id: this.editingProgram.id };
+      this.programService.updateProgram(this.editingProgram.id, updateRequest)
+        .pipe(
+          catchError(error => {
+            console.error('Error updating program:', error);
+            this.emitMessage('error', 'Error actualizando programa');
+            return of(null);
+          })
+        )
+        .subscribe(program => {
+          this.isSaving = false;
+          if (program) {
+            const index = this.allPrograms.findIndex(p => p.id === program.id);
+            if (index > -1) {
+              this.allPrograms[index] = program;
+              this.filteredPrograms = [...this.allPrograms];
+            }
+            this.emitMessage('success', 'Programa actualizado correctamente');
+            this.closeModal('programModal');
+          }
         });
-      }
-      
-      const stats = courseStats.get(enrollment.programId);
-      stats.enrollments++;
-      if (enrollment.status === 'completed') {
-        stats.completions++;
-      }
-    });
-    
-    // Update mock courses with real statistics
-    this.mockCourses.forEach(course => {
-      const stats = courseStats.get(course.id) || { enrollments: 0, completions: 0 };
-      course.enrollments = stats.enrollments;
-      course.completions = stats.completions;
-    });
-    
-    this.filteredCourses = [...this.mockCourses];
+    } else {
+      // Create new program
+      this.programService.createProgram(this.programFormModel)
+        .pipe(
+          catchError(error => {
+            console.error('Error creating program:', error);
+            this.emitMessage('error', 'Error creando programa');
+            return of(null);
+          })
+        )
+        .subscribe(program => {
+          this.isSaving = false;
+          if (program) {
+            this.allPrograms.unshift(program);
+            this.filteredPrograms = [...this.allPrograms];
+            this.emitMessage('success', 'Programa creado correctamente');
+            this.closeModal('programModal');
+          }
+        });
+    }
   }
 
-  // === COURSE ACTIONS ===
-
-  viewCourseDetails(course: any) {
-    // Show course enrollments and details
-    const courseEnrollments = this.allEnrollments.filter(e => e.programId === course.id);
-    console.log('Course enrollments:', courseEnrollments);
-    this.emitMessage('success', `Mostrando detalles de ${course.name}`);
-  }
-
-  editCourse(course: any) {
-    // TODO: Implement course editing
-    this.emitMessage('success', `Editando ${course.name}`);
-  }
-
-  createNewCourse() {
-    // TODO: Implement course creation
-    this.emitMessage('success', 'Creando nuevo curso');
-  }
-
-  duplicateCourse(course: any) {
-    // TODO: Implement course duplication
-    this.emitMessage('success', `Duplicando ${course.name}`);
-  }
-
-  archiveCourse(course: any) {
-    // Update course status to archived
-    course.status = course.status === 'archived' ? 'active' : 'archived';
-    const action = course.status === 'archived' ? 'archivado' : 'restaurado';
+  toggleCourseStatus(course: any) {
+    // Update course status to active/inactive
+    course.status = course.status === 'active' ? 'inactive' : 'active';
+    const action = course.status === 'active' ? 'activado' : 'inactivado';
     this.emitMessage('success', `Curso ${action}: ${course.name}`);
   }
 
@@ -237,14 +339,143 @@ export class CoursesComponent implements OnInit {
     this.emitMessage('success', `Mostrando certificados de ${course.name}`);
   }
 
+  duplicateProgram(program: Program) {
+    const newTitle = program.title + ' (Copia)';
+    this.programService.duplicateProgram(program.id, newTitle)
+      .pipe(
+        catchError(error => {
+          console.error('Error duplicating program:', error);
+          this.emitMessage('error', 'Error duplicando programa');
+          return of(null);
+        })
+      )
+      .subscribe(duplicated => {
+        if (duplicated) {
+          this.allPrograms.unshift(duplicated);
+          this.filteredPrograms = [...this.allPrograms];
+          this.emitMessage('success', `Programa duplicado: ${duplicated.title}`);
+        }
+      });
+  }
+
+  // === CONTENT ACTIONS ===
+
+  createNewContent() {
+    this.editingContent = null;
+    this.contentFormModel = {
+      title: '',
+      description: '',
+      type: 'module',
+      duration: '',
+      content: '',
+      isRequired: true
+    };
+    setTimeout(() => {
+      // @ts-ignore
+      const modal = new window.bootstrap.Modal(document.getElementById('contentModal'));
+      modal.show();
+    }, 0);
+  }
+
+  editContent(content: Content) {
+    this.editingContent = content;
+    this.contentFormModel = { ...content };
+    setTimeout(() => {
+      // @ts-ignore
+      const modal = new window.bootstrap.Modal(document.getElementById('contentModal'));
+      modal.show();
+    }, 0);
+  }
+
+  saveContent() {
+    this.isSaving = true;
+    
+    if (this.editingContent) {
+      // Update existing content
+      const updateRequest: UpdateContentRequest = { ...this.contentFormModel, id: this.editingContent.id };
+      this.contentService.updateContent(this.editingContent.id, updateRequest)
+        .pipe(
+          catchError(error => {
+            console.error('Error updating content:', error);
+            this.emitMessage('error', 'Error actualizando contenido');
+            return of(null);
+          })
+        )
+        .subscribe(content => {
+          this.isSaving = false;
+          if (content) {
+            const index = this.allContents.findIndex(c => c.id === content.id);
+            if (index > -1) {
+              this.allContents[index] = content;
+              this.availableContents = [...this.allContents];
+            }
+            this.emitMessage('success', 'Contenido actualizado correctamente');
+            this.closeModal('contentModal');
+          }
+        });
+    } else {
+      // Create new content
+      this.contentService.createContent(this.contentFormModel)
+        .pipe(
+          catchError(error => {
+            console.error('Error creating content:', error);
+            this.emitMessage('error', 'Error creando contenido');
+            return of(null);
+          })
+        )
+        .subscribe(content => {
+          this.isSaving = false;
+          if (content) {
+            this.allContents.unshift(content);
+            this.availableContents = [...this.allContents];
+            this.emitMessage('success', 'Contenido creado correctamente');
+            this.closeModal('contentModal');
+          }
+        });
+    }
+  }
+
+  // === UTILITY METHODS ===
+
+  closeModal(modalId: string) {
+    setTimeout(() => {
+      // @ts-ignore
+      const modal = window.bootstrap.Modal.getInstance(document.getElementById(modalId));
+      if (modal) modal.hide();
+    }, 0);
+  }
+
+  setCurrentView(view: string) {
+    this.currentView = view;
+    if (view === 'list') {
+      this.selectedProgram = null;
+    }
+  }
+
+  isContentAlreadyAssigned(contentId: number): boolean {
+    return this.programContents.some(pc => pc.contentId === contentId);
+  }
+
+  // === VIEW HELPER METHODS ===
+  
+  isListView(): boolean {
+    return this.currentView === 'list';
+  }
+
+  isDetailsView(): boolean {
+    return this.currentView === 'details';
+  }
+
+  isContentLibraryView(): boolean {
+    return this.currentView === 'content-library';
+  }
+
   // === UI HELPERS ===
 
   getStatusBadgeClass(status: string): string {
     switch (status) {
       case 'active': return 'badge bg-success';
-      case 'draft': return 'badge bg-warning';
-      case 'archived': return 'badge bg-secondary';
-      case 'suspended': return 'badge bg-danger';
+      case 'inactive': return 'badge bg-secondary';
       default: return 'badge bg-info';
     }
   }
@@ -252,9 +483,7 @@ export class CoursesComponent implements OnInit {
   getStatusText(status: string): string {
     switch (status) {
       case 'active': return 'Activo';
-      case 'draft': return 'Borrador';
-      case 'archived': return 'Archivado';
-      case 'suspended': return 'Suspendido';
+      case 'inactive': return 'Inactivo';
       default: return status;
     }
   }
@@ -298,9 +527,7 @@ export class CoursesComponent implements OnInit {
     return [
       { value: '', label: 'Todos los estados' },
       { value: 'active', label: 'Activos' },
-      { value: 'draft', label: 'Borradores' },
-      { value: 'archived', label: 'Archivados' },
-      { value: 'suspended', label: 'Suspendidos' }
+      { value: 'inactive', label: 'Inactivos' }
     ];
   }
 
@@ -314,38 +541,144 @@ export class CoursesComponent implements OnInit {
   }
 
   get availableCategories() {
-    const categories = [...new Set(this.mockCourses.map(c => c.category))];
+    const categories = [...new Set(this.allPrograms.map(p => p.category))];
     return [
       { value: '', label: 'Todas las categorías' },
       ...categories.map(cat => ({ value: cat, label: cat }))
     ];
   }
 
+  get availableContentTypes() {
+    return [
+      { value: '', label: 'Todos los tipos' },
+      { value: 'module', label: 'Módulos' },
+      { value: 'lesson', label: 'Lecciones' },
+      { value: 'assignment', label: 'Asignaciones' },
+      { value: 'exam', label: 'Exámenes' },
+      { value: 'resource', label: 'Recursos' }
+    ];
+  }
+
   // === STATISTICS ===
 
-  get totalCourses(): number {
-    return this.filteredCourses.length;
+  get totalPrograms(): number {
+    return this.filteredPrograms.length;
   }
 
-  get activeCourses(): number {
-    return this.filteredCourses.filter(c => c.status === 'active').length;
+  get activePrograms(): number {
+    return this.filteredPrograms.filter(p => p.status === 'active').length;
   }
 
-  get draftCourses(): number {
-    return this.filteredCourses.filter(c => c.status === 'draft').length;
+  get inactivePrograms(): number {
+    return this.filteredPrograms.filter(p => p.status === 'inactive').length;
   }
 
-  get totalEnrollments(): number {
-    return this.filteredCourses.reduce((sum, course) => sum + course.enrollments, 0);
+  get totalContents(): number {
+    return this.allContents.length;
   }
 
-  get totalCompletions(): number {
-    return this.filteredCourses.reduce((sum, course) => sum + course.completions, 0);
+  get moduleContents(): number {
+    return this.allContents.filter(c => c.type === 'module').length;
   }
 
-  get averageCompletionRate(): number {
-    if (this.totalEnrollments === 0) return 0;
-    return Math.round((this.totalCompletions / this.totalEnrollments) * 100);
+  get totalProgramContents(): number {
+    // Sum all content counts from all programs
+    let total = 0;
+    this.programContentCounts.forEach(count => {
+      total += count;
+    });
+    return total;
+  }
+
+  // === PROGRAM CONTENT COUNTS ===
+
+  getProgramContentCount(programId: number): number {
+    return this.programContentCounts.get(programId) || 0;
+  }
+
+  loadProgramContentCounts() {
+    // Load content counts for all programs
+    this.allPrograms.forEach(program => {
+      this.programService.getProgramContents(program.id).subscribe({
+        next: (contents) => {
+          this.programContentCounts.set(program.id, contents.length);
+        },
+        error: (error) => {
+          console.error('Error loading content count for program:', program.id, error);
+          this.programContentCounts.set(program.id, 0);
+        }
+      });
+    });
+  }
+
+  // === ADDITIONAL PROGRAM ACTIONS ===
+
+  viewProgramStudents(program: Program) {
+    // TODO: Navigate to students view filtered by program
+    this.emitMessage('success', `Mostrando estudiantes de ${program.title}`);
+  }
+
+  viewProgramCertificates(program: Program) {
+    // TODO: Navigate to certificates view filtered by program
+    this.emitMessage('success', `Mostrando certificados de ${program.title}`);
+  }
+
+  toggleProgramStatus(program: Program) {
+    this.programService.toggleProgramStatus(program.id)
+      .pipe(
+        catchError(error => {
+          console.error('Error toggling program status:', error);
+          this.emitMessage('error', 'Error cambiando estado del programa');
+          return of(null);
+        })
+      )
+      .subscribe(updatedProgram => {
+        if (updatedProgram) {
+          const index = this.allPrograms.findIndex(p => p.id === program.id);
+          if (index > -1) {
+            this.allPrograms[index] = updatedProgram;
+            this.filteredPrograms = [...this.allPrograms];
+          }
+          const statusText = updatedProgram.status === 'active' ? 'activado' : 'inactivado';
+          this.emitMessage('success', `Programa ${statusText}: ${updatedProgram.title}`);
+        }
+      });
+  }
+
+  deleteProgram(program: Program) {
+    if (confirm(`¿Estás seguro de que quieres eliminar el programa "${program.title}"?`)) {
+      this.programService.deleteProgram(program.id)
+        .pipe(
+          catchError(error => {
+            console.error('Error deleting program:', error);
+            this.emitMessage('error', 'Error eliminando programa');
+            return of(null);
+          })
+        )
+        .subscribe(() => {
+          this.allPrograms = this.allPrograms.filter(p => p.id !== program.id);
+          this.filteredPrograms = [...this.allPrograms];
+          this.emitMessage('success', `Programa eliminado: ${program.title}`);
+        });
+    }
+  }
+
+  deleteContent(content: Content) {
+    if (confirm(`¿Estás seguro de que quieres eliminar el contenido "${content.title}"?`)) {
+      this.contentService.deleteContent(content.id)
+        .pipe(
+          catchError(error => {
+            console.error('Error deleting content:', error);
+            this.emitMessage('error', 'Error eliminando contenido');
+            return of(null);
+          })
+        )
+        .subscribe(() => {
+          this.allContents = this.allContents.filter(c => c.id !== content.id);
+          this.availableContents = [...this.allContents];
+          this.emitMessage('success', `Contenido eliminado: ${content.title}`);
+        });
+    }
   }
 
   // === UTILITY ===
@@ -356,7 +689,15 @@ export class CoursesComponent implements OnInit {
 
   // === TRACKING ===
 
-  trackByCourseId(index: number, item: any): number {
+  trackByProgramId(index: number, item: Program): number {
     return item.id;
   }
-} 
+
+  trackByContentId(index: number, item: Content): number {
+    return item.id;
+  }
+
+  trackByProgramContentId(index: number, item: ProgramContent): number {
+    return item.id;
+  }
+}

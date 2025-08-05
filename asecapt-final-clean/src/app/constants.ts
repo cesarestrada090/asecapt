@@ -19,14 +19,15 @@ export const APP_CONFIG = {
     maxPageSize: 100
   },
   
-  // API Endpoints
-  endpoints: {
-    enrollments: '/enrollments',
-    certificates: '/certificates',
-    verification: '/verify',
-    programs: '/programs',
-    users: '/users'
-  }
+      // API Endpoints
+    endpoints: {
+      enrollments: '/enrollments',
+      certificates: '/certificates',
+      verification: '/verify',
+      programs: '/programs',
+      contents: '/contents',
+      users: '/users'
+    }
 };
 
 // QR Configuration

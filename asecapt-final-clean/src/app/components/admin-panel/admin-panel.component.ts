@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterLink, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EnrollmentService, Enrollment } from '../../services/enrollment.service';
@@ -10,7 +10,7 @@ import { of } from 'rxjs';
 @Component({
   selector: 'app-admin-panel',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './admin-panel.component.html',
   styleUrl: './admin-panel.component.css'
 })
