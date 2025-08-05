@@ -21,7 +21,7 @@ import { CoursesComponent } from '../courses/courses.component';
 })
 export class DashboardComponent implements OnInit {
   // Navigation state
-  activeSection: string = 'generate-certificates';
+  activeSection: string = 'courses'; // Changed default to courses
   sidebarOpen: boolean = false;
 
   // Messages

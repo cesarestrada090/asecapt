@@ -22,7 +22,7 @@ export class CoursesComponent implements OnInit {
   filteredPrograms: Program[] = [];
   allContents: Content[] = [];
   availableContents: Content[] = [];
-  
+
   // Program content counts cache
   programContentCounts: Map<number, number> = new Map();
 
@@ -74,6 +74,15 @@ export class CoursesComponent implements OnInit {
   programContents: ProgramContent[] = [];
   isLoadingProgramContents: boolean = false;
 
+  // === ADD CONTENT WITH OPTIONS ===
+  selectedContentToAdd: number | null = null;
+  newContentIsRequired: boolean = false;
+  showAddContentForm: boolean = false;
+
+  // === INLINE CONTENT EDITING ===
+  editingProgramContent: { programContentId: number, content: Content } | null = null;
+  editingContentForm: Content | null = null;
+
   // === VIEW STATES ===
   currentView: string = 'list';
 
@@ -83,9 +92,10 @@ export class CoursesComponent implements OnInit {
     private contentService: ContentService
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadPrograms();
     this.loadContents();
+    this.loadProgramContentCounts();
   }
 
   // === DATA LOADING ===
@@ -104,7 +114,7 @@ export class CoursesComponent implements OnInit {
         this.allPrograms = programs;
         this.filteredPrograms = [...programs];
         this.isLoadingPrograms = false;
-        
+
         // Load content counts for each program
         this.loadProgramContentCounts();
       });
@@ -181,11 +191,11 @@ export class CoursesComponent implements OnInit {
   addContentToProgram(contentId: number) {
     if (!this.selectedProgram) return;
 
-    const request: AddContentToProgramRequest = {
+    const request = {
       programId: this.selectedProgram.id,
       contentId: contentId,
       orderIndex: this.programContents.length + 1,
-      isRequired: true
+      isRequired: false // Changed from true to false - content is optional by default
     };
 
     this.programService.addContentToProgram(request)
@@ -202,6 +212,45 @@ export class CoursesComponent implements OnInit {
           this.emitMessage('success', 'Contenido agregado exitosamente');
         }
       });
+  }
+
+  addContentToProgramWithOptions() {
+    if (!this.selectedProgram || !this.selectedContentToAdd) return;
+
+    const request = {
+      programId: this.selectedProgram.id,
+      contentId: this.selectedContentToAdd,
+      orderIndex: this.programContents.length + 1,
+      isRequired: this.newContentIsRequired
+    };
+
+    this.programService.addContentToProgram(request)
+      .pipe(
+        catchError(error => {
+          console.error('Error adding content to program:', error);
+          this.emitMessage('error', 'Error agregando contenido al programa');
+          return of(null);
+        })
+      )
+      .subscribe(programContent => {
+        if (programContent) {
+          this.programContents.push(programContent);
+          this.emitMessage('success', 'Contenido agregado exitosamente');
+          // Reset form and collapse
+          this.selectedContentToAdd = null;
+          this.newContentIsRequired = false;
+          this.showAddContentForm = false;
+        }
+      });
+  }
+
+  toggleAddContentForm() {
+    this.showAddContentForm = !this.showAddContentForm;
+    // Reset form when closing
+    if (!this.showAddContentForm) {
+      this.selectedContentToAdd = null;
+      this.newContentIsRequired = false;
+    }
   }
 
   removeContentFromProgram(contentId: number) {
@@ -221,22 +270,169 @@ export class CoursesComponent implements OnInit {
       });
   }
 
+  // === INLINE CONTENT EDITING ===
+
+  editProgramContent(contentId: number) {
+    const content = this.getContentById(contentId);
+    if (!content) {
+      this.emitMessage('error', 'Contenido no encontrado');
+      return;
+    }
+
+    this.editingProgramContent = { programContentId: contentId, content: content };
+    // Create a copy for editing
+    this.editingContentForm = { ...content };
+  }
+
+  saveProgramContentEdit() {
+    if (!this.editingContentForm || !this.editingProgramContent) return;
+
+    this.isSaving = true;
+    const updateRequest: UpdateContentRequest = { 
+      ...this.editingContentForm, 
+      id: this.editingContentForm.id 
+    };
+
+    this.contentService.updateContent(this.editingContentForm.id, updateRequest)
+      .pipe(
+        catchError(error => {
+          console.error('Error updating content:', error);
+          this.emitMessage('error', 'Error actualizando contenido');
+          return of(null);
+        })
+      )
+      .subscribe(updatedContent => {
+        this.isSaving = false;
+        if (updatedContent) {
+          // Update in allContents array
+          const index = this.allContents.findIndex(c => c.id === updatedContent.id);
+          if (index > -1) {
+            this.allContents[index] = updatedContent;
+            this.availableContents = [...this.allContents];
+          }
+          
+          this.emitMessage('success', 'Contenido actualizado exitosamente');
+          this.cancelProgramContentEdit();
+        }
+      });
+  }
+
+  cancelProgramContentEdit() {
+    this.editingProgramContent = null;
+    this.editingContentForm = null;
+  }
+
+  isEditingProgramContent(contentId: number): boolean {
+    return this.editingProgramContent?.programContentId === contentId;
+  }
+
   // === PROGRAM ACTIONS ===
 
   viewProgramDetails(program: Program) {
-    console.log('🔍 viewProgramDetails called with:', program);
-    console.log('🔍 Current view before:', this.currentView);
-    
+    console.log('🔍 Viewing program details for:', program.title);
     this.selectedProgram = program;
     this.currentView = 'details';
-    
-    console.log('🔍 Selected program set to:', this.selectedProgram);
-    console.log('🔍 Current view after:', this.currentView);
-    console.log('🔍 isDetailsView():', this.isDetailsView());
-    console.log('🔍 selectedProgram exists:', !!this.selectedProgram);
-    
     this.loadProgramContents(program.id);
-    this.emitMessage('success', `Mostrando detalles de ${program.title}`);
+
+  }
+
+  // === VIEW NAVIGATION ===
+
+  setCurrentView(view: string) {
+    this.currentView = view;
+    if (view === 'list') {
+      this.selectedProgram = null;
+    }
+  }
+
+  isListView(): boolean {
+    return this.currentView === 'list';
+  }
+
+  isDetailsView(): boolean {
+    return this.currentView === 'details';
+  }
+
+  isContentAlreadyAssigned(contentId: number): boolean {
+    return this.programContents.some(pc => pc.contentId === contentId);
+  }
+
+  getContentById(contentId: number): Content | undefined {
+    return this.allContents.find(content => content.id === contentId);
+  }
+
+  isContentLibraryView(): boolean {
+    return this.currentView === 'content-library';
+  }
+
+  // === PROGRAM MANAGEMENT ACTIONS ===
+
+  toggleProgramStatus(program: Program) {
+    this.programService.toggleProgramStatus(program.id)
+      .pipe(
+        catchError(error => {
+          console.error('Error toggling program status:', error);
+          this.emitMessage('error', 'Error cambiando estado del programa');
+          return of(null);
+        })
+      )
+      .subscribe(updatedProgram => {
+        if (updatedProgram) {
+          const index = this.allPrograms.findIndex(p => p.id === program.id);
+          if (index > -1) {
+            this.allPrograms[index] = updatedProgram;
+            this.filteredPrograms = [...this.allPrograms];
+          }
+          const statusText = updatedProgram.status === 'active' ? 'activado' : 'inactivado';
+          this.emitMessage('success', `Programa ${statusText}: ${updatedProgram.title}`);
+        }
+      });
+  }
+
+  deleteProgram(program: Program) {
+    if (confirm(`¿Estás seguro de que quieres eliminar el programa "${program.title}"?`)) {
+      this.programService.deleteProgram(program.id)
+        .pipe(
+          catchError(error => {
+            console.error('Error deleting program:', error);
+            this.emitMessage('error', 'Error eliminando programa');
+            return of(null);
+          })
+        )
+        .subscribe(() => {
+          this.allPrograms = this.allPrograms.filter(p => p.id !== program.id);
+          this.filteredPrograms = [...this.allPrograms];
+          this.emitMessage('success', `Programa eliminado: ${program.title}`);
+        });
+    }
+  }
+
+  deleteContent(content: Content) {
+    if (confirm(`¿Estás seguro de que quieres eliminar el contenido "${content.title}"?`)) {
+      this.contentService.deleteContent(content.id)
+        .pipe(
+          catchError(error => {
+            console.error('Error deleting content:', error);
+            this.emitMessage('error', 'Error eliminando contenido');
+            return of(null);
+          })
+        )
+        .subscribe(() => {
+          this.allContents = this.allContents.filter(c => c.id !== content.id);
+          this.availableContents = [...this.allContents];
+          this.emitMessage('success', `Contenido eliminado: ${content.title}`);
+        });
+    }
+  }
+
+  viewProgramStudents(program: Program) {
+    // TODO: Navigate to students view filtered by program
+    this.emitMessage('success', `Mostrando estudiantes de ${program.title}`);
+  }
+
+  viewProgramCertificates(program: Program) {
+    // TODO: Navigate to certificates view filtered by program
+    this.emitMessage('success', `Mostrando certificados de ${program.title}`);
   }
 
   createNewProgram() {
@@ -276,7 +472,7 @@ export class CoursesComponent implements OnInit {
 
   saveProgram() {
     this.isSaving = true;
-    
+
     if (this.editingProgram) {
       // Update existing program
       const updateRequest: UpdateProgramRequest = { ...this.programFormModel, id: this.editingProgram.id };
@@ -389,7 +585,7 @@ export class CoursesComponent implements OnInit {
 
   saveContent() {
     this.isSaving = true;
-    
+
     if (this.editingContent) {
       // Update existing content
       const updateRequest: UpdateContentRequest = { ...this.contentFormModel, id: this.editingContent.id };
@@ -445,29 +641,39 @@ export class CoursesComponent implements OnInit {
     }, 0);
   }
 
-  setCurrentView(view: string) {
-    this.currentView = view;
-    if (view === 'list') {
-      this.selectedProgram = null;
-    }
+  // === TRACKING ===
+
+  trackByProgramId(index: number, item: Program): number {
+    return item.id;
   }
 
-  isContentAlreadyAssigned(contentId: number): boolean {
-    return this.programContents.some(pc => pc.contentId === contentId);
+  trackByContentId(index: number, item: Content): number {
+    return item.id;
   }
 
-  // === VIEW HELPER METHODS ===
-  
-  isListView(): boolean {
-    return this.currentView === 'list';
+  trackByProgramContentId(index: number, item: ProgramContent): number {
+    return item.id;
   }
 
-  isDetailsView(): boolean {
-    return this.currentView === 'details';
+  // === MISSING UTILITY METHODS ===
+
+  private emitMessage(type: 'success' | 'error', message: string) {
+    this.message.emit({ type, message });
   }
 
-  isContentLibraryView(): boolean {
-    return this.currentView === 'content-library';
+  loadProgramContentCounts() {
+    // Load content counts for all programs
+    this.allPrograms.forEach(program => {
+      this.programService.getProgramContents(program.id).subscribe({
+        next: (contents) => {
+          this.programContentCounts.set(program.id, contents.length);
+        },
+        error: (error) => {
+          console.error('Error loading content count for program:', program.id, error);
+          this.programContentCounts.set(program.id, 0);
+        }
+      });
+    });
   }
 
   // === UI HELPERS ===
@@ -510,55 +716,6 @@ export class CoursesComponent implements OnInit {
     return new Date(date).toLocaleDateString('es-ES');
   }
 
-  getCompletionRate(course: any): number {
-    if (course.enrollments === 0) return 0;
-    return Math.round((course.completions / course.enrollments) * 100);
-  }
-
-  getCompletionRateClass(rate: number): string {
-    if (rate >= 80) return 'text-success';
-    if (rate >= 60) return 'text-warning';
-    return 'text-danger';
-  }
-
-  // === FILTERS ===
-
-  get availableStatuses() {
-    return [
-      { value: '', label: 'Todos los estados' },
-      { value: 'active', label: 'Activos' },
-      { value: 'inactive', label: 'Inactivos' }
-    ];
-  }
-
-  get availableTypes() {
-    return [
-      { value: '', label: 'Todos los tipos' },
-      { value: 'course', label: 'Cursos' },
-      { value: 'specialization', label: 'Especializaciones' },
-      { value: 'certification', label: 'Certificaciones' }
-    ];
-  }
-
-  get availableCategories() {
-    const categories = [...new Set(this.allPrograms.map(p => p.category))];
-    return [
-      { value: '', label: 'Todas las categorías' },
-      ...categories.map(cat => ({ value: cat, label: cat }))
-    ];
-  }
-
-  get availableContentTypes() {
-    return [
-      { value: '', label: 'Todos los tipos' },
-      { value: 'module', label: 'Módulos' },
-      { value: 'lesson', label: 'Lecciones' },
-      { value: 'assignment', label: 'Asignaciones' },
-      { value: 'exam', label: 'Exámenes' },
-      { value: 'resource', label: 'Recursos' }
-    ];
-  }
-
   // === STATISTICS ===
 
   get totalPrograms(): number {
@@ -581,123 +738,38 @@ export class CoursesComponent implements OnInit {
     return this.allContents.filter(c => c.type === 'module').length;
   }
 
-  get totalProgramContents(): number {
-    // Sum all content counts from all programs
-    let total = 0;
-    this.programContentCounts.forEach(count => {
-      total += count;
-    });
-    return total;
-  }
-
-  // === PROGRAM CONTENT COUNTS ===
-
   getProgramContentCount(programId: number): number {
     return this.programContentCounts.get(programId) || 0;
   }
 
-  loadProgramContentCounts() {
-    // Load content counts for all programs
-    this.allPrograms.forEach(program => {
-      this.programService.getProgramContents(program.id).subscribe({
-        next: (contents) => {
-          this.programContentCounts.set(program.id, contents.length);
-        },
-        error: (error) => {
-          console.error('Error loading content count for program:', program.id, error);
-          this.programContentCounts.set(program.id, 0);
-        }
-      });
-    });
+  // === FILTERS ===
+
+  get availableStatuses() {
+    return [
+      { value: '', label: 'Todos los estados' },
+      { value: 'active', label: 'Activos' },
+      { value: 'inactive', label: 'Inactivos' }
+    ];
   }
 
-  // === ADDITIONAL PROGRAM ACTIONS ===
-
-  viewProgramStudents(program: Program) {
-    // TODO: Navigate to students view filtered by program
-    this.emitMessage('success', `Mostrando estudiantes de ${program.title}`);
+  get availableTypes() {
+    return [
+      { value: '', label: 'Todos los tipos' },
+      { value: 'course', label: 'Cursos' },
+      { value: 'specialization', label: 'Especializaciones' },
+      { value: 'certification', label: 'Certificaciones' }
+    ];
   }
 
-  viewProgramCertificates(program: Program) {
-    // TODO: Navigate to certificates view filtered by program
-    this.emitMessage('success', `Mostrando certificados de ${program.title}`);
-  }
-
-  toggleProgramStatus(program: Program) {
-    this.programService.toggleProgramStatus(program.id)
-      .pipe(
-        catchError(error => {
-          console.error('Error toggling program status:', error);
-          this.emitMessage('error', 'Error cambiando estado del programa');
-          return of(null);
-        })
-      )
-      .subscribe(updatedProgram => {
-        if (updatedProgram) {
-          const index = this.allPrograms.findIndex(p => p.id === program.id);
-          if (index > -1) {
-            this.allPrograms[index] = updatedProgram;
-            this.filteredPrograms = [...this.allPrograms];
-          }
-          const statusText = updatedProgram.status === 'active' ? 'activado' : 'inactivado';
-          this.emitMessage('success', `Programa ${statusText}: ${updatedProgram.title}`);
-        }
-      });
-  }
-
-  deleteProgram(program: Program) {
-    if (confirm(`¿Estás seguro de que quieres eliminar el programa "${program.title}"?`)) {
-      this.programService.deleteProgram(program.id)
-        .pipe(
-          catchError(error => {
-            console.error('Error deleting program:', error);
-            this.emitMessage('error', 'Error eliminando programa');
-            return of(null);
-          })
-        )
-        .subscribe(() => {
-          this.allPrograms = this.allPrograms.filter(p => p.id !== program.id);
-          this.filteredPrograms = [...this.allPrograms];
-          this.emitMessage('success', `Programa eliminado: ${program.title}`);
-        });
-    }
-  }
-
-  deleteContent(content: Content) {
-    if (confirm(`¿Estás seguro de que quieres eliminar el contenido "${content.title}"?`)) {
-      this.contentService.deleteContent(content.id)
-        .pipe(
-          catchError(error => {
-            console.error('Error deleting content:', error);
-            this.emitMessage('error', 'Error eliminando contenido');
-            return of(null);
-          })
-        )
-        .subscribe(() => {
-          this.allContents = this.allContents.filter(c => c.id !== content.id);
-          this.availableContents = [...this.allContents];
-          this.emitMessage('success', `Contenido eliminado: ${content.title}`);
-        });
-    }
-  }
-
-  // === UTILITY ===
-
-  private emitMessage(type: 'success' | 'error', message: string) {
-    this.message.emit({ type, message });
-  }
-
-  // === TRACKING ===
-
-  trackByProgramId(index: number, item: Program): number {
-    return item.id;
-  }
-
-  trackByContentId(index: number, item: Content): number {
-    return item.id;
-  }
-
-  trackByProgramContentId(index: number, item: ProgramContent): number {
-    return item.id;
+  get availableContentTypes() {
+    return [
+      { value: '', label: 'Todos los tipos' },
+      { value: 'module', label: 'Módulo' },
+      { value: 'lesson', label: 'Lección' },
+      { value: 'quiz', label: 'Quiz' },
+      { value: 'video', label: 'Video' },
+      { value: 'document', label: 'Documento' },
+      { value: 'external-link', label: 'Enlace Externo' }
+    ];
   }
 }

@@ -196,3 +196,340 @@
     margin-top: 0.5rem;
   }
 } 
+
+/* Course Cards */
+.course-card {
+  border: 1px solid #e0e6ed;
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+  background: white;
+  height: 100%;
+}
+
+.course-card:hover {
+  border-color: #007bff;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.course-header {
+  margin-bottom: 1rem;
+}
+
+.course-body h6 {
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.course-body .text-muted {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.course-stats {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin: 1rem 0;
+}
+
+.course-actions .btn {
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Content Item Cards */
+.content-item-card {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.content-item-card:hover {
+  border-color: #007bff;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+}
+
+.content-item-card.clickable {
+  cursor: pointer;
+  position: relative;
+}
+
+.content-item-card.clickable:hover {
+  border-color: #007bff;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.content-item-card.clickable::after {
+  content: "Click para editar";
+  position: absolute;
+  top: -8px;
+  right: 8px;
+  background: #007bff;
+  color: white;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.content-item-card.clickable:hover::after {
+  opacity: 1;
+}
+
+.content-item-card .badge {
+  font-size: 0.75rem;
+}
+
+.content-item-card h6 {
+  color: #495057;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* Content Actions */
+.content-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.content-actions .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+/* Content Edit Card */
+.content-edit-card {
+  border: 1px solid #007bff;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+.content-edit-card .card-header {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border-radius: 7px 7px 0 0;
+  padding: 0.75rem 1rem;
+}
+
+.content-edit-card .card-body {
+  padding: 1.25rem;
+}
+
+.content-edit-card .form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.content-edit-card .form-control:focus,
+.content-edit-card .form-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.content-edit-card .btn-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border: none;
+}
+
+.content-edit-card .btn-primary:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Form Enhancements */
+.form-check-input:checked {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.form-check-label {
+  color: #495057;
+  font-weight: 500;
+}
+
+/* Edit Mode Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.content-edit-card {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Add Content Section */
+.add-content-section {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border: 1px solid #dee2e6 !important;
+  transition: all 0.2s ease;
+}
+
+.add-content-section:hover {
+  border-color: #007bff !important;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+}
+
+.add-content-section h6 {
+  color: #495057;
+  font-weight: 600;
+}
+
+.add-content-section .form-check-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.add-content-section .btn-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border: none;
+  font-weight: 600;
+}
+
+.add-content-section .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.add-content-section .btn-primary:disabled {
+  background: #6c757d;
+  opacity: 0.6;
+}
+
+/* Collapse Animation */
+.collapse-animation {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 500px;
+  }
+}
+
+/* Toggle Button Styling */
+.btn-outline-primary {
+  transition: all 0.2s ease;
+}
+
+.btn-outline-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.btn-outline-primary i {
+  transition: transform 0.2s ease;
+}
+
+.btn-outline-primary:hover i {
+  transform: scale(1.1);
+}
+
+/* Statistics Cards */
+.stat-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.25rem;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Form Styling */
+.form-label {
+  font-weight: 600;
+  color: #495057;
+}
+
+/* Modal Enhancements */
+.modal-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.modal-title {
+  color: #495057;
+  font-weight: 600;
+}
+
+/* Loading States */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+/* Empty States */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #6c757d;
+}
+
+.empty-state i {
+  margin-bottom: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .course-card {
+    margin-bottom: 1rem;
+  }
+  
+  .content-item-card {
+    margin-bottom: 1rem;
+  }
+  
+  .stat-card {
+    margin-bottom: 1rem;
+  }
+  
+  .course-actions .btn {
+    width: 100%;
+    margin-right: 0;
+  }
+} 

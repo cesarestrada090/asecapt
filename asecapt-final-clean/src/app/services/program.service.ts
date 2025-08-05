@@ -36,6 +36,9 @@ export interface Content {
   isRequired: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  // Legacy fields for compatibility
+  topicNumber?: number;
+  topic?: string;
 }
 
 export interface ProgramContent {

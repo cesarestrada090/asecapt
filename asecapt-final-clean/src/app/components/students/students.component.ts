@@ -74,15 +74,15 @@ export class StudentsComponent implements OnInit {
     }
 
     this.isSearching = true;
-    
+
     // Filter enrollments based on search criteria
     this.filteredEnrollments = this.allEnrollments.filter(enrollment => {
       const matchesStatus = !this.searchForm.status || enrollment.status === this.searchForm.status;
       const matchesProgram = !this.searchForm.programId || enrollment.programId.toString() === this.searchForm.programId;
-      
+
       // For now, we'll search by user ID since we don't have proper user names
       const matchesQuery = enrollment.userId.toString().includes(this.searchForm.query);
-      
+
       return matchesStatus && matchesProgram && matchesQuery;
     });
 
@@ -141,7 +141,7 @@ export class StudentsComponent implements OnInit {
     // Update student list based on enrollments
     // This is a simplified version - in a real app, you'd fetch user details from a user service
     const studentMap = new Map();
-    
+
     this.filteredEnrollments.forEach(enrollment => {
       if (!studentMap.has(enrollment.userId)) {
         studentMap.set(enrollment.userId, {
@@ -155,14 +155,14 @@ export class StudentsComponent implements OnInit {
           status: 'active'
         });
       }
-      
+
       const student = studentMap.get(enrollment.userId);
       student.enrollments++;
       if (enrollment.status === 'completed') {
         student.completedCourses++;
       }
     });
-    
+
     // For display, we'll use a mix of mock data and real enrollment data
     this.filteredStudents = Array.from(studentMap.values());
   }
@@ -173,7 +173,7 @@ export class StudentsComponent implements OnInit {
     // Show student enrollments
     const studentEnrollments = this.allEnrollments.filter(e => e.userId === student.id);
     console.log('Student enrollments:', studentEnrollments);
-    this.emitMessage('success', `Mostrando detalles de ${student.name}`);
+
   }
 
   editStudent(student: any) {
@@ -272,4 +272,4 @@ export class StudentsComponent implements OnInit {
   trackByEnrollmentId(index: number, item: Enrollment): number {
     return item.id;
   }
-} 
+}
