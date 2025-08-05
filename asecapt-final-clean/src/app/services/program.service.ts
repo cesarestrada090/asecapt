@@ -207,9 +207,21 @@ export class ProgramService {
     return this.http.put<ProgramContent>(`${this.apiUrl}/${programId}/contents/${contentId}`, request);
   }
 
+  // Remove content from program
   removeProgramContent(programId: number, contentId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${programId}/contents/${contentId}`);
   }
+
+  // === BATCH OPERATIONS ===
+  
+  // Toggle isRequired status for all contents of a program
+  toggleAllContentRequiredStatus(programId: number): Observable<{message: string, updated: number, newStatus: string, totalContents: number, previousRequired: number}> {
+    return this.http.put<{message: string, updated: number, newStatus: string, totalContents: number, previousRequired: number}>(
+      `${this.apiUrl}/${programId}/contents/toggle-required`, {}
+    );
+  }
+
+  // === PROGRAM CRUD ===
 
   reorderProgramContents(programId: number, contentOrders: { contentId: number, orderIndex: number }[]): Observable<ProgramContent[]> {
     return this.http.put<ProgramContent[]>(`${this.apiUrl}/${programId}/contents/reorder`, { contentOrders });

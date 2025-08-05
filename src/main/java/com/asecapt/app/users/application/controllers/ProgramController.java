@@ -189,6 +189,18 @@ public class ProgramController {
         }
     }
 
+    // === BATCH OPERATIONS ===
+    
+    @PutMapping("/{id}/contents/toggle-required")
+    public ResponseEntity<Map<String, Object>> toggleAllContentRequiredStatus(@PathVariable Integer id) {
+        try {
+            Map<String, Object> result = programService.toggleAllContentRequiredStatus(id);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @PutMapping("/{id}/contents/reorder")
     public ResponseEntity<List<ProgramContent>> reorderProgramContents(@PathVariable Integer id, @RequestBody ReorderContentsRequest request) {
         try {

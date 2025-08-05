@@ -438,6 +438,31 @@ export class CoursesComponent implements OnInit {
     this.emitMessage('success', `Mostrando certificados de ${program.title}`);
   }
 
+  toggleProgramContentRequiredStatus(program: Program, event: Event) {
+    // Prevent card click event
+    event.stopPropagation();
+    
+    this.programService.toggleAllContentRequiredStatus(program.id)
+      .pipe(
+        catchError(error => {
+          console.error('Error toggling content required status:', error);
+          this.emitMessage('error', 'Error cambiando estado de contenidos');
+          return of(null);
+        })
+      )
+      .subscribe(result => {
+        if (result) {
+          const statusText = result.newStatus === 'required' ? 'obligatorios' : 'opcionales';
+          this.emitMessage('success', `${result.updated} contenidos cambiados a ${statusText}`);
+          
+          // Refresh content counts if we're in details view
+          if (this.selectedProgram && this.selectedProgram.id === program.id) {
+            this.loadProgramContents(program.id);
+          }
+        }
+      });
+  }
+
   createNewProgram() {
     this.editingProgram = null;
     this.programFormModel = {
@@ -753,6 +778,13 @@ export class CoursesComponent implements OnInit {
 
   getProgramContentCount(programId: number): number {
     return this.programContentCounts.get(programId) || 0;
+  }
+
+  // Get content summary for display in program cards
+  getContentSummary(programId: number): string {
+    const totalCount = this.getProgramContentCount(programId);
+    if (totalCount === 0) return 'Sin contenidos';
+    return `${totalCount} contenido${totalCount !== 1 ? 's' : ''}`;
   }
 
   // === FILTERS ===

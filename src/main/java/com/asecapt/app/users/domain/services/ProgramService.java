@@ -222,6 +222,49 @@ public class ProgramService {
         programContentRepository.deleteByProgramIdAndContentId(programId, contentId);
     }
 
+    // === BATCH OPERATIONS ===
+    
+    public Map<String, Object> toggleAllContentRequiredStatus(Integer programId) {
+        List<ProgramContent> programContents = programContentRepository.findByProgramId(programId);
+        
+        if (programContents.isEmpty()) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("message", "No content found for this program");
+            result.put("updated", 0);
+            result.put("newStatus", "none");
+            return result;
+        }
+        
+        // Determine current status - check if majority are required or optional
+        long requiredCount = programContents.stream()
+            .filter(pc -> pc.getIsRequired())
+            .count();
+        long totalCount = programContents.size();
+        
+        // If more than half are required, make all optional. Otherwise, make all required.
+        boolean newRequiredStatus = requiredCount <= totalCount / 2;
+        
+        // Update all contents
+        int updatedCount = 0;
+        for (ProgramContent pc : programContents) {
+            if (pc.getIsRequired() != newRequiredStatus) {
+                pc.setIsRequired(newRequiredStatus);
+                programContentRepository.save(pc);
+                updatedCount++;
+            }
+        }
+        
+        // Prepare response
+        Map<String, Object> result = new HashMap<>();
+        result.put("message", newRequiredStatus ? "All contents set to required" : "All contents set to optional");
+        result.put("updated", updatedCount);
+        result.put("newStatus", newRequiredStatus ? "required" : "optional");
+        result.put("totalContents", totalCount);
+        result.put("previousRequired", requiredCount);
+        
+        return result;
+    }
+
     public List<ProgramContent> reorderProgramContents(Integer programId, List<ReorderContentsRequest.ContentOrder> contentOrders) {
         for (ReorderContentsRequest.ContentOrder order : contentOrders) {
             Optional<ProgramContent> optionalProgramContent = programContentRepository.findByProgramIdAndContentId(programId, order.getContentId());

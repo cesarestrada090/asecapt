@@ -533,3 +533,45 @@
     margin-right: 0;
   }
 } 
+
+/* Toggle Required Button */
+.dropdown-item:has(.fa-exchange-alt) {
+  background: linear-gradient(45deg, #fff3cd, #f8f9fa);
+  border-left: 3px solid #ffc107;
+  margin: 2px 0;
+  border-radius: 4px;
+}
+
+.dropdown-item:has(.fa-exchange-alt):hover {
+  background: linear-gradient(45deg, #fff3cd, #ffeaa7);
+  transform: translateX(2px);
+  transition: all 0.2s ease;
+}
+
+.dropdown-item .fa-exchange-alt {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Course Card Enhancements */
+.course-card .meta-item {
+  padding: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.course-card .meta-item:hover {
+  background: rgba(0, 123, 255, 0.1);
+  border-radius: 8px;
+  transform: translateY(-2px);
+} 
