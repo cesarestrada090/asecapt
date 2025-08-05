@@ -4,14 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { EnrollmentService, Enrollment } from '../../services/enrollment.service';
 import { ProgramService, Program, CreateProgramRequest, UpdateProgramRequest, Content, CreateContentRequest, UpdateContentRequest, ProgramContent, AddContentToProgramRequest } from '../../services/program.service';
 import { ContentService } from '../../services/content.service';
-import { AddContentPopupComponent } from '../add-content-popup/add-content-popup.component';
+
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 @Component({
   selector: 'app-courses',
   standalone: true,
-  imports: [CommonModule, FormsModule, AddContentPopupComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './courses.component.html',
   styleUrl: './courses.component.css'
 })
@@ -65,7 +65,9 @@ export class CoursesComponent implements OnInit {
     description: '',
     type: 'module',
     duration: '',
-    content: ''
+    content: '',
+    topic: '',
+    topicNumber: null
   };
   editingContent: Content | null = null;
 
@@ -81,6 +83,21 @@ export class CoursesComponent implements OnInit {
   
   // === ADD CONTENT POPUP ===
   showAddContentPopup: boolean = false;
+
+  // === SIMPLE ADD CONTENT MODAL ===
+  showSimpleAddModal: boolean = false;
+  simpleAddForm = {
+    isRequired: false,
+    newContent: {
+      title: '',
+      description: '',
+      type: 'module' as string,
+      duration: '',
+      content: '',
+      topic: '',
+      topicNumber: null as number | null
+    }
+  };
 
   // === INLINE CONTENT EDITING ===
   editingProgramContent: { programContentId: number, content: Content } | null = null;
@@ -350,6 +367,119 @@ export class CoursesComponent implements OnInit {
         }
       });
   }
+
+  // === SIMPLE ADD CONTENT MODAL METHODS ===
+
+  showSimpleAddContentModal() {
+    if (!this.selectedProgram) {
+      this.emitMessage('error', 'Debe seleccionar un programa primero');
+      return;
+    }
+    
+    // Reset form
+    this.resetSimpleAddForm();
+    
+    // Show modal using Angular state
+    this.showSimpleAddModal = true;
+  }
+
+  resetSimpleAddForm() {
+    this.simpleAddForm = {
+      isRequired: false,
+      newContent: {
+        title: '',
+        description: '',
+        type: 'module',
+        duration: '',
+        content: '',
+        topic: '',
+        topicNumber: null
+      }
+    };
+  }
+
+  isSimpleAddFormValid(): boolean {
+    return !!(
+      this.simpleAddForm.newContent.title?.trim() &&
+      this.simpleAddForm.newContent.type &&
+      this.simpleAddForm.newContent.duration?.trim()
+    );
+  }
+
+  submitSimpleAddForm() {
+    if (!this.selectedProgram || !this.isSimpleAddFormValid()) {
+      return;
+    }
+
+    this.isSaving = true;
+    // Always create new content and add to program
+    this.createAndAddNewContent();
+  }
+
+
+
+  private createAndAddNewContent() {
+    if (!this.selectedProgram) return;
+
+    // Prepare content data with defaults
+    const contentData = {
+      ...this.simpleAddForm.newContent,
+      topic: this.simpleAddForm.newContent.topic?.trim() || this.simpleAddForm.newContent.title || 'Contenido'
+    };
+
+    // First create the new content
+    this.contentService.createContent(contentData)
+      .pipe(
+        catchError(error => {
+          console.error('Error creating content:', error);
+          this.emitMessage('error', 'Error creando contenido');
+          this.isSaving = false;
+          return of(null);
+        })
+      )
+      .subscribe(newContent => {
+        if (newContent && this.selectedProgram) {
+          // Add the newly created content to available contents
+          this.allContents.push(newContent);
+          this.availableContents.push(newContent);
+
+          // Now add it to the program
+          const request = {
+            programId: this.selectedProgram.id,
+            contentId: newContent.id,
+            orderIndex: this.programContents.length + 1,
+            isRequired: this.simpleAddForm.isRequired
+          };
+
+          this.programService.addContentToProgram(request)
+            .pipe(
+              catchError(error => {
+                console.error('Error adding new content to program:', error);
+                this.emitMessage('error', 'Error agregando contenido al programa');
+                this.isSaving = false;
+                return of(null);
+              })
+            )
+            .subscribe(programContent => {
+              if (programContent) {
+                this.programContents.push(programContent);
+                this.emitMessage('success', 'Contenido creado y agregado exitosamente');
+                this.closeSimpleAddModal();
+              }
+              this.isSaving = false;
+            });
+        } else {
+          this.isSaving = false;
+        }
+      });
+  }
+
+  closeSimpleAddModal() {
+    this.showSimpleAddModal = false;
+    this.resetSimpleAddForm();
+  }
+
+
 
   removeContentFromProgram(contentId: number) {
     if (!this.selectedProgram) return;

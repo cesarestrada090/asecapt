@@ -79,6 +79,8 @@ export interface CreateContentRequest {
   type: string;
   duration: string;
   content: string;
+  topic?: string;
+  topicNumber?: number | null;
 }
 
 export interface UpdateContentRequest extends CreateContentRequest {

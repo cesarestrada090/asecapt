@@ -159,6 +159,8 @@ public class ContentController {
         private String type;
         private String duration;
         private String content;
+        private String topic;
+        private Integer topicNumber;
 
         // Getters and Setters
         public String getTitle() { return title; }
@@ -171,6 +173,10 @@ public class ContentController {
         public void setDuration(String duration) { this.duration = duration; }
         public String getContent() { return content; }
         public void setContent(String content) { this.content = content; }
+        public String getTopic() { return topic; }
+        public void setTopic(String topic) { this.topic = topic; }
+        public Integer getTopicNumber() { return topicNumber; }
+        public void setTopicNumber(Integer topicNumber) { this.topicNumber = topicNumber; }
     }
 
     public static class UpdateContentRequest extends CreateContentRequest {

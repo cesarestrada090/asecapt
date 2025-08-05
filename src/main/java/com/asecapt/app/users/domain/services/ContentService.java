@@ -39,6 +39,8 @@ public class ContentService {
         content.setType(request.getType());
         content.setDuration(request.getDuration());
         content.setContent(request.getContent());
+        content.setTopic(request.getTopic());
+        content.setTopicNumber(request.getTopicNumber());
         
         return contentRepository.save(content);
     }
@@ -52,6 +54,8 @@ public class ContentService {
             content.setType(request.getType());
             content.setDuration(request.getDuration());
             content.setContent(request.getContent());
+            content.setTopic(request.getTopic());
+            content.setTopicNumber(request.getTopicNumber());
             
             return contentRepository.save(content);
         }
