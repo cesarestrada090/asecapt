@@ -12,16 +12,16 @@ ASECAPT is a full-stack application for educational program management, built wi
 - **Main Entities:**
   - `Person`: Stores personal data.
   - `User`: Authentication and user type, linked to `Person`.
-  - `Program`: Educational programs/courses.
-  - `Content`: Modules/topics for each program.
-  - `ProgramContent`: Many-to-many relationship between `Program` and `Content`.
+  - `Program`: Educational programs/courses with full metadata (title, type, status, category, duration, credits, price, instructor, etc.).
+  - `Content`: Modules/topics for programs with title, description, type, duration, topic, topicNumber, and content details.
+  - `ProgramContent`: Many-to-many relationship between `Program` and `Content` with orderIndex and isRequired flags.
   - `Category`: Optional, for program categorization.
   - `Enrollment`: Student enrollments in programs with status tracking.
   - `Certificate`: Digital certificates with QR verification for completed programs.
   - `CertificateValidation`: Audit log of certificate scans and validations.
 - **Repositories:** Spring Data JPA repositories for CRUD and custom queries.
 - **Services:** Business logic for listing programs, favorites, and modules.
-- **Controllers:** REST endpoints for program and module listing.
+- **Controllers:** REST endpoints for program and module listing, creation, updating, status management, and content assignment.
 - **Scripts:** SQL scripts for initial data loading (e.g., `initial.sql`).
 
 ## Frontend
@@ -29,6 +29,16 @@ ASECAPT is a full-stack application for educational program management, built wi
 - **Framework:** Angular
 - **Assets:** HTML, CSS, JS, images, fonts, etc.
 - **Features:** Course listing, details, search, instructor profiles, events, blog, contact, etc.
+- **Course Management System:**
+  - **Program/Course Management:** Full CRUD operations for educational programs with inline editing
+  - **Content Management:** Create, edit, and assign content/modules to programs with topics and ordering
+  - **Status Management:** Activate/deactivate programs with real-time status updates
+  - **Program-Content Relationship:** Many-to-many relationship management with required/optional content flags
+  - **Inline Editing:** Click-to-edit functionality for both programs and content without modals
+  - **Real-time Updates:** Immediate UI updates without page refresh for all operations
+  - **Form Validation:** Client-side validation for required fields (title, type, duration, topic)
+  - **Loading States:** Visual feedback with spinners and disabled states during operations
+  - **Success/Error Messages:** User feedback system for all CRUD operations
 
 ## Data Model Highlights
 - Programs and modules are scalable and support many-to-many relationships.
@@ -39,10 +49,17 @@ ASECAPT is a full-stack application for educational program management, built wi
 
 ## Usage
 - Backend endpoints for listing programs, favorites, and modules by program.
+- Full CRUD API for programs and content with status management and assignment operations.
 - Certificate management endpoints for enrollment tracking and QR generation.
 - Public certificate verification API at `/api/verify/{token}`.
 - Frontend pages for course catalog, details, and user interaction.
 - Admin panel for certificate generation and student management.
+- **Course Management Interface:**
+  - Program listing with search, filtering, and statistics
+  - Inline editing for programs and content without page refresh
+  - Content creation and assignment to programs with drag-and-drop ordering
+  - Status toggle buttons for activating/deactivating programs
+  - Real-time validation and error handling
 - Docker and Maven support for deployment and builds.
 
 ## File Structure
