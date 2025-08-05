@@ -1,52 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface QRCode {
-  id: string;
-  title: string;
-  content: string;
-  createdAt: Date;
-  qrDataURL: string;
-  type?: string;
-}
-
-interface Certificate {
-  id: string;
-  studentName: string;
-  studentDNI: string;
-  studentEmail: string;
-  courseName: string;
-  courseType: 'curso' | 'diplomado' | 'especializacion';
-  completionDate: Date;
-  issueDate: Date;
-  certificateNumber: string;
-  verificationURL: string;
-  pdfFile?: File;
-  pdfDataURL?: string;
-  qrCode?: QRCode;
-  createdAt: Date;
-}
-
-interface Student {
-  id: string;
-  name: string;
-  email: string;
-  dni: string;
-  course: string;
-  status: 'activo' | 'completado' | 'suspendido';
-  enrolledAt: Date;
-}
-
-interface Course {
-  id: string;
-  name: string;
-  description: string;
-  status: 'activo' | 'inactivo';
-  enrolledStudents: number;
-  duration: string;
-}
+import { EnrollmentService, Enrollment } from '../../services/enrollment.service';
+import { CertificateService, Certificate, CertificateResponse, GenerateCertificateRequest } from '../../services/certificate.service';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-admin-panel',
@@ -55,34 +14,53 @@ interface Course {
   templateUrl: './admin-panel.component.html',
   styleUrl: './admin-panel.component.css'
 })
-export class AdminPanelComponent {
-  // Navegación del dashboard
+export class AdminPanelComponent implements OnInit {
+  // Navigation
   activeSection: string = 'qr';
   sidebarOpen: boolean = false;
 
-  // Datos del formulario para certificados
+  // Certificate form data
   certificateForm = {
+    selectedEnrollmentId: null as number | null,
+    pdfFile: null as File | null,
     studentName: '',
     studentDNI: '',
     studentEmail: '',
     courseName: '',
-    courseType: 'curso' as 'curso' | 'diplomado' | 'especializacion',
+    courseType: '',
     completionDate: '',
-    issueDate: new Date().toISOString().split('T')[0], // Fecha actual por defecto
-    pdfFile: null as File | null
+    issueDate: ''
   };
 
-  // Lista de certificados generados
+  // Data lists
+  completedEnrollments: Enrollment[] = [];
+  filteredEnrollments: Enrollment[] = [];
   generatedCertificates: Certificate[] = [];
   filteredCertificates: Certificate[] = [];
   
-  // Estados
+  // Mock data for students and courses (for backward compatibility with template)
+  mockStudents: any[] = [];
+  mockCourses: any[] = [];
+  filteredStudents: any[] = [];
+  filteredCourses: any[] = [];
+
+  // Loading states
   isGenerating: boolean = false;
   isUploadingPDF: boolean = false;
-  pdfPreviewURL: string | null = null;
+  isLoadingEnrollments: boolean = false;
+  isLoadingCertificates: boolean = false;
 
-  // Formularios de búsqueda
+  // UI states
+  pdfPreviewURL: string | null = null;
+  generatedCertificateResponse: CertificateResponse | null = null;
+  errorMessage: string = '';
+  successMessage: string = '';
+
+  // Search forms
   searchForm = {
+    enrollmentQuery: '',
+    certificateQuery: '',
+    certificateStatus: '',
     qrQuery: '',
     qrType: '',
     studentQuery: '',
@@ -91,409 +69,344 @@ export class AdminPanelComponent {
     courseStatus: ''
   };
 
-  // Datos mock
-  mockStudents: Student[] = [
-    {
-      id: '1',
-      name: 'Juan Carlos Pérez',
-      email: 'juan.perez@email.com',
-      dni: '12345678',
-      course: 'Seguridad Industrial',
-      status: 'activo',
-      enrolledAt: new Date('2024-01-15')
-    },
-    {
-      id: '2',
-      name: 'María Elena González',
-      email: 'maria.gonzalez@email.com',
-      dni: '87654321',
-      course: 'Soldadura',
-      status: 'completado',
-      enrolledAt: new Date('2024-02-01')
-    },
-    {
-      id: '3',
-      name: 'Carlos Alberto Ruiz',
-      email: 'carlos.ruiz@email.com',
-      dni: '11223344',
-      course: 'Electricidad',
-      status: 'activo',
-      enrolledAt: new Date('2024-01-20')
-    },
-    {
-      id: '4',
-      name: 'Ana Sofia Martínez',
-      email: 'ana.martinez@email.com',
-      dni: '44332211',
-      course: 'Mecánica',
-      status: 'suspendido',
-      enrolledAt: new Date('2023-12-10')
-    },
-    {
-      id: '5',
-      name: 'Roberto Silva',
-      email: 'roberto.silva@email.com',
-      dni: '55667788',
-      course: 'Seguridad Industrial',
-      status: 'activo',
-      enrolledAt: new Date('2024-02-15')
-    }
-  ];
+  // Current user (normally would come from auth service)
+  currentUserId: number = 1; // TODO: Get from authentication service
 
-  mockCourses: Course[] = [
-    {
-      id: '1',
-      name: 'Seguridad Industrial',
-      description: 'Curso completo de seguridad y salud ocupacional',
-      status: 'activo',
-      enrolledStudents: 25,
-      duration: '120 horas'
-    },
-    {
-      id: '2',
-      name: 'Soldadura Básica',
-      description: 'Fundamentos de soldadura eléctrica y oxiacetilénica',
-      status: 'activo',
-      enrolledStudents: 18,
-      duration: '80 horas'
-    },
-    {
-      id: '3',
-      name: 'Electricidad Residencial',
-      description: 'Instalaciones eléctricas domiciliarias',
-      status: 'activo',
-      enrolledStudents: 22,
-      duration: '100 horas'
-    },
-    {
-      id: '4',
-      name: 'Mecánica Automotriz',
-      description: 'Diagnóstico y reparación de motores',
-      status: 'inactivo',
-      enrolledStudents: 0,
-      duration: '150 horas'
-    }
-  ];
+  constructor(
+    private router: Router,
+    private enrollmentService: EnrollmentService,
+    private certificateService: CertificateService
+  ) {}
 
-  filteredStudents: Student[] = [];
-  filteredCourses: Course[] = [];
-
-  constructor(private router: Router) {
-    // Cargar certificados guardados del localStorage
-    this.loadSavedCertificates();
-    // Inicializar listas filtradas
-    this.filteredCertificates = [...this.generatedCertificates];
-    this.filteredStudents = [...this.mockStudents];
-    this.filteredCourses = [...this.mockCourses];
+  ngOnInit() {
+    this.loadCompletedEnrollments();
+    this.loadCertificates();
   }
 
-  // Generar nuevo certificado con QR
+  // === DATA LOADING ===
+
+  loadCompletedEnrollments() {
+    this.isLoadingEnrollments = true;
+    this.enrollmentService.getCompletedEnrollments()
+      .pipe(
+        catchError(error => {
+          console.error('Error loading enrollments:', error);
+          this.errorMessage = 'Error cargando inscripciones completadas';
+          return of([]);
+        })
+      )
+      .subscribe(enrollments => {
+        this.completedEnrollments = enrollments;
+        this.filteredEnrollments = [...enrollments];
+        this.isLoadingEnrollments = false;
+      });
+  }
+
+  loadCertificates() {
+    this.isLoadingCertificates = true;
+    this.certificateService.getAllCertificates()
+      .pipe(
+        catchError(error => {
+          console.error('Error loading certificates:', error);
+          this.errorMessage = 'Error cargando certificados';
+          return of([]);
+        })
+      )
+      .subscribe(certificates => {
+        this.generatedCertificates = certificates;
+        this.filteredCertificates = [...certificates];
+        this.isLoadingCertificates = false;
+      });
+  }
+
+  // === CERTIFICATE GENERATION ===
+
+  onPDFFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      if (!this.certificateService.isValidPDFFile(file)) {
+        this.errorMessage = 'Solo se permiten archivos PDF';
+        return;
+      }
+
+      this.certificateForm.pdfFile = file;
+      this.isUploadingPDF = true;
+      this.errorMessage = '';
+
+      // Upload PDF to server
+      this.certificateService.uploadCertificatePDF(file)
+        .pipe(
+          catchError(error => {
+            console.error('Error uploading PDF:', error);
+            this.errorMessage = 'Error subiendo archivo PDF';
+            this.isUploadingPDF = false;
+            return of(null);
+          })
+        )
+        .subscribe(response => {
+          if (response && response.success) {
+            // Create preview URL for the PDF
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              this.pdfPreviewURL = e.target?.result as string;
+              this.isUploadingPDF = false;
+              this.successMessage = 'PDF subido exitosamente';
+            };
+            reader.readAsDataURL(file);
+          } else {
+            this.errorMessage = response?.error || 'Error subiendo PDF';
+            this.isUploadingPDF = false;
+          }
+        });
+    }
+  }
+
   generateCertificate() {
     if (!this.isValidCertificateForm()) {
+      this.errorMessage = 'Por favor complete todos los campos requeridos';
       return;
     }
 
     this.isGenerating = true;
+    this.errorMessage = '';
+    this.successMessage = '';
 
-    // Simular generación de certificado
-    setTimeout(() => {
-      const certificateNumber = this.generateCertificateNumber();
-      const verificationURL = `https://asecapt.com/verify/${certificateNumber}`;
-      
-      // Crear QR para la URL de verificación
-      const qrCode: QRCode = {
-        id: this.generateId(),
-        title: `Certificado - ${this.certificateForm.studentName}`,
-        content: verificationURL,
-        createdAt: new Date(),
-        qrDataURL: this.generateQRDataURL(),
-        type: 'url'
-      };
-
-      const newCertificate: Certificate = {
-        id: this.generateId(),
-        studentName: this.certificateForm.studentName,
-        studentDNI: this.certificateForm.studentDNI,
-        studentEmail: this.certificateForm.studentEmail,
-        courseName: this.certificateForm.courseName,
-        courseType: this.certificateForm.courseType,
-        completionDate: new Date(this.certificateForm.completionDate),
-        issueDate: new Date(this.certificateForm.issueDate),
-        certificateNumber: certificateNumber,
-        verificationURL: verificationURL,
-        pdfDataURL: this.pdfPreviewURL || undefined,
-        qrCode: qrCode,
-        createdAt: new Date()
-      };
-
-      this.generatedCertificates.unshift(newCertificate);
-      this.filteredCertificates = [...this.generatedCertificates];
-      this.saveCertificatesToStorage();
-      this.resetCertificateForm();
-      this.isGenerating = false;
-    }, 1500);
-  }
-
-  // Generar número de certificado único
-  generateCertificateNumber(): string {
-    const year = new Date().getFullYear();
-    const month = String(new Date().getMonth() + 1).padStart(2, '0');
-    const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    return `ASECAPT-${year}${month}-${randomNum}`;
-  }
-
-  // Generar QR simulado (en producción usarías una librería como qrcode.js)
-  generateQRDataURL(): string {
-    // SVG simple simulando un QR
-    const size = 200;
-    const squares = Math.floor(Math.random() * 50) + 100;
-    let qrPattern = '<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">';
-    qrPattern += '<rect width="200" height="200" fill="white"/>';
-    
-    for (let i = 0; i < squares; i++) {
-      const x = Math.floor(Math.random() * 20) * 10;
-      const y = Math.floor(Math.random() * 20) * 10;
-      qrPattern += `<rect x="${x}" y="${y}" width="10" height="10" fill="black"/>`;
-    }
-    
-    qrPattern += '</svg>';
-    
-    return 'data:image/svg+xml;base64,' + btoa(qrPattern);
-  }
-
-  // Generar ID único
-  generateId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-  }
-
-  // Resetear formulario de certificado
-  resetCertificateForm() {
-    this.certificateForm = {
-      studentName: '',
-      studentDNI: '',
-      studentEmail: '',
-      courseName: '',
-      courseType: 'curso',
-      completionDate: '',
-      issueDate: new Date().toISOString().split('T')[0],
-      pdfFile: null
+    const request: GenerateCertificateRequest = {
+      enrollmentId: this.certificateForm.selectedEnrollmentId!,
+      certificateFilePath: this.pdfPreviewURL || '', // In real implementation, use the file path from upload response
+      issuedByUserId: this.currentUserId
     };
-    this.pdfPreviewURL = null;
+
+    this.certificateService.generateCertificate(request)
+      .pipe(
+        catchError(error => {
+          console.error('Error generating certificate:', error);
+          this.errorMessage = error.error?.message || 'Error generando certificado';
+          this.isGenerating = false;
+          return of(null);
+        })
+      )
+      .subscribe(response => {
+        this.isGenerating = false;
+        if (response && response.success) {
+          this.generatedCertificateResponse = response;
+          this.successMessage = 'Certificado generado exitosamente';
+          this.resetCertificateForm();
+          this.loadCertificates(); // Refresh certificates list
+        } else {
+          this.errorMessage = response?.message || 'Error generando certificado';
+        }
+      });
   }
 
-  // Validar formulario de certificado
+  downloadCertificateQR(certificate: Certificate) {
+    this.certificateService.getQRCode(certificate.id)
+      .pipe(
+        catchError(error => {
+          console.error('Error getting QR code:', error);
+          this.errorMessage = 'Error obteniendo código QR';
+          return of(null);
+        })
+      )
+      .subscribe(response => {
+        if (response) {
+          this.certificateService.downloadQRCode(response.qrCodeDataURL, certificate.certificateNumber);
+        }
+      });
+  }
+
+  // === SEARCH FUNCTIONALITY ===
+
+  searchEnrollments() {
+    const query = this.searchForm.enrollmentQuery.toLowerCase().trim();
+    
+    if (!query) {
+      this.filteredEnrollments = [...this.completedEnrollments];
+      return;
+    }
+
+    this.enrollmentService.searchCompletedEnrollments(query)
+      .pipe(
+        catchError(error => {
+          console.error('Error searching enrollments:', error);
+          return of([]);
+        })
+      )
+      .subscribe(enrollments => {
+        this.filteredEnrollments = enrollments;
+      });
+  }
+
+  clearEnrollmentSearch() {
+    this.searchForm.enrollmentQuery = '';
+    this.filteredEnrollments = [...this.completedEnrollments];
+  }
+
+  searchCertificates() {
+    const query = this.searchForm.certificateQuery.toLowerCase().trim();
+    const status = this.searchForm.certificateStatus;
+
+    this.certificateService.searchCertificates(query || undefined, status || undefined)
+      .pipe(
+        catchError(error => {
+          console.error('Error searching certificates:', error);
+          return of([]);
+        })
+      )
+      .subscribe(certificates => {
+        this.filteredCertificates = certificates;
+      });
+  }
+
+  clearCertificateSearch() {
+    this.searchForm.certificateQuery = '';
+    this.searchForm.certificateStatus = '';
+    this.filteredCertificates = [...this.generatedCertificates];
+  }
+
+  // === VALIDATION ===
+
   isValidCertificateForm(): boolean {
     return !!(
-      this.certificateForm.studentName.trim() &&
-      this.certificateForm.studentDNI.trim() &&
-      this.certificateForm.studentEmail.trim() &&
-      this.certificateForm.courseName.trim() &&
-      this.certificateForm.completionDate &&
-      this.certificateForm.issueDate &&
+      this.certificateForm.selectedEnrollmentId &&
       this.pdfPreviewURL
     );
   }
 
-  // Manejar selección de archivo PDF
-  onPDFFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file && file.type === 'application/pdf') {
-      this.certificateForm.pdfFile = file;
-      this.isUploadingPDF = true;
-      
-      // Crear preview URL para el PDF
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.pdfPreviewURL = e.target?.result as string;
-        this.isUploadingPDF = false;
-      };
-      reader.readAsDataURL(file);
-    }
+  // === UI HELPERS ===
+
+  resetCertificateForm() {
+    this.certificateForm = {
+      selectedEnrollmentId: null,
+      pdfFile: null,
+      studentName: '',
+      studentDNI: '',
+      studentEmail: '',
+      courseName: '',
+      courseType: '',
+      completionDate: '',
+      issueDate: ''
+    };
+    this.pdfPreviewURL = null;
+    this.generatedCertificateResponse = null;
   }
 
-  // Descargar QR del certificado
-  downloadCertificateQR(certificate: Certificate) {
-    if (certificate.qrCode) {
-      const link = document.createElement('a');
-      link.download = `QR_${certificate.certificateNumber}.svg`;
-      link.href = certificate.qrCode.qrDataURL;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+  selectEnrollment(enrollment: Enrollment) {
+    this.certificateForm.selectedEnrollmentId = enrollment.id;
   }
 
-  // Eliminar certificado
-  deleteCertificate(certificateId: string) {
-    this.generatedCertificates = this.generatedCertificates.filter(cert => cert.id !== certificateId);
-    this.filteredCertificates = this.filteredCertificates.filter(cert => cert.id !== certificateId);
-    this.saveCertificatesToStorage();
+  getStudentName(enrollment: Enrollment): string {
+    // TODO: Implement proper student name retrieval from separate API calls
+    return `Estudiante ID: ${enrollment.userId}`;
   }
 
-
-
-  // Cerrar sesión
-  logout() {
-    // Limpiar cualquier estado de autenticación si fuera necesario
-    this.router.navigate(['/virtual-classroom']);
+  getProgramName(enrollment: Enrollment): string {
+    // TODO: Implement proper program name retrieval from separate API calls
+    return `Programa ID: ${enrollment.programId}`;
   }
 
-  // Guardar certificados en localStorage
-  private saveCertificatesToStorage() {
-    localStorage.setItem('asecapt_certificates', JSON.stringify(this.generatedCertificates));
+  getStatusBadgeClass(status: string): string {
+    return this.certificateService.getStatusBadgeClass(status);
   }
 
-  // Cargar certificados del localStorage
-  private loadSavedCertificates() {
-    const saved = localStorage.getItem('asecapt_certificates');
-    if (saved) {
-      this.generatedCertificates = JSON.parse(saved).map((cert: any) => ({
-        ...cert,
-        createdAt: new Date(cert.createdAt),
-        completionDate: new Date(cert.completionDate),
-        issueDate: new Date(cert.issueDate)
-      }));
-      this.filteredCertificates = [...this.generatedCertificates];
-    }
+  getStatusText(status: string): string {
+    return this.certificateService.getStatusText(status);
   }
 
-  // Obtener texto para el tipo de curso
-  getCourseTypeText(type: string): string {
-    switch (type) {
-      case 'curso':
-        return 'Curso';
-      case 'diplomado':
-        return 'Diplomado';
-      case 'especializacion':
-        return 'Especialización';
-      default:
-        return 'Curso';
-    }
+  formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleDateString('es-ES');
   }
 
-  // TrackBy para optimizar ngFor
-  trackByQRId(index: number, item: QRCode | Certificate): string {
-    return item.id;
+  clearMessages() {
+    this.errorMessage = '';
+    this.successMessage = '';
   }
 
-  // === NAVEGACIÓN DEL DASHBOARD ===
+  // === NAVIGATION ===
 
-  // Alternar sidebar en móviles
   toggleSidebar() {
     this.sidebarOpen = !this.sidebarOpen;
   }
 
-  // Cambiar sección activa
   setActiveSection(section: string) {
     this.activeSection = section;
-    this.sidebarOpen = false; // Cerrar sidebar en móviles
+    this.sidebarOpen = false;
+    this.clearMessages();
   }
 
-  // Obtener título de la sección actual
   getSectionTitle(): string {
     switch (this.activeSection) {
       case 'qr': return 'Generador de Certificados';
       case 'qr-search': return 'Buscar Certificados';
-      case 'students': return 'Alumnos Matriculados';
+      case 'students': return 'Alumnos Completados';
       case 'courses': return 'Gestión de Cursos';
       default: return 'Dashboard';
     }
   }
 
-  // Obtener descripción de la sección actual
   getSectionDescription(): string {
     switch (this.activeSection) {
       case 'qr': return 'Genera certificados con QR de verificación';
       case 'qr-search': return 'Busca certificados por estudiante, curso o número';
-      case 'students': return 'Administra estudiantes matriculados';
+      case 'students': return 'Estudiantes que han completado programas';
       case 'courses': return 'Gestiona cursos y programas';
       default: return 'Panel de administración ASECAPT';
     }
   }
 
-  // === BÚSQUEDAS ===
-
-  // Buscar certificados
-  searchCertificates() {
-    const query = this.searchForm.qrQuery.toLowerCase();
-    const type = this.searchForm.qrType;
-
-    this.filteredCertificates = this.generatedCertificates.filter(cert => {
-      const matchesQuery = !query || 
-        cert.studentName.toLowerCase().includes(query) || 
-        cert.certificateNumber.toLowerCase().includes(query) ||
-        cert.courseName.toLowerCase().includes(query);
-      
-      const matchesType = !type || cert.courseType === type;
-
-      return matchesQuery && matchesType;
-    });
+  logout() {
+    this.router.navigate(['/virtual-classroom']);
   }
 
-  // Limpiar búsqueda de certificados
-  clearCertificateSearch() {
-    this.searchForm.qrQuery = '';
-    this.searchForm.qrType = '';
-    this.filteredCertificates = [...this.generatedCertificates];
+  // === MISSING METHODS FOR TEMPLATE COMPATIBILITY ===
+
+  trackByQRId(index: number, certificate: Certificate): number {
+    return certificate.id;
   }
 
-  // Buscar estudiantes
+  getCourseTypeText(courseType: string | undefined): string {
+    switch (courseType) {
+      case 'course': return 'Curso';
+      case 'specialization': return 'Especialización';
+      case 'certification': return 'Certificación';
+      default: return 'Programa';
+    }
+  }
+
+  deleteCertificate(certificateId: number) {
+    // TODO: Implement certificate deletion
+    console.log('Delete certificate:', certificateId);
+  }
+
   searchStudents() {
-    const query = this.searchForm.studentQuery.toLowerCase();
-    const course = this.searchForm.studentCourse;
-
-    this.filteredStudents = this.mockStudents.filter(student => {
-      const matchesQuery = !query || 
-        student.name.toLowerCase().includes(query) || 
-        student.email.toLowerCase().includes(query) ||
-        student.course.toLowerCase().includes(query) ||
-        student.dni.includes(query);
-      
-      const matchesCourse = !course || student.course === course;
-
-      return matchesQuery && matchesCourse;
-    });
+    // TODO: Implement student search
+    console.log('Search students:', this.searchForm.studentQuery);
   }
 
-  // Limpiar búsqueda de estudiantes
   clearStudentSearch() {
     this.searchForm.studentQuery = '';
     this.searchForm.studentCourse = '';
-    this.filteredStudents = [...this.mockStudents];
+    this.searchStudents();
   }
 
-  // Buscar cursos
   searchCourses() {
-    const query = this.searchForm.courseQuery.toLowerCase();
-    const status = this.searchForm.courseStatus;
-
-    this.filteredCourses = this.mockCourses.filter(course => {
-      const matchesQuery = !query || 
-        course.name.toLowerCase().includes(query) || 
-        course.description.toLowerCase().includes(query);
-      
-      const matchesStatus = !status || course.status === status;
-
-      return matchesQuery && matchesStatus;
-    });
+    // TODO: Implement course search
+    console.log('Search courses:', this.searchForm.courseQuery);
   }
 
-  // Limpiar búsqueda de cursos
   clearCourseSearch() {
     this.searchForm.courseQuery = '';
     this.searchForm.courseStatus = '';
-    this.filteredCourses = [...this.mockCourses];
+    this.searchCourses();
   }
 
-  // === MÉTODOS AUXILIARES ===
+  // === TRACKING ===
 
-  // Obtener clase de badge para estado de estudiante
-  getStatusBadgeClass(status: string): string {
-    switch (status) {
-      case 'activo': return 'bg-success';
-      case 'completado': return 'bg-primary';
-      case 'suspendido': return 'bg-danger';
-      default: return 'bg-secondary';
-    }
+  trackByEnrollmentId(index: number, item: Enrollment): number {
+    return item.id;
+  }
+
+  trackByCertificateId(index: number, item: Certificate): number {
+    return item.id;
   }
 } 

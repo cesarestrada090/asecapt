@@ -3,6 +3,7 @@ import { CoursesGridComponent } from './components/courses-grid/courses-grid.com
 import { LandingPageComponent } from './components/landing-page/landing-page.component';
 import { AboutComponent } from './components/about/about.component';
 import { CertificateValidationComponent } from './components/certificate-validation/certificate-validation.component';
+import { CertificateVerificationComponent } from './components/certificate-verification/certificate-verification.component';
 import { ComplaintsBookComponent } from './components/complaints-book/complaints-book.component';
 import { VirtualClassroomComponent } from './components/virtual-classroom/virtual-classroom.component';
 import { AdminPanelComponent } from './components/admin-panel/admin-panel.component';
@@ -12,6 +13,8 @@ export const routes: Routes = [
   { path: 'courses-grid', component: CoursesGridComponent },
   { path: 'about', component: AboutComponent },
   { path: 'certificate-validation', component: CertificateValidationComponent },
+  { path: 'verify', component: CertificateVerificationComponent }, // Manual verification
+  { path: 'verify/:token', component: CertificateVerificationComponent }, // QR verification with token
   { path: 'complaints-book', component: ComplaintsBookComponent },
   { path: 'virtual-classroom', component: VirtualClassroomComponent },
   { path: 'admin-panel', component: AdminPanelComponent },
