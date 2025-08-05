@@ -27,9 +27,6 @@ public class Content {
     @Column(columnDefinition = "LONGTEXT")
     private String content;
 
-    @Column(name = "is_required")
-    private Boolean isRequired = true;
-
     @Column(name = "order_index")
     private Integer orderIndex;
 

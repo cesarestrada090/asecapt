@@ -159,7 +159,6 @@ public class ContentController {
         private String type;
         private String duration;
         private String content;
-        private Boolean isRequired;
 
         // Getters and Setters
         public String getTitle() { return title; }
@@ -172,8 +171,6 @@ public class ContentController {
         public void setDuration(String duration) { this.duration = duration; }
         public String getContent() { return content; }
         public void setContent(String content) { this.content = content; }
-        public Boolean getIsRequired() { return isRequired; }
-        public void setIsRequired(Boolean isRequired) { this.isRequired = isRequired; }
     }
 
     public static class UpdateContentRequest extends CreateContentRequest {

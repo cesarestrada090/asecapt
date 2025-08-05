@@ -39,7 +39,6 @@ public class ContentService {
         content.setType(request.getType());
         content.setDuration(request.getDuration());
         content.setContent(request.getContent());
-        content.setIsRequired(request.getIsRequired());
         
         return contentRepository.save(content);
     }
@@ -53,7 +52,6 @@ public class ContentService {
             content.setType(request.getType());
             content.setDuration(request.getDuration());
             content.setContent(request.getContent());
-            content.setIsRequired(request.getIsRequired());
             
             return contentRepository.save(content);
         }
@@ -148,7 +146,6 @@ public class ContentService {
             duplicatedContent.setType(originalContent.getType());
             duplicatedContent.setDuration(originalContent.getDuration());
             duplicatedContent.setContent(originalContent.getContent());
-            duplicatedContent.setIsRequired(originalContent.getIsRequired());
             
             return contentRepository.save(duplicatedContent);
         }

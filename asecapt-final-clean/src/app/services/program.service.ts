@@ -33,7 +33,6 @@ export interface Content {
   duration: string;
   content: string;
   orderIndex?: number;
-  isRequired: boolean;
   createdAt?: Date;
   updatedAt?: Date;
   // Legacy fields for compatibility
@@ -80,7 +79,6 @@ export interface CreateContentRequest {
   type: string;
   duration: string;
   content: string;
-  isRequired: boolean;
 }
 
 export interface UpdateContentRequest extends CreateContentRequest {

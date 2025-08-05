@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @Table(name = "program_content")
 @IdClass(ProgramContentId.class)
 @NoArgsConstructor
-@AllArgsConstructor
 public class ProgramContent {
     
     @Id
@@ -26,10 +25,18 @@ public class ProgramContent {
     private Integer orderIndex;
     
     @Column(name = "is_required", nullable = false)
-    private Boolean isRequired = true;
+    private Boolean isRequired;
     
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    // Custom constructor to ensure defaults
+    public ProgramContent(Integer programId, Integer contentId, Integer orderIndex, Boolean isRequired) {
+        this.programId = programId;
+        this.contentId = contentId;
+        this.orderIndex = orderIndex;
+        this.isRequired = isRequired != null ? isRequired : false; // Default to false if null
+    }
 
     // Relationships (commented out to avoid circular dependencies for now)
     // @ManyToOne(fetch = FetchType.LAZY)
@@ -45,5 +52,22 @@ public class ProgramContent {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
+        if (isRequired == null) {
+            isRequired = false; // Ensure default value
+        }
+    }
+
+    // Explicit getters/setters for isRequired to avoid serialization issues
+    public Boolean getIsRequired() {
+        return isRequired != null ? isRequired : false;
+    }
+
+    public void setIsRequired(Boolean isRequired) {
+        this.isRequired = isRequired != null ? isRequired : false;
+    }
+
+    // Alternative getter for boolean fields (Jackson sometimes expects this)
+    public boolean isRequired() {
+        return isRequired != null ? isRequired : false;
     }
 }

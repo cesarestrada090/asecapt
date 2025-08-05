@@ -64,8 +64,7 @@ export class CoursesComponent implements OnInit {
     description: '',
     type: 'module',
     duration: '',
-    content: '',
-    isRequired: true
+    content: ''
   };
   editingContent: Content | null = null;
 
@@ -361,6 +360,10 @@ export class CoursesComponent implements OnInit {
     return this.allContents.find(content => content.id === contentId);
   }
 
+  get unassignedContents(): Content[] {
+    return this.availableContents.filter(content => !this.isContentAlreadyAssigned(content.id));
+  }
+
   isContentLibraryView(): boolean {
     return this.currentView === 'content-library';
   }
@@ -563,8 +566,7 @@ export class CoursesComponent implements OnInit {
       description: '',
       type: 'module',
       duration: '',
-      content: '',
-      isRequired: true
+      content: ''
     };
     setTimeout(() => {
       // @ts-ignore
