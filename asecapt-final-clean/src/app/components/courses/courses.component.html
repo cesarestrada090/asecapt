@@ -111,14 +111,33 @@
   <!-- Program Details View -->
   <div *ngIf="isDetailsView() && selectedProgram">
 
+    <!-- Navigation Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+      <ol class="breadcrumb bg-light p-3 rounded">
+        <li class="breadcrumb-item">
+          <a href="#" (click)="setCurrentView('list')" class="text-decoration-none">
+            <i class="fas fa-graduation-cap me-1"></i>Programas
+          </a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+          <i class="fas fa-eye me-1"></i>{{ selectedProgram.title }}
+        </li>
+      </ol>
+    </nav>
+
     <!-- Program Details Card (Full Width) -->
     <div class="card mb-4">
-      <div class="card-header">
-        <div class="d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">{{ selectedProgram.title }}</h5>
-          <button class="btn btn-outline-secondary btn-sm" (click)="setCurrentView('list')">
-            <i class="fas fa-arrow-left me-1"></i>Volver
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          <i class="fas fa-book-open me-2 text-primary"></i>{{ selectedProgram.title }}
+        </h5>
+        <div class="d-flex align-items-center">
+          <button class="btn btn-outline-primary btn-sm me-2" (click)="editProgram(selectedProgram)">
+            <i class="fas fa-edit me-1"></i>Editar
           </button>
+          <span class="badge" [ngClass]="getStatusBadgeClass(selectedProgram.status)">
+            {{ getStatusText(selectedProgram.status) }}
+          </span>
         </div>
       </div>
       <div class="card-body">
@@ -159,16 +178,17 @@
       <div class="card-header">
         <div class="d-flex justify-content-between align-items-center">
           <h5 class="mb-0">
-            <i class="fas fa-list me-2"></i>Contenidos del Programa
+            <i class="fas fa-list me-2 text-primary"></i>Contenidos del Programa
+            <span class="badge bg-primary ms-2">{{ programContents.length }}</span>
           </h5>
-          <span class="badge bg-primary">{{ programContents.length }} contenidos</span>
         </div>
       </div>
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <p class="mb-0 text-muted">Gestiona los módulos y contenidos asignados a este programa</p>
-          </div>
+          <p class="text-muted mb-0">
+            <i class="fas fa-info-circle me-1"></i>
+            Click en cualquier contenido para editarlo
+          </p>
           <button class="btn btn-sm"
                   [ngClass]="showAddContentForm ? 'btn-outline-secondary' : 'btn-outline-primary'"
                   (click)="toggleAddContentForm()">
