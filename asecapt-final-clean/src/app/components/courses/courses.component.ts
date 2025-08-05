@@ -604,11 +604,14 @@ export class CoursesComponent implements OnInit {
   // === PROGRAM MANAGEMENT ACTIONS ===
 
   toggleProgramStatus(program: Program) {
+    this.isSaving = true; // Show loading state
+    
     this.programService.toggleProgramStatus(program.id)
       .pipe(
         catchError(error => {
           console.error('Error toggling program status:', error);
           this.emitMessage('error', 'Error cambiando estado del programa');
+          this.isSaving = false;
           return of(null);
         })
       )
@@ -619,9 +622,16 @@ export class CoursesComponent implements OnInit {
             this.allPrograms[index] = updatedProgram;
             this.filteredPrograms = [...this.allPrograms];
           }
+          
+          // Update selected program if it's the same one being toggled
+          if (this.selectedProgram && this.selectedProgram.id === program.id) {
+            this.selectedProgram = updatedProgram;
+          }
+          
           const statusText = updatedProgram.status === 'active' ? 'activado' : 'inactivado';
           this.emitMessage('success', `Programa ${statusText}: ${updatedProgram.title}`);
         }
+        this.isSaving = false; // Hide loading state
       });
   }
 

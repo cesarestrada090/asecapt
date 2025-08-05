@@ -138,6 +138,17 @@
             <button class="btn btn-outline-primary btn-sm me-2" (click)="editProgram(selectedProgram)">
               <i class="fas fa-edit me-1"></i>Editar
             </button>
+            <button class="btn btn-sm me-2" 
+                    [ngClass]="selectedProgram.status === 'active' ? 'btn-warning' : 'btn-success'"
+                    (click)="toggleProgramStatus(selectedProgram)"
+                    [disabled]="isSaving">
+              <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+              <i *ngIf="!isSaving" class="fas" [ngClass]="selectedProgram.status === 'active' ? 'fa-pause' : 'fa-play'"></i>
+              <span class="ms-1">
+                <span *ngIf="isSaving">Procesando...</span>
+                <span *ngIf="!isSaving">{{ selectedProgram.status === 'active' ? 'Desactivar' : 'Activar' }}</span>
+              </span>
+            </button>
             <span class="badge" [ngClass]="getStatusBadgeClass(selectedProgram.status)">
               {{ getStatusText(selectedProgram.status) }}
             </span>
