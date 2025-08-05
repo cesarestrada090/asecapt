@@ -26,11 +26,11 @@ export class VirtualClassroomComponent {
     if (this.isValidForm()) {
       this.isLoading = true;
       this.loginError = '';
-      
+
       // Simular proceso de login
       setTimeout(() => {
         // Simular validación de credenciales de administrador
-        if (this.loginForm.username === 'admin@asecapt.com' && this.loginForm.password === 'admin2024') {
+        if (this.loginForm.username === 'admin' && this.loginForm.password === 'admin') {
           // Login exitoso - redirigir al dashboard administrativo
           console.log('Login exitoso - redirigiendo al dashboard administrativo');
           this.isLoading = false;
@@ -58,4 +58,4 @@ export class VirtualClassroomComponent {
   isValidForm(): boolean {
     return !!(this.loginForm.username.trim() && this.loginForm.password.trim());
   }
-} 
+}

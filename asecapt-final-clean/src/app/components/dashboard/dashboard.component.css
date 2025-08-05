@@ -1,8 +1,17 @@
-/* Dashboard Layout */
+/* Dashboard Layout - COVERS ENTIRE VIEWPORT */
 .admin-dashboard {
   display: flex;
   min-height: 100vh;
   background-color: #f8f9fa;
+  
+  /* Cover entire viewport to hide header/footer */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  overflow: hidden;
 }
 
 /* Sidebar */
@@ -104,6 +113,8 @@
   margin-left: 0;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .content-header {
@@ -111,6 +122,7 @@
   padding: 1.5rem 2rem;
   border-bottom: 1px solid #dee2e6;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  flex-shrink: 0;
 }
 
 .page-info h2 {
@@ -132,6 +144,7 @@
   flex: 1;
   padding: 2rem;
   overflow-y: auto;
+  height: calc(100vh - 100px); /* Adjust based on header height */
 }
 
 /* Sidebar Overlay */

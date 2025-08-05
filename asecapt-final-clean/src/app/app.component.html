@@ -6,7 +6,7 @@
     ================================================== -->
     <div class="main-wrapper">
 
-        <!-- HEADER
+        <!-- HEADER - ALWAYS VISIBLE FOR NOW
         ================================================== -->
         <header class="header-style1 menu_area-light">
 
@@ -82,13 +82,15 @@
             </div>
         </header>
 
-    <!-- Overlay para cerrar menú móvil -->
-    <div class="mobile-menu-overlay" [class.show]="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
+    <!-- Mobile menu overlay - ALWAYS VISIBLE FOR NOW -->
+    <div class="mobile-menu-overlay" 
+         [class.show]="isMobileMenuOpen" 
+         (click)="closeMobileMenu()"></div>
 
     <!-- DYNAMIC CONTENT - Each component will render here -->
     <router-outlet></router-outlet>
 
-        <!-- FOOTER
+        <!-- FOOTER - ALWAYS VISIBLE FOR NOW
         ================================================== -->
         <footer class="bg-dark" id="contacto">
             <div class="container">
@@ -183,6 +185,5 @@
 
     </div>
 
-    <!-- start scroll to top -->
+    <!-- Scroll to top - ALWAYS VISIBLE FOR NOW -->
     <a href="#!" class="scroll-to-top"><i class="fas fa-angle-up" aria-hidden="true"></i></a>
-    <!-- end scroll to top -->
