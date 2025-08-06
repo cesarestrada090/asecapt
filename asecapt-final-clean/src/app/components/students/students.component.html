@@ -72,8 +72,7 @@
             <tr>
               <th>Estudiante</th>
               <th>Contacto</th>
-              <th>Inscripciones</th>
-              <th>Completados</th>
+              <th>Cursos</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
@@ -93,10 +92,13 @@
                 </div>
               </td>
               <td>
-                <span class="badge bg-info">{{ getStudentEnrollmentCount(student) }}</span>
-              </td>
-              <td>
-                <span class="badge bg-success">{{ getStudentCompletedCount(student) }}</span>
+                <button
+                  class="btn btn-outline-info btn-sm"
+                  (click)="viewStudentCourses(student)"
+                  title="Ver cursos matriculados">
+                  <i class="fas fa-book me-1"></i>Ver Cursos
+                  <span class="badge bg-secondary ms-1">{{ getStudentEnrollmentCount(student) }}</span>
+                </button>
               </td>
               <td>
                 <span [class]="getStatusBadgeClass(student.active)">
@@ -286,6 +288,141 @@
             [disabled]="isSaving">
             <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
             {{ editingStudent ? 'Actualizar' : 'Crear' }} Estudiante
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Student Courses Modal -->
+  <div class="modal fade" id="studentCoursesModal" tabindex="-1" aria-labelledby="studentCoursesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="studentCoursesModalLabel">
+            <i class="fas fa-book me-2"></i>Cursos de {{ selectedStudent?.person?.firstName }} {{ selectedStudent?.person?.lastName }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeModal('studentCoursesModal')" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Modal Message -->
+          <div 
+            *ngIf="modalMessage" 
+            class="alert alert-dismissible fade show"
+            [class.alert-success]="modalMessage.type === 'success'"
+            [class.alert-danger]="modalMessage.type === 'error'"
+            role="alert">
+            {{ modalMessage.text }}
+            <button 
+              type="button" 
+              class="btn-close" 
+              (click)="modalMessage = null"
+              aria-label="Close">
+            </button>
+          </div>
+
+          <!-- Loading State -->
+          <div class="text-center py-4" *ngIf="isLoadingStudentCourses">
+            <div class="spinner-border" role="status"></div>
+            <p class="mt-2 text-muted">Cargando cursos...</p>
+          </div>
+
+          <!-- Courses List -->
+          <div *ngIf="!isLoadingStudentCourses && studentCourses.length > 0">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Curso</th>
+                    <th>Estado</th>
+                    <th>Progreso</th>
+                    <th>Fecha Inscripción</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let course of studentCourses; trackBy: trackByCourseId">
+                    <td>
+                      <div>
+                        <h6 class="mb-1">{{ course.program?.title || course.program?.name || 'Curso sin título' }}</h6>
+                        <p class="text-muted small mb-0">{{ course.program?.description || 'Sin descripción' }}</p>
+                        <small class="text-info">
+                          <i class="fas fa-clock me-1"></i>{{ course.program?.duration || 'N/A' }}
+                          <span class="mx-2">•</span>
+                          <i class="fas fa-star me-1"></i>{{ course.program?.credits || 0 }} créditos
+                        </small>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge" [class]="getCourseStatusBadgeClass(course.status)">
+                        {{ getCourseStatusText(course.status) }}
+                      </span>
+                      <div class="mt-1" *ngIf="course.completedAt">
+                        <small class="text-success">
+                          <i class="fas fa-check-circle me-1"></i>
+                          {{ formatDate(course.completedAt) }}
+                        </small>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="progress me-2" style="width: 60px; height: 8px;">
+                          <div 
+                            class="progress-bar bg-primary" 
+                            [style.width.%]="course.progress || 0">
+                          </div>
+                        </div>
+                        <small class="text-muted">{{ course.progress || 0 }}%</small>
+                      </div>
+                    </td>
+                    <td>
+                      <small class="text-muted" *ngIf="course.enrolledAt">
+                        {{ formatDate(course.enrolledAt) }}
+                      </small>
+                      <small class="text-muted" *ngIf="!course.enrolledAt">
+                        No disponible
+                      </small>
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <button
+                          *ngIf="course.status !== 'completed'"
+                          class="btn btn-outline-success"
+                          (click)="markCourseAsCompleted(course)"
+                          title="Marcar como completado">
+                          <i class="fas fa-check"></i>
+                        </button>
+                        <button
+                          *ngIf="course.status === 'completed'"
+                          class="btn btn-outline-warning"
+                          (click)="markCourseAsInProgress(course)"
+                          title="Marcar como en progreso">
+                          <i class="fas fa-undo"></i>
+                        </button>
+                        <button
+                          class="btn btn-outline-danger"
+                          (click)="deleteEnrollment(course)"
+                          title="Eliminar matrícula">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div class="text-center py-4" *ngIf="!isLoadingStudentCourses && studentCourses.length === 0">
+            <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+            <h5>Sin cursos matriculados</h5>
+            <p class="text-muted">Este estudiante aún no se ha matriculado en ningún curso</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal('studentCoursesModal')">
+            Cerrar
           </button>
         </div>
       </div>

@@ -51,6 +51,10 @@ export class StudentsComponent implements OnInit {
   // UI states
   showStudentForm: boolean = false;
   editingStudent: Student | null = null;
+  selectedStudent: Student | null = null;
+  studentCourses: any[] = [];
+  isLoadingStudentCourses: boolean = false;
+  modalMessage: {type: 'success' | 'error', text: string} | null = null;
 
   // Document types
   documentTypes = [
@@ -431,6 +435,150 @@ export class StudentsComponent implements OnInit {
     // Note: Using success type for info messages since only success/error are supported
   }
 
+  viewStudentCourses(student: Student) {
+    this.selectedStudent = student;
+    this.isLoadingStudentCourses = true;
+    this.studentCourses = [];
+    this.modalMessage = null; // Clear any previous modal messages
+    
+    console.log('Loading courses for student:', student.id);
+    this.showModal('studentCoursesModal');
+    
+    // Load real enrollments from API
+    this.enrollmentService.getEnrollmentsByUser(student.id)
+      .pipe(
+        catchError(error => {
+          console.error('Error loading student enrollments:', error);
+          this.showModalMessage('error', 'Error cargando cursos del estudiante');
+          this.isLoadingStudentCourses = false;
+          return of([]);
+        })
+      )
+      .subscribe(enrollments => {
+        console.log('Loaded enrollments for student:', enrollments);
+        this.studentCourses = enrollments;
+        this.isLoadingStudentCourses = false;
+      });
+  }
+
+
+
+  getCourseStatusBadgeClass(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'bg-success';
+      case 'active':
+      case 'in_progress':
+        return 'bg-primary';
+      case 'paused':
+        return 'bg-warning';
+      case 'cancelled':
+        return 'bg-danger';
+      default:
+        return 'bg-secondary';
+    }
+  }
+
+  getCourseStatusText(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'Completado';
+      case 'active':
+        return 'Activo';
+      case 'in_progress':
+        return 'En Progreso';
+      case 'paused':
+        return 'Pausado';
+      case 'cancelled':
+        return 'Cancelado';
+      default:
+        return 'Desconocido';
+    }
+  }
+
+  trackByCourseId(index: number, course: any): number {
+    return course.id || index;
+  }
+
+  private showModalMessage(type: 'success' | 'error', text: string) {
+    this.modalMessage = { type, text };
+    // Auto-hide message after 4 seconds
+    setTimeout(() => {
+      this.modalMessage = null;
+    }, 4000);
+  }
+
+
+
+  markCourseAsCompleted(course: any) {
+    console.log('Marking course as completed:', course);
+    
+    // Call API to update enrollment status to completed
+    this.enrollmentService.updateEnrollmentStatus(course.id, 'completed')
+      .pipe(
+        catchError(error => {
+          console.error('Error updating enrollment status:', error);
+          this.showModalMessage('error', 'Error marcando curso como completado');
+          return of(null);
+        })
+      )
+      .subscribe(updatedEnrollment => {
+        if (updatedEnrollment) {
+          // Update local data
+          const courseIndex = this.studentCourses.findIndex(c => c.id === course.id);
+          if (courseIndex !== -1) {
+            this.studentCourses[courseIndex] = updatedEnrollment;
+          }
+          this.showModalMessage('success', `✅ Curso "${course.program?.title || updatedEnrollment.programId}" marcado como completado`);
+        }
+      });
+  }
+
+  markCourseAsInProgress(course: any) {
+    console.log('Marking course as in progress:', course);
+    
+    // Call API to update enrollment status to in_progress
+    this.enrollmentService.updateEnrollmentStatus(course.id, 'in_progress')
+      .pipe(
+        catchError(error => {
+          console.error('Error updating enrollment status:', error);
+          this.showModalMessage('error', 'Error marcando curso como en progreso');
+          return of(null);
+        })
+      )
+      .subscribe(updatedEnrollment => {
+        if (updatedEnrollment) {
+          // Update local data
+          const courseIndex = this.studentCourses.findIndex(c => c.id === course.id);
+          if (courseIndex !== -1) {
+            this.studentCourses[courseIndex] = updatedEnrollment;
+          }
+          this.showModalMessage('success', `🔄 Curso "${course.program?.title || updatedEnrollment.programId}" marcado como en progreso`);
+        }
+      });
+  }
+
+  deleteEnrollment(course: any) {
+    if (confirm(`¿Estás seguro de que deseas eliminar la matrícula del estudiante en el curso "${course.program?.title || 'Sin título'}"?`)) {
+      console.log('Deleting enrollment from course:', course);
+      
+      // Call API to delete enrollment
+      this.enrollmentService.deleteEnrollment(course.id)
+        .pipe(
+          catchError(error => {
+            console.error('Error deleting enrollment:', error);
+            this.showModalMessage('error', 'Error eliminando matrícula');
+            return of(null);
+          })
+        )
+        .subscribe(() => {
+          // Remove from local data
+          this.studentCourses = this.studentCourses.filter(c => c.id !== course.id);
+          this.showModalMessage('success', `🗑️ Matrícula eliminada del curso "${course.program?.title || 'Sin título'}"`);
+        });
+    }
+  }
+
   // Computed properties for student display
   getStudentDisplayName(student: Student): string {
     return this.getFullName(student);
@@ -449,6 +597,7 @@ export class StudentsComponent implements OnInit {
   }
 
   getStudentEnrollmentCount(student: Student): number {
+    // Return count from real enrollments if available
     return this.allEnrollments.filter(e => e.userId === student.id).length;
   }
 

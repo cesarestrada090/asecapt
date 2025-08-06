@@ -108,4 +108,9 @@ export class EnrollmentService {
   completeEnrollment(id: number, request: CompleteEnrollmentRequest): Observable<Enrollment> {
     return this.http.put<Enrollment>(`${this.apiUrl}/${id}/complete`, request);
   }
+
+  // Delete enrollment
+  deleteEnrollment(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 } 
