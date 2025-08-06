@@ -718,4 +718,44 @@
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
   }
+}
+
+/* Student Courses Modal Editing Styles */
+#studentCoursesModal .form-control-sm {
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+#studentCoursesModal .form-select-sm {
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+#studentCoursesModal .btn-group-sm .btn {
+  padding: 0.25rem 0.4rem;
+  font-size: 0.75rem;
+}
+
+#studentCoursesModal .btn-group-sm .btn i {
+  font-size: 0.7rem;
+}
+
+#studentCoursesModal .spinner-border-sm {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+/* Edit mode row highlighting for student courses */
+#studentCoursesModal tr.editing {
+  background-color: rgba(255, 193, 7, 0.1);
+  border-left: 3px solid #ffc107;
+}
+
+/* Validation styles for student courses */
+#studentCoursesModal .form-control.is-invalid {
+  border-color: #dc3545;
+}
+
+#studentCoursesModal .form-control.is-valid {
+  border-color: #28a745;
 } 

@@ -57,6 +57,11 @@ export class StudentsComponent implements OnInit {
   isLoadingStudentCourses: boolean = false;
   modalMessage: {type: 'success' | 'error', text: string} | null = null;
 
+  // Course editing properties (for student courses modal)
+  editingStudentCourse: { [key: number]: boolean } = {};
+  studentCourseEditForm: { [key: number]: { finalGrade: number | null, attendancePercentage: number | null, status: string } } = {};
+  isUpdatingStudentCourse: { [key: number]: boolean } = {};
+
   // Course enrollment properties
   availableCourses: Program[] = [];
   courseSearchQuery: string = '';
@@ -721,6 +726,22 @@ export class StudentsComponent implements OnInit {
     return course.status === 'enrolled' ? 10 : 0;
   }
 
+  getGradeBadgeClass(grade: number | null | undefined): string {
+    if (grade === null || grade === undefined) {
+      return 'badge bg-secondary';
+    }
+    
+    if (grade >= 90) {
+      return 'badge bg-success';
+    } else if (grade >= 80) {
+      return 'badge bg-primary';
+    } else if (grade >= 70) {
+      return 'badge bg-warning';
+    } else {
+      return 'badge bg-danger';
+    }
+  }
+
   // Methods to handle modal transitions
   editStudentFromDetails() {
     if (!this.selectedStudent) return;
@@ -931,5 +952,108 @@ export class StudentsComponent implements OnInit {
 
   trackByCourseId(index: number, course: Program): number {
     return course.id;
+  }
+
+  // === STUDENT COURSE EDITING METHODS ===
+
+  startEditingStudentCourse(course: any) {
+    console.log('Starting to edit student course:', course);
+    
+    // Initialize edit form with current values
+    this.studentCourseEditForm[course.id] = {
+      finalGrade: course.finalGrade,
+      attendancePercentage: course.attendancePercentage,
+      status: course.status
+    };
+    
+    // Mark as editing
+    this.editingStudentCourse[course.id] = true;
+    
+    console.log('Student course edit form initialized:', this.studentCourseEditForm[course.id]);
+  }
+
+  cancelEditingStudentCourse(courseId: number) {
+    console.log('Canceling edit for student course:', courseId);
+    
+    // Remove from editing state
+    delete this.editingStudentCourse[courseId];
+    delete this.studentCourseEditForm[courseId];
+    delete this.isUpdatingStudentCourse[courseId];
+  }
+
+  saveStudentCourseChanges(course: any) {
+    const courseId = course.id;
+    const formData = this.studentCourseEditForm[courseId];
+    
+    if (!formData) {
+      console.error('No form data found for student course:', courseId);
+      return;
+    }
+
+    console.log('Saving student course changes:', { courseId, formData });
+    
+    // Validate data
+    if (formData.finalGrade !== null && (formData.finalGrade < 0 || formData.finalGrade > 100)) {
+      this.showModalMessage('error', 'La nota debe estar entre 0 y 100');
+      return;
+    }
+    
+    if (formData.attendancePercentage !== null && (formData.attendancePercentage < 0 || formData.attendancePercentage > 100)) {
+      this.showModalMessage('error', 'La asistencia debe estar entre 0% y 100%');
+      return;
+    }
+
+    // Mark as updating
+    this.isUpdatingStudentCourse[courseId] = true;
+
+    // Prepare update request
+    const updateRequest: any = {
+      finalGrade: formData.finalGrade,
+      attendancePercentage: formData.attendancePercentage,
+      status: formData.status as 'enrolled' | 'in_progress' | 'completed' | 'suspended'
+    };
+
+    // If marking as completed, set completion date
+    if (formData.status === 'completed' && course.status !== 'completed') {
+      updateRequest.completionDate = new Date().toISOString().split('T')[0];
+    }
+
+    console.log('Sending student course update request:', updateRequest);
+
+    // Call the API to update enrollment
+    this.enrollmentService.updateEnrollment(courseId, updateRequest)
+      .pipe(
+        catchError(error => {
+          console.error('Error updating student course:', error);
+          this.showModalMessage('error', 'Error actualizando el curso');
+          this.isUpdatingStudentCourse[courseId] = false;
+          return of(null);
+        })
+      )
+      .subscribe(updatedCourse => {
+        if (updatedCourse) {
+          console.log('Student course updated successfully:', updatedCourse);
+          
+          // Update the local data
+          const courseIndex = this.studentCourses.findIndex(c => c.id === courseId);
+          if (courseIndex !== -1) {
+            this.studentCourses[courseIndex] = {
+              ...this.studentCourses[courseIndex],
+              ...updatedCourse
+            };
+          }
+          
+          // Clean up editing state
+          this.cancelEditingStudentCourse(courseId);
+          
+          // Show success message
+          this.showModalMessage('success', 'Curso actualizado exitosamente');
+          
+          // Update statistics
+          this.loadStatistics();
+        }
+        
+        this.isUpdatingStudentCourse[courseId] = false;
+      });
   }
 }

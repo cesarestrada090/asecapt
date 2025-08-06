@@ -87,6 +87,35 @@ public class EnrollmentService {
         return enrollmentRepository.save(enrollment);
     }
 
+    public Enrollment updateEnrollment(Integer enrollmentId, com.asecapt.app.users.application.controllers.EnrollmentController.UpdateEnrollmentRequest request) {
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+            .orElseThrow(() -> new RuntimeException("Enrollment not found"));
+        
+        // Update fields if provided
+        if (request.getStatus() != null) {
+            enrollment.setStatus(request.getStatus());
+        }
+        
+        if (request.getFinalGrade() != null) {
+            enrollment.setFinalGrade(request.getFinalGrade());
+        }
+        
+        if (request.getAttendancePercentage() != null) {
+            enrollment.setAttendancePercentage(request.getAttendancePercentage());
+        }
+        
+        if (request.getCompletionDate() != null) {
+            enrollment.setCompletionDate(request.getCompletionDate());
+        }
+        
+        // If status is being set to completed and no completion date is provided, set it to today
+        if ("completed".equals(request.getStatus()) && enrollment.getCompletionDate() == null) {
+            enrollment.setCompletionDate(LocalDate.now());
+        }
+
+        return enrollmentRepository.save(enrollment);
+    }
+
     public Enrollment completeEnrollment(Integer enrollmentId, BigDecimal finalGrade, BigDecimal attendancePercentage) {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
             .orElseThrow(() -> new RuntimeException("Enrollment not found"));

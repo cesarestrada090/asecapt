@@ -4,9 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { EnrollmentService, Enrollment } from '../../services/enrollment.service';
 import { ProgramService, Program, CreateProgramRequest, UpdateProgramRequest, Content, CreateContentRequest, UpdateContentRequest, ProgramContent, AddContentToProgramRequest } from '../../services/program.service';
 import { ContentService } from '../../services/content.service';
+import { StudentService, Student } from '../../services/student.service';
 
-import { catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
+import { of, forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-courses',
@@ -111,10 +112,20 @@ export class CoursesComponent implements OnInit {
   // === VIEW STATES ===
   currentView: string = 'list';
 
+  // === PROGRAM STUDENTS MODAL ===
+  selectedProgramForStudents: Program | null = null;
+  programStudents: (Enrollment & { student?: Student })[] = [];
+  isLoadingProgramStudents: boolean = false;
+  editingEnrollment: { [key: number]: boolean } = {};
+  enrollmentEditForm: { [key: number]: { finalGrade: number | null, attendancePercentage: number | null, status: string } } = {};
+  isUpdatingEnrollment: { [key: number]: boolean } = {};
+  programStudentsModalMessage: {type: 'success' | 'error', text: string} | null = null;
+
   constructor(
     private enrollmentService: EnrollmentService,
     private programService: ProgramService,
-    private contentService: ContentService
+    private contentService: ContentService,
+    private studentService: StudentService
   ) {}
 
   ngOnInit(): void {
@@ -681,8 +692,80 @@ export class CoursesComponent implements OnInit {
   }
 
   viewProgramStudents(program: Program) {
-    // TODO: Navigate to students view filtered by program
-    this.emitMessage('success', `Mostrando estudiantes de ${program.title}`);
+    console.log('Loading students for program:', program.title);
+    
+    this.selectedProgramForStudents = program;
+    this.programStudents = [];
+    this.isLoadingProgramStudents = true;
+    this.programStudentsModalMessage = null; // Clear any previous messages
+    
+    // Show the modal
+    this.showModal('programStudentsModal');
+    
+    // Load enrollments for this program and then get student details
+    this.enrollmentService.getEnrollmentsByProgram(program.id)
+      .pipe(
+        switchMap(enrollments => {
+          console.log('Found enrollments for program:', enrollments);
+          
+          if (enrollments.length === 0) {
+            return of([]);
+          }
+          
+          // Get unique student IDs
+          const studentIds = [...new Set(enrollments.map(e => e.userId))];
+          console.log('Loading student details for IDs:', studentIds);
+          
+          // Create requests for each student
+          const studentRequests = studentIds.map(id => 
+            this.studentService.getStudentById(id).pipe(
+              catchError(error => {
+                console.error(`Error loading student ${id}:`, error);
+                return of(null);
+              })
+            )
+          );
+          
+          // Execute all student requests in parallel
+          return forkJoin(studentRequests).pipe(
+            switchMap(students => {
+              // Filter out null results and create student map
+              const studentMap = new Map();
+              students.filter(s => s !== null).forEach(student => {
+                studentMap.set(student.id, student);
+              });
+              
+              console.log('Loaded students:', studentMap);
+              
+              // Enrich enrollments with student data
+              const enrichedEnrollments = enrollments.map(enrollment => ({
+                ...enrollment,
+                student: studentMap.get(enrollment.userId) || {
+                  id: enrollment.userId,
+                  person: {
+                    firstName: 'Estudiante',
+                    lastName: `${enrollment.userId}`,
+                    email: 'No disponible'
+                  }
+                }
+              }));
+              
+              return of(enrichedEnrollments);
+            })
+          );
+        }),
+        catchError(error => {
+          console.error('Error loading program students:', error);
+          this.emitMessage('error', 'Error cargando estudiantes del programa');
+          this.isLoadingProgramStudents = false;
+          return of([]);
+        })
+      )
+      .subscribe(enrichedStudents => {
+        console.log('Final enriched students:', enrichedStudents);
+        this.programStudents = enrichedStudents;
+        this.isLoadingProgramStudents = false;
+      });
   }
 
   viewProgramCertificates(program: Program) {
@@ -1167,10 +1250,6 @@ export class CoursesComponent implements OnInit {
     }
   }
 
-  formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('es-ES');
-  }
-
   // === STATISTICS ===
 
   get totalPrograms(): number {
@@ -1252,5 +1331,225 @@ export class CoursesComponent implements OnInit {
         }
       }
     });
+  }
+
+  // === PROGRAM STUDENTS MODAL HELPER METHODS ===
+
+  trackByEnrollmentId(index: number, enrollment: any): number {
+    return enrollment.id || index;
+  }
+
+  getStudentFullName(student: Student | undefined): string {
+    if (!student || !student.person) {
+      return 'Estudiante no encontrado';
+    }
+    return `${student.person.firstName} ${student.person.lastName}`;
+  }
+
+  getEnrollmentStatusBadgeClass(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'badge bg-success';
+      case 'enrolled':
+        return 'badge bg-primary';
+      case 'in_progress':
+        return 'badge bg-warning';
+      case 'suspended':
+        return 'badge bg-danger';
+      default:
+        return 'badge bg-secondary';
+    }
+  }
+
+  getEnrollmentStatusText(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'Completado';
+      case 'enrolled':
+        return 'Matriculado';
+      case 'in_progress':
+        return 'En Progreso';
+      case 'suspended':
+        return 'Suspendido';
+      default:
+        return 'Desconocido';
+    }
+  }
+
+  getEnrollmentProgress(enrollment: any): number {
+    if (enrollment.status === 'completed') {
+      return 100;
+    }
+    
+    if (enrollment.attendancePercentage) {
+      return Math.round(enrollment.attendancePercentage);
+    }
+    
+    // Estimate progress based on time if start date is available
+    if (enrollment.startDate) {
+      try {
+        const startDate = new Date(enrollment.startDate);
+        const currentDate = new Date();
+        const daysPassed = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        // Rough estimation: assume 30 days for most programs
+        const estimatedDays = 30;
+        const progress = Math.min(Math.max((daysPassed / estimatedDays) * 100, 0), 95);
+        return Math.round(progress);
+      } catch (error) {
+        console.error('Error calculating progress:', error);
+      }
+    }
+    
+    return enrollment.status === 'enrolled' ? 15 : 0;
+  }
+
+  getProgressBarClass(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'bg-success';
+      case 'enrolled':
+        return 'bg-primary';
+      case 'in_progress':
+        return 'bg-warning';
+      case 'suspended':
+        return 'bg-danger';
+      default:
+        return 'bg-secondary';
+    }
+  }
+
+  getGradeBadgeClass(grade: number | null | undefined): string {
+    if (grade === null || grade === undefined) {
+      return 'badge bg-secondary';
+    }
+    
+    if (grade >= 90) {
+      return 'badge bg-success';
+    } else if (grade >= 80) {
+      return 'badge bg-primary';
+    } else if (grade >= 70) {
+      return 'badge bg-warning';
+    } else {
+      return 'badge bg-danger';
+    }
+  }
+
+  formatDate(dateString: string | Date | null | undefined): string {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-ES');
+    } catch {
+      return 'Fecha inválida';
+    }
+  }
+
+  // === ENROLLMENT EDITING METHODS ===
+
+  startEditingEnrollment(enrollment: any) {
+    console.log('Starting to edit enrollment:', enrollment);
+    
+    // Initialize edit form with current values
+    this.enrollmentEditForm[enrollment.id] = {
+      finalGrade: enrollment.finalGrade,
+      attendancePercentage: enrollment.attendancePercentage,
+      status: enrollment.status
+    };
+    
+    // Mark as editing
+    this.editingEnrollment[enrollment.id] = true;
+    
+    console.log('Edit form initialized:', this.enrollmentEditForm[enrollment.id]);
+  }
+
+  cancelEditingEnrollment(enrollmentId: number) {
+    console.log('Canceling edit for enrollment:', enrollmentId);
+    
+    // Remove from editing state
+    delete this.editingEnrollment[enrollmentId];
+    delete this.enrollmentEditForm[enrollmentId];
+    delete this.isUpdatingEnrollment[enrollmentId];
+  }
+
+  saveEnrollmentChanges(enrollment: any) {
+    const enrollmentId = enrollment.id;
+    const formData = this.enrollmentEditForm[enrollmentId];
+    
+    if (!formData) {
+      console.error('No form data found for enrollment:', enrollmentId);
+      return;
+    }
+
+    console.log('Saving enrollment changes:', { enrollmentId, formData });
+    
+    // Validate data
+    if (formData.finalGrade !== null && (formData.finalGrade < 0 || formData.finalGrade > 100)) {
+      this.showProgramStudentsModalMessage('error', 'La nota debe estar entre 0 y 100');
+      return;
+    }
+    
+    if (formData.attendancePercentage !== null && (formData.attendancePercentage < 0 || formData.attendancePercentage > 100)) {
+      this.showProgramStudentsModalMessage('error', 'La asistencia debe estar entre 0% y 100%');
+      return;
+    }
+
+    // Mark as updating
+    this.isUpdatingEnrollment[enrollmentId] = true;
+
+    // Prepare update request
+    const updateRequest: any = {
+      finalGrade: formData.finalGrade,
+      attendancePercentage: formData.attendancePercentage,
+      status: formData.status as 'enrolled' | 'in_progress' | 'completed' | 'suspended'
+    };
+
+    // If marking as completed, set completion date
+    if (formData.status === 'completed' && enrollment.status !== 'completed') {
+      updateRequest.completionDate = new Date().toISOString().split('T')[0];
+    }
+
+    console.log('Sending update request:', updateRequest);
+
+    // Call the API to update enrollment
+    this.enrollmentService.updateEnrollment(enrollmentId, updateRequest)
+      .pipe(
+        catchError(error => {
+          console.error('Error updating enrollment:', error);
+          this.showProgramStudentsModalMessage('error', 'Error actualizando la matrícula');
+          this.isUpdatingEnrollment[enrollmentId] = false;
+          return of(null);
+        })
+      )
+      .subscribe(updatedEnrollment => {
+        if (updatedEnrollment) {
+          console.log('Enrollment updated successfully:', updatedEnrollment);
+          
+          // Update the local data
+          const enrollmentIndex = this.programStudents.findIndex(e => e.id === enrollmentId);
+          if (enrollmentIndex !== -1) {
+            this.programStudents[enrollmentIndex] = {
+              ...this.programStudents[enrollmentIndex],
+              ...updatedEnrollment
+            };
+          }
+          
+          // Clean up editing state
+          this.cancelEditingEnrollment(enrollmentId);
+          
+          // Show success message in the modal
+          this.showProgramStudentsModalMessage('success', 'Matrícula actualizada exitosamente');
+        }
+        
+        this.isUpdatingEnrollment[enrollmentId] = false;
+      });
+  }
+
+  private showProgramStudentsModalMessage(type: 'success' | 'error', text: string) {
+    this.programStudentsModalMessage = { type, text };
+    // Auto-hide message after 4 seconds
+    setTimeout(() => {
+      this.programStudentsModalMessage = null;
+    }, 4000);
   }
 }

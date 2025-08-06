@@ -104,6 +104,11 @@ export class EnrollmentService {
     return this.http.put<Enrollment>(`${this.apiUrl}/${id}/status`, { status });
   }
 
+  // Update enrollment (full update)
+  updateEnrollment(id: number, updateData: Partial<Enrollment>): Observable<Enrollment> {
+    return this.http.put<Enrollment>(`${this.apiUrl}/${id}`, updateData);
+  }
+
   // Complete enrollment with grades
   completeEnrollment(id: number, request: CompleteEnrollmentRequest): Observable<Enrollment> {
     return this.http.put<Enrollment>(`${this.apiUrl}/${id}/complete`, request);

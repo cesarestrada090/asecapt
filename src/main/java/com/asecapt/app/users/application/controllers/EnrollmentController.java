@@ -84,6 +84,19 @@ public class EnrollmentController {
         }
     }
 
+    // Update enrollment (full update)
+    @PutMapping("/{id}")
+    public ResponseEntity<Enrollment> updateEnrollment(
+            @PathVariable Integer id,
+            @RequestBody UpdateEnrollmentRequest request) {
+        try {
+            Enrollment enrollment = enrollmentService.updateEnrollment(id, request);
+            return ResponseEntity.ok(enrollment);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     // Complete enrollment with grades
     @PutMapping("/{id}/complete")
     public ResponseEntity<Enrollment> completeEnrollment(
@@ -121,6 +134,22 @@ public class EnrollmentController {
 
         public String getStatus() { return status; }
         public void setStatus(String status) { this.status = status; }
+    }
+
+    public static class UpdateEnrollmentRequest {
+        private String status;
+        private BigDecimal finalGrade;
+        private BigDecimal attendancePercentage;
+        private LocalDate completionDate;
+
+        public String getStatus() { return status; }
+        public void setStatus(String status) { this.status = status; }
+        public BigDecimal getFinalGrade() { return finalGrade; }
+        public void setFinalGrade(BigDecimal finalGrade) { this.finalGrade = finalGrade; }
+        public BigDecimal getAttendancePercentage() { return attendancePercentage; }
+        public void setAttendancePercentage(BigDecimal attendancePercentage) { this.attendancePercentage = attendancePercentage; }
+        public LocalDate getCompletionDate() { return completionDate; }
+        public void setCompletionDate(LocalDate completionDate) { this.completionDate = completionDate; }
     }
 
     public static class CompleteEnrollmentRequest {
