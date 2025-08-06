@@ -340,7 +340,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1050;
+  z-index: 1055;
   background-color: rgba(0, 0, 0, 0.5);
 }
 
@@ -418,13 +418,13 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1050;
+  z-index: 1060;
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-/* Ensure messages appear above modal */
+/* Ensure messages appear above all modals */
 .alert {
-  z-index: 1060 !important;
+  z-index: 1070 !important;
   position: relative;
 }
 
@@ -454,6 +454,80 @@
   border-radius: 0.3rem;
   outline: 0;
   box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.5);
+}
+
+/* Student Details Modal Styles */
+#studentDetailsModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1052;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+#studentDetailsModal.show {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+#studentDetailsModal .modal-dialog {
+  position: relative;
+  width: auto;
+  margin: 1.75rem;
+  pointer-events: none;
+  max-width: 900px;
+}
+
+#studentDetailsModal .modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  pointer-events: auto;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 0.3rem;
+  outline: 0;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.5);
+}
+
+#studentDetailsModal .card {
+  border: 1px solid #e0e0e0;
+  margin-bottom: 0;
+}
+
+#studentDetailsModal .card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0.75rem 1rem;
+}
+
+#studentDetailsModal .form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+#studentDetailsModal p {
+  margin-bottom: 0;
+  padding: 0.25rem 0;
+}
+
+#studentDetailsModal .fw-bold {
+  color: #212529;
+}
+
+#studentDetailsModal .border-end {
+  border-right: 1px solid #dee2e6 !important;
+}
+
+#studentDetailsModal .h4 {
+  margin-bottom: 0.25rem;
 }
 
 /* Student Courses Table */
@@ -547,5 +621,27 @@
 
   #studentCoursesModal h6 {
     font-size: 0.9rem;
+  }
+
+  #studentDetailsModal .modal-dialog {
+    margin: 0.5rem;
+    max-width: 95%;
+  }
+
+  #studentDetailsModal .col-md-6 {
+    margin-bottom: 1rem;
+  }
+
+  #studentDetailsModal .border-end {
+    border-right: none !important;
+    border-bottom: 1px solid #dee2e6 !important;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  #studentDetailsModal .col-md-3:last-child .border-end {
+    border-bottom: none !important;
+    margin-bottom: 0;
+    padding-bottom: 0;
   }
 } 

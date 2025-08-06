@@ -111,13 +111,13 @@
                     class="btn btn-outline-primary"
                     (click)="viewStudentDetails(student)"
                     title="Ver detalles">
-                    <i class="fas fa-eye"></i>
+                    <i class="fas fa-user"></i>
                   </button>
                   <button
-                    class="btn btn-outline-success"
+                    class="btn btn-outline-warning"
                     (click)="viewStudentCertificates(student)"
                     title="Ver certificados">
-                    <i class="fas fa-certificate"></i>
+                    <i class="fas fa-award"></i>
                   </button>
                   <button
                     class="btn btn-outline-info"
@@ -422,6 +422,173 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" (click)="closeModal('studentCoursesModal')">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Student Details Modal -->
+  <div class="modal fade" id="studentDetailsModal" tabindex="-1" aria-labelledby="studentDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="studentDetailsModalLabel">
+            <i class="fas fa-user me-2"></i>Detalles del Estudiante
+          </h5>
+          <button type="button" class="btn-close" (click)="closeModal('studentDetailsModal')" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" *ngIf="selectedStudent">
+          <div class="row">
+            <!-- Personal Information -->
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-header">
+                  <h6 class="card-title mb-0">
+                    <i class="fas fa-id-card me-2"></i>Información Personal
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label class="form-label text-muted">Nombre Completo</label>
+                    <p class="fw-bold">{{ getStudentDisplayName(selectedStudent) }}</p>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label class="form-label text-muted">Tipo de Documento</label>
+                    <p>{{ selectedStudent.person.documentType }}</p>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label class="form-label text-muted">Número de Documento</label>
+                    <p>{{ selectedStudent.person.documentNumber }}</p>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label class="form-label text-muted">Email</label>
+                    <p>
+                      <a href="mailto:{{ selectedStudent.person.email }}" class="text-decoration-none">
+                        {{ selectedStudent.person.email }}
+                      </a>
+                    </p>
+                  </div>
+                  
+                  <div class="mb-3" *ngIf="selectedStudent.person.phoneNumber">
+                    <label class="form-label text-muted">Teléfono</label>
+                    <p>
+                      <a href="tel:{{ selectedStudent.person.phoneNumber }}" class="text-decoration-none">
+                        {{ selectedStudent.person.phoneNumber }}
+                      </a>
+                    </p>
+                  </div>
+                  
+                  <div class="mb-3" *ngIf="selectedStudent.person.gender">
+                    <label class="form-label text-muted">Género</label>
+                    <p>{{ getGenderLabel(selectedStudent.person.gender) }}</p>
+                  </div>
+                  
+                  <div class="mb-3" *ngIf="selectedStudent.person.birthDate">
+                    <label class="form-label text-muted">Fecha de Nacimiento</label>
+                    <p>{{ formatDate(selectedStudent.person.birthDate) }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Account Information -->
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-header">
+                  <h6 class="card-title mb-0">
+                    <i class="fas fa-user-cog me-2"></i>Información de Cuenta
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label class="form-label text-muted">Usuario</label>
+                    <p class="fw-bold">{{ selectedStudent.username }}</p>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label class="form-label text-muted">Estado</label>
+                    <p>
+                      <span [class]="getStatusBadgeClass(selectedStudent.active)">
+                        {{ getStatusText(selectedStudent.active) }}
+                      </span>
+                    </p>
+                  </div>
+                  
+                  <div class="mb-3" *ngIf="isStudentPremium(selectedStudent)">
+                    <label class="form-label text-muted">Cuenta Premium</label>
+                    <p>
+                      <span class="badge bg-warning">
+                        <i class="fas fa-crown me-1"></i>Premium
+                      </span>
+                    </p>
+                  </div>
+                  
+                  <div class="mb-3" *ngIf="selectedStudent.createdAt">
+                    <label class="form-label text-muted">Fecha de Registro</label>
+                    <p>{{ formatDate(selectedStudent.createdAt) }}</p>
+                  </div>
+                  
+                  <div class="mb-3" *ngIf="selectedStudent.updatedAt">
+                    <label class="form-label text-muted">Última Actualización</label>
+                    <p>{{ formatDate(selectedStudent.updatedAt) }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Academic Summary -->
+          <div class="row mt-4">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <h6 class="card-title mb-0">
+                    <i class="fas fa-graduation-cap me-2"></i>Resumen Académico
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <div class="row text-center">
+                    <div class="col-md-3">
+                      <div class="border-end">
+                        <div class="fw-bold text-primary h4">{{ getStudentEnrollmentCount(selectedStudent) }}</div>
+                        <div class="text-muted">Cursos Matriculados</div>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="border-end">
+                        <div class="fw-bold text-success h4">{{ getStudentCompletedCount(selectedStudent) }}</div>
+                        <div class="text-muted">Cursos Completados</div>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="border-end">
+                        <div class="fw-bold text-info h4">{{ getStudentActiveCount(selectedStudent) }}</div>
+                        <div class="text-muted">Cursos Activos</div>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="fw-bold text-warning h4">{{ getStudentCompletionRate(selectedStudent) }}%</div>
+                      <div class="text-muted">Tasa de Completado</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="editStudentFromDetails()" *ngIf="selectedStudent">
+            <i class="fas fa-edit me-1"></i>Editar Estudiante
+          </button>
+          <button type="button" class="btn btn-outline-warning" (click)="viewStudentCoursesFromDetails()" *ngIf="selectedStudent">
+            <i class="fas fa-book me-1"></i>Ver Cursos
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="closeModal('studentDetailsModal')">
             Cerrar
           </button>
         </div>

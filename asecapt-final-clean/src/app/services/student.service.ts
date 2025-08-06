@@ -9,6 +9,8 @@ export interface Student {
   type: number;
   active: boolean;
   isEmailVerified: boolean;
+  isPremium?: boolean;
+  is_premium?: boolean;
   createdAt: string;
   updatedAt: string;
   person: {

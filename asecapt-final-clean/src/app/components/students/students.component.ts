@@ -424,9 +424,13 @@ export class StudentsComponent implements OnInit {
 
   // View methods for student actions
   viewStudentDetails(student: Student): void {
-    // TODO: Implement student details view
-    console.log('View student details:', student);
-    // Note: Using success type for info messages since only success/error are supported
+    console.log('=== VIEW STUDENT DETAILS ===');
+    console.log('Student:', student);
+    this.selectedStudent = student;
+    console.log('Selected student set to:', this.selectedStudent);
+    console.log('About to show modal: studentDetailsModal');
+    
+    this.showModal('studentDetailsModal');
   }
 
   viewStudentCertificates(student: Student): void {
@@ -467,13 +471,11 @@ export class StudentsComponent implements OnInit {
     switch (status?.toLowerCase()) {
       case 'completed':
         return 'bg-success';
-      case 'active':
+      case 'enrolled':
       case 'in_progress':
         return 'bg-primary';
-      case 'paused':
+      case 'suspended':
         return 'bg-warning';
-      case 'cancelled':
-        return 'bg-danger';
       default:
         return 'bg-secondary';
     }
@@ -483,14 +485,12 @@ export class StudentsComponent implements OnInit {
     switch (status?.toLowerCase()) {
       case 'completed':
         return 'Completado';
-      case 'active':
-        return 'Activo';
+      case 'enrolled':
+        return 'Inscrito';
       case 'in_progress':
         return 'En Progreso';
-      case 'paused':
-        return 'Pausado';
-      case 'cancelled':
-        return 'Cancelado';
+      case 'suspended':
+        return 'Suspendido';
       default:
         return 'Desconocido';
     }
@@ -605,6 +605,48 @@ export class StudentsComponent implements OnInit {
     return this.allEnrollments.filter(e => e.userId === student.id && e.status === 'completed').length;
   }
 
+  getStudentActiveCount(student: Student): number {
+    return this.allEnrollments.filter(e => e.userId === student.id && (e.status === 'enrolled' || e.status === 'in_progress')).length;
+  }
+
+  getStudentCompletionRate(student: Student): number {
+    const totalEnrollments = this.getStudentEnrollmentCount(student);
+    if (totalEnrollments === 0) return 0;
+    
+    const completedCount = this.getStudentCompletedCount(student);
+    return Math.round((completedCount / totalEnrollments) * 100);
+  }
+
+  getGenderLabel(gender: string): string {
+    const genderObj = this.genders.find(g => g.value === gender);
+    return genderObj ? genderObj.label : gender || 'No especificado';
+  }
+
+  isStudentPremium(student: Student): boolean {
+    return !!(student.isPremium || student.is_premium);
+  }
+
+  // Methods to handle modal transitions
+  editStudentFromDetails() {
+    if (!this.selectedStudent) return;
+    
+    console.log('Transitioning from details modal to edit modal');
+    
+    // Close current modal and immediately open edit modal
+    this.closeModal('studentDetailsModal');
+    this.editStudent(this.selectedStudent!);
+  }
+
+  viewStudentCoursesFromDetails() {
+    if (!this.selectedStudent) return;
+    
+    console.log('Transitioning from details modal to courses modal');
+    
+    // Close current modal and immediately open courses modal
+    this.closeModal('studentDetailsModal');
+    this.viewStudentCourses(this.selectedStudent!);
+  }
+
   trackByStudentId(index: number, student: Student): number {
     return student.id;
   }
@@ -634,125 +676,53 @@ export class StudentsComponent implements OnInit {
   // === MODAL MANAGEMENT ===
 
   showModal(modalId: string) {
-    console.log('Attempting to show modal:', modalId);
-    setTimeout(() => {
-      const modalElement = document.getElementById(modalId);
-      console.log('Modal element found:', modalElement);
+    const modalElement = document.getElementById(modalId);
+    if (!modalElement) {
+      console.error('Modal element not found:', modalId);
+      return;
+    }
+
+    try {
+      // Use data-bs-toggle approach - let Bootstrap handle everything
+      modalElement.classList.add('show');
+      modalElement.style.display = 'block';
+      modalElement.setAttribute('aria-modal', 'true');
+      modalElement.setAttribute('aria-hidden', 'false');
       
-      if (modalElement) {
-        try {
-          // Check if Bootstrap is available
-          const bootstrapAvailable = typeof (window as any).bootstrap !== 'undefined';
-          console.log('Bootstrap available:', bootstrapAvailable);
-          
-          if (bootstrapAvailable) {
-            console.log('Using Bootstrap modal');
-            const modal = new (window as any).bootstrap.Modal(modalElement, {
-              backdrop: true,
-              keyboard: true,
-              focus: true
-            });
-            modal.show();
-          } else {
-            console.log('Using manual modal fallback');
-            // Fallback: manually show modal using CSS classes
-            modalElement.classList.add('show', 'd-block');
-            modalElement.style.display = 'block';
-            modalElement.style.opacity = '1';
-            modalElement.style.visibility = 'visible';
-            modalElement.setAttribute('aria-hidden', 'false');
-            modalElement.setAttribute('aria-modal', 'true');
-            
-            // Add backdrop if it doesn't exist
-            let backdrop = document.getElementById(modalId + '-backdrop');
-            if (!backdrop) {
-              backdrop = document.createElement('div');
-              backdrop.className = 'modal-backdrop fade show';
-              backdrop.id = modalId + '-backdrop';
-              backdrop.style.zIndex = '1040';
-              document.body.appendChild(backdrop);
-            }
-            
-            document.body.classList.add('modal-open');
-            document.body.style.overflow = 'hidden';
-            
-            // Focus on modal
-            modalElement.focus();
-          }
-          console.log('Modal should now be visible');
-        } catch (error) {
-          console.error('Error showing modal:', error);
-          // Emergency fallback method
-          console.log('Using emergency fallback');
-          modalElement.classList.add('show', 'd-block');
-          modalElement.style.display = 'block !important';
-          modalElement.style.opacity = '1';
-          modalElement.style.zIndex = '1050';
-          modalElement.style.position = 'fixed';
-          modalElement.style.top = '50%';
-          modalElement.style.left = '50%';
-          modalElement.style.transform = 'translate(-50%, -50%)';
-          modalElement.style.width = '90%';
-          modalElement.style.maxWidth = '800px';
-        }
-      } else {
-        console.error('Modal element not found:', modalId);
+      // Add backdrop
+      if (!document.querySelector('.modal-backdrop')) {
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        document.body.appendChild(backdrop);
       }
-    }, 100); // Increased timeout to ensure DOM is ready
+      
+      document.body.classList.add('modal-open');
+    } catch (error) {
+      console.error('Error showing modal:', error);
+    }
   }
 
   closeModal(modalId: string) {
-    console.log('Attempting to close modal:', modalId);
-    setTimeout(() => {
-      const modalElement = document.getElementById(modalId);
-      if (modalElement) {
-        try {
-          // Try to use Bootstrap if available
-          const bootstrapAvailable = typeof (window as any).bootstrap !== 'undefined';
-          
-          if (bootstrapAvailable) {
-            const modal = (window as any).bootstrap.Modal.getInstance(modalElement);
-            if (modal) {
-              modal.hide();
-            } else {
-              // Manually hide if no instance
-              modalElement.classList.remove('show');
-              modalElement.style.display = 'none';
-            }
-          } else {
-            // Fallback: manually hide modal
-            modalElement.classList.remove('show', 'd-block');
-            modalElement.style.display = 'none';
-            modalElement.style.opacity = '';
-            modalElement.style.visibility = '';
-            modalElement.style.zIndex = '';
-            modalElement.style.position = '';
-            modalElement.style.top = '';
-            modalElement.style.left = '';
-            modalElement.style.transform = '';
-            modalElement.style.width = '';
-            modalElement.style.maxWidth = '';
-            modalElement.setAttribute('aria-hidden', 'true');
-            modalElement.removeAttribute('aria-modal');
-            
-            // Remove backdrop
-            const backdrop = document.getElementById(modalId + '-backdrop');
-            if (backdrop) {
-              backdrop.remove();
-            }
-            
-            document.body.classList.remove('modal-open');
-            document.body.style.overflow = '';
-          }
-        } catch (error) {
-          console.error('Error closing modal:', error);
-          // Emergency fallback method
-          modalElement.classList.remove('show', 'd-block');
-          modalElement.style.display = 'none';
-          modalElement.style.opacity = '';
-          modalElement.style.visibility = '';
-        }
+    const modalElement = document.getElementById(modalId);
+    if (!modalElement) return;
+
+    try {
+      // Simple CSS approach - no Bootstrap API calls
+      modalElement.classList.remove('show');
+      modalElement.style.display = 'none';
+      modalElement.setAttribute('aria-modal', 'false');
+      modalElement.setAttribute('aria-hidden', 'true');
+      
+      // Remove backdrop
+      const backdrop = document.querySelector('.modal-backdrop');
+      if (backdrop) {
+        backdrop.remove();
       }
-    }, 0);
+      
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+    } catch (error) {
+      console.error('Error closing modal:', error);
+    }
   }
 }
