@@ -99,7 +99,7 @@
 
             <!-- Courses Section -->
             <div *ngIf="activeSection === 'courses'">
-                <app-courses (message)="onMessage($event)"></app-courses>
+                <app-courses (message)="onMessage($event)" (navigate)="setActiveSection($event)"></app-courses>
             </div>
         </div>
     </div>

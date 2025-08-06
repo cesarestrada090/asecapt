@@ -17,6 +17,7 @@ import { of } from 'rxjs';
 })
 export class CoursesComponent implements OnInit {
   @Output() message = new EventEmitter<{ type: 'success' | 'error', message: string }>();
+  @Output() navigate = new EventEmitter<string>();
 
   // Data lists
   allPrograms: Program[] = [];
@@ -574,6 +575,8 @@ export class CoursesComponent implements OnInit {
     this.currentView = view;
     if (view === 'list') {
       this.selectedProgram = null;
+      // When going back to list view, ensure we're in the courses section of dashboard
+      this.navigate.emit('courses');
     }
   }
 
@@ -632,6 +635,9 @@ export class CoursesComponent implements OnInit {
           this.emitMessage('success', `Programa ${statusText}: ${updatedProgram.title}`);
         }
         this.isSaving = false; // Hide loading state
+        
+        // Close dropdown after action completes
+        setTimeout(() => this.closeAllDropdowns(), 100);
       });
   }
 
@@ -649,6 +655,9 @@ export class CoursesComponent implements OnInit {
           this.allPrograms = this.allPrograms.filter(p => p.id !== program.id);
           this.filteredPrograms = [...this.allPrograms];
           this.emitMessage('success', `Programa eliminado: ${program.title}`);
+          
+          // Close dropdown after action completes
+          setTimeout(() => this.closeAllDropdowns(), 100);
         });
     }
   }
@@ -1224,5 +1233,24 @@ export class CoursesComponent implements OnInit {
       { value: 'document', label: 'Documento' },
       { value: 'external-link', label: 'Enlace Externo' }
     ];
+  }
+
+  // === UTILITY METHODS ===
+
+  closeAllDropdowns() {
+    // Close all Bootstrap dropdowns
+    const dropdowns = document.querySelectorAll('.dropdown-menu.show');
+    dropdowns.forEach(dropdown => {
+      const dropdownInstance = (window as any).bootstrap?.Dropdown?.getInstance(dropdown.previousElementSibling);
+      if (dropdownInstance) {
+        dropdownInstance.hide();
+      } else {
+        // Fallback: remove show class manually
+        dropdown.classList.remove('show');
+        if (dropdown.previousElementSibling) {
+          dropdown.previousElementSibling.setAttribute('aria-expanded', 'false');
+        }
+      }
+    });
   }
 }

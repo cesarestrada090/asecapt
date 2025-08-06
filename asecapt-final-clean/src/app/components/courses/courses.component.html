@@ -112,7 +112,7 @@
     <nav aria-label="breadcrumb" class="mb-4">
       <ol class="breadcrumb bg-light p-3 rounded">
         <li class="breadcrumb-item">
-          <a href="#" (click)="setCurrentView('list')" class="text-decoration-none">
+          <a href="#" (click)="$event.preventDefault(); setCurrentView('list')" class="text-decoration-none">
             <i class="fas fa-graduation-cap me-1"></i>Programas
           </a>
         </li>
@@ -526,25 +526,22 @@
                   <i class="fas fa-ellipsis-v"></i>
                 </button>
                 <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" (click)="viewProgramDetails(program)">
+                  <li><a class="dropdown-item" (click)="viewProgramDetails(program); closeAllDropdowns()" data-bs-dismiss="dropdown">
                     <i class="fas fa-eye me-2"></i>Ver Detalles
                   </a></li>
-                  <li><a class="dropdown-item" (click)="editProgram(program)">
-                    <i class="fas fa-edit me-2"></i>Editar
-                  </a></li>
                   <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" (click)="viewProgramStudents(program)">
+                  <li><a class="dropdown-item" (click)="viewProgramStudents(program); closeAllDropdowns()" data-bs-dismiss="dropdown">
                     <i class="fas fa-users me-2"></i>Ver Estudiantes
                   </a></li>
-                  <li><a class="dropdown-item" (click)="viewProgramCertificates(program)">
+                  <li><a class="dropdown-item" (click)="viewProgramCertificates(program); closeAllDropdowns()" data-bs-dismiss="dropdown">
                     <i class="fas fa-certificate me-2"></i>Ver Certificados
                   </a></li>
                   <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" (click)="toggleProgramStatus(program)">
+                  <li><a class="dropdown-item" (click)="toggleProgramStatus(program); closeAllDropdowns()" data-bs-dismiss="dropdown">
                     <i class="fas fa-toggle-on me-2"></i>
                     {{ program.status === 'active' ? 'Inactivar' : 'Activar' }}
                   </a></li>
-                  <li><a class="dropdown-item" (click)="deleteProgram(program)">
+                  <li><a class="dropdown-item" (click)="deleteProgram(program); closeAllDropdowns()" data-bs-dismiss="dropdown">
                     <i class="fas fa-trash me-2"></i>Eliminar
                   </a></li>
                 </ul>
