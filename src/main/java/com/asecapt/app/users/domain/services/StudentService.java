@@ -90,10 +90,16 @@ public class StudentService {
 
     // Update student
     public User updateStudent(Integer id, UpdateStudentRequest request) {
+        System.out.println("=== UPDATE STUDENT DEBUG ===");
+        System.out.println("Student ID received: " + id);
+        System.out.println("Request email: " + request.getEmail());
+        
         User student = userRepository.findByIdAndType(id, 3)
             .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
 
         Person person = student.getPerson();
+        System.out.println("Found student: " + student.getUsername() + " with person ID: " + person.getId());
+        System.out.println("Current person email: " + person.getEmail());
         
         // Update Person data
         if (request.getFirstName() != null) {
@@ -103,9 +109,21 @@ public class StudentService {
             person.setLastName(request.getLastName());
         }
         if (request.getEmail() != null) {
-            // Check if email is already used by another person
-            if (personRepository.existsByEmailAndIdNot(request.getEmail(), person.getId())) {
-                throw new RuntimeException("El email ya está siendo usado por otro usuario");
+            System.out.println("=== EMAIL VALIDATION ===");
+            System.out.println("Request email: " + request.getEmail());
+            System.out.println("Current person email: " + person.getEmail());
+            System.out.println("Person ID: " + person.getId());
+            
+            // Only check if email is actually changing
+            if (!request.getEmail().equals(person.getEmail())) {
+                System.out.println("Email is changing, checking for duplicates...");
+                boolean emailExists = personRepository.existsByEmailAndIdNot(request.getEmail(), person.getId());
+                System.out.println("Email exists for another person: " + emailExists);
+                if (emailExists) {
+                    throw new RuntimeException("El email ya está siendo usado por otro usuario");
+                }
+            } else {
+                System.out.println("Email is the same, skipping validation");
             }
             person.setEmail(request.getEmail());
         }
@@ -113,9 +131,21 @@ public class StudentService {
             person.setPhoneNumber(request.getPhoneNumber());
         }
         if (request.getDocumentNumber() != null) {
-            // Check if document is already used by another person
-            if (personRepository.existsByDocumentNumberAndIdNot(request.getDocumentNumber(), person.getId())) {
-                throw new RuntimeException("El número de documento ya está siendo usado por otro usuario");
+            System.out.println("=== DOCUMENT VALIDATION ===");
+            System.out.println("Request document: " + request.getDocumentNumber());
+            System.out.println("Current person document: " + person.getDocumentNumber());
+            System.out.println("Person ID: " + person.getId());
+            
+            // Only check if document is actually changing
+            if (!request.getDocumentNumber().equals(person.getDocumentNumber())) {
+                System.out.println("Document is changing, checking for duplicates...");
+                boolean documentExists = personRepository.existsByDocumentNumberAndIdNot(request.getDocumentNumber(), person.getId());
+                System.out.println("Document exists for another person: " + documentExists);
+                if (documentExists) {
+                    throw new RuntimeException("El número de documento ya está siendo usado por otro usuario");
+                }
+            } else {
+                System.out.println("Document is the same, skipping validation");
             }
             person.setDocumentNumber(request.getDocumentNumber());
         }

@@ -74,6 +74,10 @@ public class StudentController {
     // Update student
     @PutMapping("/{id}")
     public ResponseEntity<Object> updateStudent(@PathVariable Integer id, @RequestBody UpdateStudentRequest request) {
+        System.out.println("=== CONTROLLER: UPDATE STUDENT CALLED ===");
+        System.out.println("Controller received ID: " + id);
+        System.out.println("Request email: " + (request != null ? request.getEmail() : "null"));
+        System.out.println("Request document: " + (request != null ? request.getDocumentNumber() : "null"));
         try {
             User student = studentService.updateStudent(id, request);
             return ResponseEntity.ok(student);

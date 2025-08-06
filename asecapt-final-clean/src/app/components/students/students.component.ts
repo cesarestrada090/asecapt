@@ -236,6 +236,11 @@ export class StudentsComponent implements OnInit {
       // Update existing student
       const updateRequest: UpdateStudentRequest = { ...this.studentForm };
       
+      console.log('=== UPDATE STUDENT FRONTEND DEBUG ===');
+      console.log('Editing student ID:', this.editingStudent.id);
+      console.log('Update request:', updateRequest);
+      console.log('API URL will be:', `/api/students/${this.editingStudent.id}`);
+      
       this.studentService.updateStudent(this.editingStudent.id, updateRequest)
         .pipe(
           catchError(error => {
