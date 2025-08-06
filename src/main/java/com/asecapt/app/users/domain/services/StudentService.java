@@ -38,9 +38,15 @@ public class StudentService {
     // Search students by name, document, or email
     public List<User> searchStudents(String query) {
         if (query == null || query.trim().isEmpty()) {
+            System.out.println("StudentService: Empty query, returning all students");
             return getAllStudents();
         }
-        return userRepository.findStudentsByQuery(query.trim());
+        String trimmedQuery = query.trim();
+        String likeQuery = "%" + trimmedQuery + "%";
+        System.out.println("StudentService: Searching students with query: '" + trimmedQuery + "' (LIKE: '" + likeQuery + "')");
+        List<User> results = userRepository.findStudentsByQuery(likeQuery);
+        System.out.println("StudentService: Found " + results.size() + " students matching query: '" + trimmedQuery + "'");
+        return results;
     }
 
     // Create new student

@@ -31,8 +31,7 @@ export class StudentsComponent implements OnInit {
   // Search form
   searchForm = {
     query: '',
-    status: '',
-    programId: ''
+    status: ''
   };
 
   // Student form for create/edit
@@ -144,6 +143,9 @@ export class StudentsComponent implements OnInit {
   // === SEARCH AND FILTER ===
 
   searchStudents() {
+    console.log('Searching students with:', this.searchForm);
+    
+    // Start with all students or search results
     if (!this.searchForm.query.trim()) {
       this.filteredStudents = [...this.allStudents];
     } else {
@@ -153,29 +155,48 @@ export class StudentsComponent implements OnInit {
           catchError(error => {
             console.error('Error searching students:', error);
             this.emitMessage('error', 'Error buscando estudiantes');
+            this.isSearching = false;
             return of([]);
           })
         )
         .subscribe(students => {
+          console.log(`Backend search returned ${students.length} students for query: "${this.searchForm.query}"`);
           this.filteredStudents = students;
           this.isSearching = false;
+          this.applyFilters();
         });
+      return; // Exit early to avoid applying filters twice
     }
+
+    // Apply all filters
+    this.applyFilters();
+  }
+
+  private applyFilters() {
+    let filtered = [...this.filteredStudents];
+    console.log(`Starting with ${filtered.length} students before filters`);
 
     // Apply status filter
     if (this.searchForm.status) {
       const isActive = this.searchForm.status === 'true';
-      this.filteredStudents = this.filteredStudents.filter(student => student.active === isActive);
+      const beforeFilter = filtered.length;
+      filtered = filtered.filter(student => student.active === isActive);
+      console.log(`Status filter (${isActive ? 'active' : 'inactive'}): ${beforeFilter} → ${filtered.length} students`);
     }
+
+
+
+    this.filteredStudents = filtered;
+    console.log(`Final filtered students: ${this.filteredStudents.length}`);
   }
 
   clearStudentSearch() {
     this.searchForm = {
       query: '',
-      status: '',
-      programId: ''
+      status: ''
     };
     this.filteredStudents = [...this.allStudents];
+    console.log('Search cleared, showing all students:', this.filteredStudents.length);
   }
 
   // === STUDENT MANAGEMENT ===
@@ -183,7 +204,7 @@ export class StudentsComponent implements OnInit {
   showCreateStudentForm() {
     this.editingStudent = null;
     this.resetStudentForm();
-    this.showStudentForm = true;
+    this.showModal('studentModal');
   }
 
   editStudent(student: Student) {
@@ -200,7 +221,7 @@ export class StudentsComponent implements OnInit {
       username: student.username,
       password: '' // Don't show password
     };
-    this.showStudentForm = true;
+    this.showModal('studentModal');
   }
 
   saveStudent() {
@@ -284,7 +305,7 @@ export class StudentsComponent implements OnInit {
   }
 
   cancelStudentForm() {
-    this.showStudentForm = false;
+    this.closeModal('studentModal');
     this.editingStudent = null;
     this.resetStudentForm();
   }
@@ -454,5 +475,130 @@ export class StudentsComponent implements OnInit {
 
   private emitMessage(type: 'success' | 'error', message: string) {
     this.message.emit({ type, message });
+  }
+
+  // === MODAL MANAGEMENT ===
+
+  showModal(modalId: string) {
+    console.log('Attempting to show modal:', modalId);
+    setTimeout(() => {
+      const modalElement = document.getElementById(modalId);
+      console.log('Modal element found:', modalElement);
+      
+      if (modalElement) {
+        try {
+          // Check if Bootstrap is available
+          const bootstrapAvailable = typeof (window as any).bootstrap !== 'undefined';
+          console.log('Bootstrap available:', bootstrapAvailable);
+          
+          if (bootstrapAvailable) {
+            console.log('Using Bootstrap modal');
+            const modal = new (window as any).bootstrap.Modal(modalElement, {
+              backdrop: true,
+              keyboard: true,
+              focus: true
+            });
+            modal.show();
+          } else {
+            console.log('Using manual modal fallback');
+            // Fallback: manually show modal using CSS classes
+            modalElement.classList.add('show', 'd-block');
+            modalElement.style.display = 'block';
+            modalElement.style.opacity = '1';
+            modalElement.style.visibility = 'visible';
+            modalElement.setAttribute('aria-hidden', 'false');
+            modalElement.setAttribute('aria-modal', 'true');
+            
+            // Add backdrop if it doesn't exist
+            let backdrop = document.getElementById(modalId + '-backdrop');
+            if (!backdrop) {
+              backdrop = document.createElement('div');
+              backdrop.className = 'modal-backdrop fade show';
+              backdrop.id = modalId + '-backdrop';
+              backdrop.style.zIndex = '1040';
+              document.body.appendChild(backdrop);
+            }
+            
+            document.body.classList.add('modal-open');
+            document.body.style.overflow = 'hidden';
+            
+            // Focus on modal
+            modalElement.focus();
+          }
+          console.log('Modal should now be visible');
+        } catch (error) {
+          console.error('Error showing modal:', error);
+          // Emergency fallback method
+          console.log('Using emergency fallback');
+          modalElement.classList.add('show', 'd-block');
+          modalElement.style.display = 'block !important';
+          modalElement.style.opacity = '1';
+          modalElement.style.zIndex = '1050';
+          modalElement.style.position = 'fixed';
+          modalElement.style.top = '50%';
+          modalElement.style.left = '50%';
+          modalElement.style.transform = 'translate(-50%, -50%)';
+          modalElement.style.width = '90%';
+          modalElement.style.maxWidth = '800px';
+        }
+      } else {
+        console.error('Modal element not found:', modalId);
+      }
+    }, 100); // Increased timeout to ensure DOM is ready
+  }
+
+  closeModal(modalId: string) {
+    console.log('Attempting to close modal:', modalId);
+    setTimeout(() => {
+      const modalElement = document.getElementById(modalId);
+      if (modalElement) {
+        try {
+          // Try to use Bootstrap if available
+          const bootstrapAvailable = typeof (window as any).bootstrap !== 'undefined';
+          
+          if (bootstrapAvailable) {
+            const modal = (window as any).bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+              modal.hide();
+            } else {
+              // Manually hide if no instance
+              modalElement.classList.remove('show');
+              modalElement.style.display = 'none';
+            }
+          } else {
+            // Fallback: manually hide modal
+            modalElement.classList.remove('show', 'd-block');
+            modalElement.style.display = 'none';
+            modalElement.style.opacity = '';
+            modalElement.style.visibility = '';
+            modalElement.style.zIndex = '';
+            modalElement.style.position = '';
+            modalElement.style.top = '';
+            modalElement.style.left = '';
+            modalElement.style.transform = '';
+            modalElement.style.width = '';
+            modalElement.style.maxWidth = '';
+            modalElement.setAttribute('aria-hidden', 'true');
+            modalElement.removeAttribute('aria-modal');
+            
+            // Remove backdrop
+            const backdrop = document.getElementById(modalId + '-backdrop');
+            if (backdrop) {
+              backdrop.remove();
+            }
+            
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+          }
+        } catch (error) {
+          console.error('Error closing modal:', error);
+          // Emergency fallback method
+          modalElement.classList.remove('show', 'd-block');
+          modalElement.style.display = 'none';
+          modalElement.style.opacity = '';
+          modalElement.style.visibility = '';
+        }
+      }
+    }, 0);
   }
 }

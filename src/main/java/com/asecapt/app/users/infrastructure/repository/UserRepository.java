@@ -27,9 +27,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     long countByType(Integer type);
     long countByTypeAndActive(Integer type, boolean active);
     
-    // Búsqueda de estudiantes - simplified for now
-    // TODO: Implement search functionality properly
-    @Query("SELECT u FROM User u WHERE u.type = 3")
+    // Búsqueda de estudiantes por nombre (sintaxis compatible)
+    @Query("SELECT u FROM User u WHERE u.type = 3 AND " +
+           "LOWER(u.person.firstName) LIKE LOWER(:query)")
     List<User> findStudentsByQuery(@Param("query") String query);
     
 }

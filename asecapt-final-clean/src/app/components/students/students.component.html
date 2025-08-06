@@ -25,15 +25,7 @@
             </option>
           </select>
         </div>
-        <div class="col-md-3">
-          <label class="form-label">Programa</label>
-          <select class="form-select" [(ngModel)]="searchForm.programId" (change)="searchStudents()">
-            <option *ngFor="let program of availablePrograms" [value]="program.value">
-              {{ program.label }}
-            </option>
-          </select>
-        </div>
-        <div class="col-md-2">
+        <div class="col-md-5">
           <label class="form-label">&nbsp;</label>
           <button class="btn btn-outline-secondary w-100" (click)="clearStudentSearch()">
             <i class="fas fa-times me-1"></i>Limpiar
@@ -67,8 +59,11 @@
 
   <!-- Students Table -->
   <div class="card">
-    <div class="card-header">
+    <div class="card-header d-flex justify-content-between align-items-center">
       <h6 class="card-title mb-0">Lista de Estudiantes</h6>
+      <button class="btn btn-primary btn-sm" (click)="showModal('studentModal')">
+        <i class="fas fa-plus me-1"></i>Nuevo Estudiante
+      </button>
     </div>
     <div class="card-body">
       <div class="table-responsive" *ngIf="!isLoadingEnrollments && filteredStudents.length > 0">
@@ -146,6 +141,153 @@
         <i class="fas fa-user-graduate fa-3x text-muted mb-3"></i>
         <h5>No se encontraron estudiantes</h5>
         <p class="text-muted">Prueba ajustando los filtros de búsqueda</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Student Modal -->
+  <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="studentModalLabel">
+            {{ editingStudent ? 'Editar Estudiante' : 'Nuevo Estudiante' }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeModal('studentModal')" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="row">
+              <!-- Personal Information -->
+              <div class="col-12 mb-3">
+                <h6 class="text-muted border-bottom pb-2 mb-3">Información Personal</h6>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Nombre *</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  [(ngModel)]="studentForm.firstName"
+                  name="firstName"
+                  placeholder="Ingrese el nombre"
+                  required>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Apellido *</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  [(ngModel)]="studentForm.lastName"
+                  name="lastName"
+                  placeholder="Ingrese el apellido"
+                  required>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Tipo de Documento *</label>
+                <select class="form-select" [(ngModel)]="studentForm.documentType" name="documentType" required>
+                  <option value="">Seleccione tipo</option>
+                  <option *ngFor="let type of documentTypes" [value]="type.value">
+                    {{ type.label }}
+                  </option>
+                </select>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Número de Documento *</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  [(ngModel)]="studentForm.documentNumber"
+                  name="documentNumber"
+                  placeholder="Ingrese el número"
+                  required>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Email *</label>
+                <input 
+                  type="email" 
+                  class="form-control" 
+                  [(ngModel)]="studentForm.email"
+                  name="email"
+                  placeholder="correo@ejemplo.com"
+                  required>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Teléfono</label>
+                <input 
+                  type="tel" 
+                  class="form-control" 
+                  [(ngModel)]="studentForm.phoneNumber"
+                  name="phoneNumber"
+                  placeholder="Número de teléfono">
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Género</label>
+                <select class="form-select" [(ngModel)]="studentForm.gender" name="gender">
+                  <option value="">Seleccione género</option>
+                  <option *ngFor="let gender of genders" [value]="gender.value">
+                    {{ gender.label }}
+                  </option>
+                </select>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Fecha de Nacimiento</label>
+                <input 
+                  type="date" 
+                  class="form-control" 
+                  [(ngModel)]="studentForm.birthDate"
+                  name="birthDate">
+              </div>
+              
+              <!-- Account Information -->
+              <div class="col-12 mb-3 mt-3">
+                <h6 class="text-muted border-bottom pb-2 mb-3">Información de Cuenta</h6>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Usuario *</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  [(ngModel)]="studentForm.username"
+                  name="username"
+                  placeholder="Nombre de usuario"
+                  required>
+              </div>
+              
+              <div class="col-md-6 mb-3" *ngIf="!editingStudent">
+                <label class="form-label">Contraseña *</label>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  [(ngModel)]="studentForm.password"
+                  name="password"
+                  placeholder="Contraseña"
+                  required>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal('studentModal')">
+            Cancelar
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-primary" 
+            (click)="saveStudent()"
+            [disabled]="isSaving">
+            <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+            {{ editingStudent ? 'Actualizar' : 'Crear' }} Estudiante
+          </button>
+        </div>
       </div>
     </div>
   </div>
