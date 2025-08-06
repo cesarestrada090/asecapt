@@ -125,6 +125,12 @@
                     title="Editar">
                     <i class="fas fa-edit"></i>
                   </button>
+                  <button
+                    [class]="student.active ? 'btn btn-outline-danger' : 'btn btn-outline-success'"
+                    (click)="toggleStudentStatus(student)"
+                    [title]="student.active ? 'Desactivar estudiante' : 'Activar estudiante'">
+                    <i [class]="student.active ? 'fas fa-ban' : 'fas fa-check'"></i>
+                  </button>
                 </div>
               </td>
             </tr>
@@ -357,10 +363,10 @@
                       <span class="badge" [class]="getCourseStatusBadgeClass(course.status)">
                         {{ getCourseStatusText(course.status) }}
                       </span>
-                      <div class="mt-1" *ngIf="course.completedAt">
+                      <div class="mt-1" *ngIf="course.completionDate">
                         <small class="text-success">
                           <i class="fas fa-check-circle me-1"></i>
-                          {{ formatDate(course.completedAt) }}
+                          {{ formatDate(course.completionDate) }}
                         </small>
                       </div>
                     </td>
@@ -369,17 +375,17 @@
                         <div class="progress me-2" style="width: 60px; height: 8px;">
                           <div 
                             class="progress-bar bg-primary" 
-                            [style.width.%]="course.progress || 0">
+                            [style.width.%]="getCourseProgress(course)">
                           </div>
                         </div>
-                        <small class="text-muted">{{ course.progress || 0 }}%</small>
+                        <small class="text-muted">{{ getCourseProgress(course) }}%</small>
                       </div>
                     </td>
                     <td>
-                      <small class="text-muted" *ngIf="course.enrolledAt">
-                        {{ formatDate(course.enrolledAt) }}
+                      <small class="text-muted" *ngIf="course.enrollmentDate">
+                        {{ formatDate(course.enrollmentDate) }}
                       </small>
-                      <small class="text-muted" *ngIf="!course.enrolledAt">
+                      <small class="text-muted" *ngIf="!course.enrollmentDate">
                         No disponible
                       </small>
                     </td>
@@ -421,6 +427,9 @@
           </div>
         </div>
         <div class="modal-footer">
+          <button type="button" class="btn btn-success" (click)="showEnrollmentSearch()" *ngIf="selectedStudent">
+            <i class="fas fa-plus me-1"></i>Matricular en Curso
+          </button>
           <button type="button" class="btn btn-secondary" (click)="closeModal('studentCoursesModal')">
             Cerrar
           </button>
@@ -589,6 +598,103 @@
             <i class="fas fa-book me-1"></i>Ver Cursos
           </button>
           <button type="button" class="btn btn-secondary" (click)="closeModal('studentDetailsModal')">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Course Enrollment Modal -->
+  <div class="modal fade" id="courseEnrollmentModal" tabindex="-1" aria-labelledby="courseEnrollmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="courseEnrollmentModalLabel">
+            <i class="fas fa-search me-2"></i>Matricular Estudiante en Curso
+          </h5>
+          <button type="button" class="btn-close" (click)="closeModal('courseEnrollmentModal')" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Search Section -->
+          <div class="row mb-4">
+            <div class="col-md-8">
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="fas fa-search"></i>
+                </span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Buscar cursos disponibles..."
+                  [(ngModel)]="courseSearchQuery"
+                  (input)="searchAvailableCourses()"
+                  (keyup.enter)="searchAvailableCourses()">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <button class="btn btn-outline-secondary w-100" (click)="clearCourseSearch()">
+                <i class="fas fa-times me-1"></i>Limpiar
+              </button>
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div class="text-center py-4" *ngIf="isLoadingAvailableCourses">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando cursos...</span>
+            </div>
+            <p class="mt-2">Buscando cursos disponibles...</p>
+          </div>
+
+          <!-- Available Courses List -->
+          <div *ngIf="!isLoadingAvailableCourses && availableCourses.length > 0">
+            <h6 class="mb-3">Cursos Disponibles ({{ availableCourses.length }})</h6>
+            <div class="list-group">
+              <div 
+                *ngFor="let course of availableCourses; trackBy: trackByCourseId" 
+                class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between align-items-start">
+                  <div class="flex-grow-1">
+                    <h6 class="mb-1">{{ course.title }}</h6>
+                    <p class="mb-1 text-muted">{{ course.description || 'Sin descripción' }}</p>
+                    <small class="text-muted">
+                      <i class="fas fa-clock me-1"></i>{{ course.duration || 'Duración no especificada' }} |
+                      <i class="fas fa-tag me-1"></i>{{ course.category || 'Sin categoría' }} |
+                      <i class="fas fa-dollar-sign me-1"></i>{{ course.price || 'Precio no disponible' }}
+                    </small>
+                  </div>
+                  <div class="ms-3">
+                    <button
+                      class="btn btn-success btn-sm"
+                      (click)="enrollStudentInCourse(course)"
+                      [disabled]="isEnrollingStudent">
+                      <span *ngIf="isEnrollingStudent" class="spinner-border spinner-border-sm me-1"></span>
+                      <i class="fas fa-plus me-1" *ngIf="!isEnrollingStudent"></i>
+                      Matricular
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div class="text-center py-4" *ngIf="!isLoadingAvailableCourses && availableCourses.length === 0 && courseSearchQuery">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h5>No se encontraron cursos</h5>
+            <p class="text-muted">No hay cursos disponibles que coincidan con "{{ courseSearchQuery }}"</p>
+          </div>
+
+          <!-- Initial State -->
+          <div class="text-center py-4" *ngIf="!isLoadingAvailableCourses && availableCourses.length === 0 && !courseSearchQuery">
+            <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+            <h5>Buscar Cursos</h5>
+            <p class="text-muted">Utiliza la búsqueda para encontrar cursos disponibles para matricular</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal('courseEnrollmentModal')">
             Cerrar
           </button>
         </div>

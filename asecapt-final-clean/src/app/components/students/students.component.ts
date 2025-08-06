@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StudentService, Student, CreateStudentRequest, UpdateStudentRequest, StudentStatistics } from '../../services/student.service';
 import { EnrollmentService, Enrollment } from '../../services/enrollment.service';
-import { catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { ProgramService, Program } from '../../services/program.service';
+import { catchError, switchMap } from 'rxjs/operators';
+import { of, forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-students',
@@ -56,6 +57,12 @@ export class StudentsComponent implements OnInit {
   isLoadingStudentCourses: boolean = false;
   modalMessage: {type: 'success' | 'error', text: string} | null = null;
 
+  // Course enrollment properties
+  availableCourses: Program[] = [];
+  courseSearchQuery: string = '';
+  isLoadingAvailableCourses: boolean = false;
+  isEnrollingStudent: boolean = false;
+
   // Document types
   documentTypes = [
     { value: 'DNI', label: 'DNI' },
@@ -87,7 +94,8 @@ export class StudentsComponent implements OnInit {
 
   constructor(
     private studentService: StudentService,
-    private enrollmentService: EnrollmentService
+    private enrollmentService: EnrollmentService,
+    private programService: ProgramService
   ) {}
 
   ngOnInit() {
@@ -448,19 +456,67 @@ export class StudentsComponent implements OnInit {
     console.log('Loading courses for student:', student.id);
     this.showModal('studentCoursesModal');
     
-    // Load real enrollments from API
+    // Load enrollments and then get program details for each
     this.enrollmentService.getEnrollmentsByUser(student.id)
       .pipe(
+        switchMap(enrollments => {
+          console.log('Loaded enrollments for student:', enrollments);
+          
+          if (enrollments.length === 0) {
+            return of([]);
+          }
+          
+          // Get unique program IDs
+          const programIds = [...new Set(enrollments.map(e => e.programId))];
+          console.log('Loading program details for IDs:', programIds);
+          
+          // Create requests for each program
+          const programRequests = programIds.map(id => 
+            this.programService.getProgramById(id).pipe(
+              catchError(error => {
+                console.error(`Error loading program ${id}:`, error);
+                return of(null);
+              })
+            )
+          );
+          
+          // Execute all program requests in parallel
+          return forkJoin(programRequests).pipe(
+            switchMap(programs => {
+              // Filter out null results and create program map
+              const programMap = new Map();
+              programs.filter(p => p !== null).forEach(program => {
+                programMap.set(program.id, program);
+              });
+              
+              console.log('Loaded programs:', programMap);
+              
+              // Enrich enrollments with program data
+              const enrichedEnrollments = enrollments.map(enrollment => ({
+                ...enrollment,
+                program: programMap.get(enrollment.programId) || {
+                  id: enrollment.programId,
+                  title: `Programa ${enrollment.programId}`,
+                  description: 'Información no disponible',
+                  duration: 'N/A',
+                  credits: 0
+                }
+              }));
+              
+              return of(enrichedEnrollments);
+            })
+          );
+        }),
         catchError(error => {
-          console.error('Error loading student enrollments:', error);
+          console.error('Error loading student courses:', error);
           this.showModalMessage('error', 'Error cargando cursos del estudiante');
           this.isLoadingStudentCourses = false;
           return of([]);
         })
       )
-      .subscribe(enrollments => {
-        console.log('Loaded enrollments for student:', enrollments);
-        this.studentCourses = enrollments;
+      .subscribe(enrichedCourses => {
+        console.log('Final enriched courses:', enrichedCourses);
+        this.studentCourses = enrichedCourses;
         this.isLoadingStudentCourses = false;
       });
   }
@@ -494,10 +550,6 @@ export class StudentsComponent implements OnInit {
       default:
         return 'Desconocido';
     }
-  }
-
-  trackByCourseId(index: number, course: any): number {
-    return course.id || index;
   }
 
   private showModalMessage(type: 'success' | 'error', text: string) {
@@ -626,6 +678,49 @@ export class StudentsComponent implements OnInit {
     return !!(student.isPremium || student.is_premium);
   }
 
+  getCourseProgress(course: any): number {
+    // If course is completed, return 100%
+    if (course.status === 'completed') {
+      return 100;
+    }
+    
+    // If attendance percentage is available, use it as progress
+    if (course.attendancePercentage) {
+      return Math.round(course.attendancePercentage);
+    }
+    
+    // For enrolled/in_progress courses, estimate progress based on time
+    if (course.startDate && course.program?.duration) {
+      try {
+        const startDate = new Date(course.startDate);
+        const currentDate = new Date();
+        const daysPassed = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        // Extract duration in days (rough estimation)
+        const duration = course.program.duration.toLowerCase();
+        let totalDays = 30; // Default to 30 days
+        
+        if (duration.includes('semana')) {
+          const weeks = parseInt(duration.match(/\d+/)?.[0] || '4');
+          totalDays = weeks * 7;
+        } else if (duration.includes('mes')) {
+          const months = parseInt(duration.match(/\d+/)?.[0] || '1');
+          totalDays = months * 30;
+        } else if (duration.includes('día')) {
+          totalDays = parseInt(duration.match(/\d+/)?.[0] || '30');
+        }
+        
+        const progress = Math.min(Math.max((daysPassed / totalDays) * 100, 0), 95);
+        return Math.round(progress);
+      } catch (error) {
+        console.error('Error calculating course progress:', error);
+      }
+    }
+    
+    // Default progress for enrolled courses
+    return course.status === 'enrolled' ? 10 : 0;
+  }
+
   // Methods to handle modal transitions
   editStudentFromDetails() {
     if (!this.selectedStudent) return;
@@ -724,5 +819,117 @@ export class StudentsComponent implements OnInit {
     } catch (error) {
       console.error('Error closing modal:', error);
     }
+  }
+
+  // === COURSE ENROLLMENT METHODS ===
+
+  showEnrollmentSearch() {
+    if (!this.selectedStudent) return;
+    
+    console.log('Opening course enrollment modal for student:', this.selectedStudent);
+    
+    // Reset search state
+    this.courseSearchQuery = '';
+    this.availableCourses = [];
+    this.isLoadingAvailableCourses = false;
+    this.isEnrollingStudent = false;
+    
+    this.showModal('courseEnrollmentModal');
+  }
+
+  searchAvailableCourses() {
+    if (!this.courseSearchQuery.trim()) {
+      this.availableCourses = [];
+      return;
+    }
+
+    this.isLoadingAvailableCourses = true;
+    console.log('Searching for courses with query:', this.courseSearchQuery);
+
+    this.programService.searchPrograms(this.courseSearchQuery, 'course', 'active')
+      .pipe(
+        catchError(error => {
+          console.error('Error searching courses:', error);
+          this.showModalMessage('error', 'Error buscando cursos disponibles');
+          this.isLoadingAvailableCourses = false;
+          return of([]);
+        })
+      )
+      .subscribe(courses => {
+        console.log('Found courses:', courses);
+        
+        // Filter out courses the student is already enrolled in
+        if (this.selectedStudent) {
+          const enrolledProgramIds = this.studentCourses.map(c => c.programId);
+          this.availableCourses = courses.filter(course => 
+            !enrolledProgramIds.includes(course.id)
+          );
+        } else {
+          this.availableCourses = courses;
+        }
+        
+        this.isLoadingAvailableCourses = false;
+        console.log('Available courses after filtering:', this.availableCourses);
+      });
+  }
+
+  clearCourseSearch() {
+    this.courseSearchQuery = '';
+    this.availableCourses = [];
+  }
+
+  enrollStudentInCourse(course: Program) {
+    if (!this.selectedStudent) {
+      console.error('No student selected for enrollment');
+      return;
+    }
+
+    this.isEnrollingStudent = true;
+    console.log('Enrolling student', this.selectedStudent.id, 'in course', course.id);
+
+    // Create enrollment request
+    const enrollmentRequest = {
+      userId: this.selectedStudent.id,
+      programId: course.id,
+      status: 'enrolled' as const
+    };
+
+    this.enrollmentService.createEnrollment(enrollmentRequest)
+      .pipe(
+        catchError(error => {
+          console.error('Error enrolling student:', error);
+          this.showModalMessage('error', `Error matriculando en "${course.title}"`);
+          this.isEnrollingStudent = false;
+          return of(null);
+        })
+      )
+      .subscribe(newEnrollment => {
+        if (newEnrollment) {
+          console.log('Student enrolled successfully:', newEnrollment);
+          
+          // Add to student courses list
+          this.studentCourses.push(newEnrollment);
+          
+          // Remove from available courses
+          this.availableCourses = this.availableCourses.filter(c => c.id !== course.id);
+          
+          // Show success message
+          this.showModalMessage('success', `✅ Estudiante matriculado en "${course.title}" exitosamente`);
+          
+          // Update statistics
+          this.loadStatistics();
+          
+          // Close enrollment modal and show updated courses
+          setTimeout(() => {
+            this.closeModal('courseEnrollmentModal');
+            // Refresh the student courses modal will show updated list
+          }, 1500);
+        }
+        this.isEnrollingStudent = false;
+      });
+  }
+
+  trackByCourseId(index: number, course: Program): number {
+    return course.id;
   }
 }
