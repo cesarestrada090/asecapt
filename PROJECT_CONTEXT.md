@@ -40,12 +40,158 @@ ASECAPT is a full-stack application for educational program management, built wi
   - **Loading States:** Visual feedback with spinners and disabled states during operations
   - **Success/Error Messages:** User feedback system for all CRUD operations
 
+## Database Schema
+
+### Core Tables
+
+#### `person` table
+Stores personal information for all users in the system.
+```sql
+- id (PRIMARY KEY, AUTO_INCREMENT)
+- first_name (VARCHAR, NOT NULL)
+- last_name (VARCHAR, NOT NULL)
+- document_number (VARCHAR, UNIQUE, NOT NULL)
+- document_type (VARCHAR, DEFAULT 'DNI')
+- phone_number (VARCHAR, NOT NULL)
+- email (VARCHAR, NOT NULL)
+- gender (CHAR(1))
+- birth_date (DATE)
+- bio (TEXT, max 1200 chars)
+- profile_photo_id (INT)
+- presentation_video_id (INT)
+- updated_at (DATETIME)
+```
+
+#### `user` table
+Authentication and user management, linked to person table.
+```sql
+- id (PRIMARY KEY, AUTO_INCREMENT)
+- username (VARCHAR(45))
+- password (VARCHAR(256), BCrypt hashed)
+- type (INT, NOT NULL) -- 1: Admin, 2: Instructor, 3: Student
+- person_id (INT, FOREIGN KEY to person.id)
+- is_email_verified (BOOLEAN, DEFAULT FALSE)
+- active (BOOLEAN, DEFAULT TRUE)
+- is_premium (BOOLEAN, DEFAULT FALSE)
+- premium_by (ENUM: 'NONE', 'SUBSCRIPTION', 'PAYMENT')
+- email_verification_token (VARCHAR(255))
+- email_token_expires_at (DATETIME)
+- created_at (DATETIME)
+- updated_at (DATETIME)
+```
+
+#### `program` table
+Educational programs/courses with complete metadata.
+```sql
+- id (PRIMARY KEY, AUTO_INCREMENT)
+- title (VARCHAR, NOT NULL)
+- description (TEXT)
+- type (VARCHAR) -- 'course', 'diploma', 'specialization'
+- status (VARCHAR) -- 'active', 'inactive', 'draft'
+- category (VARCHAR)
+- duration (VARCHAR) -- e.g., "40 horas"
+- credits (INT)
+- price (VARCHAR) -- e.g., "S/. 299"
+- instructor (VARCHAR)
+- max_students (INT)
+- start_date (DATE)
+- end_date (DATE)
+- prerequisites (TEXT)
+- objectives (TEXT)
+- is_favorite (BOOLEAN, DEFAULT FALSE)
+- most_searched (BOOLEAN, DEFAULT FALSE)
+- created_at (DATETIME)
+- updated_at (DATETIME)
+```
+
+#### `content` table
+Modules/topics that can be assigned to programs.
+```sql
+- id (PRIMARY KEY, AUTO_INCREMENT)
+- title (VARCHAR, NOT NULL)
+- description (TEXT)
+- type (VARCHAR) -- 'module', 'lesson', 'assignment', 'exam', 'resource', 'video'
+- duration (VARCHAR) -- e.g., "2 horas"
+- topic (VARCHAR)
+- topic_number (INT)
+- content (TEXT) -- Detailed content description
+- created_at (DATETIME)
+- updated_at (DATETIME)
+```
+
+#### `program_content` table
+Many-to-many relationship between programs and content.
+```sql
+- id (PRIMARY KEY, AUTO_INCREMENT)
+- program_id (INT, FOREIGN KEY to program.id)
+- content_id (INT, FOREIGN KEY to content.id)
+- order_index (INT) -- Ordering within the program
+- is_required (BOOLEAN, DEFAULT TRUE) -- Required vs optional content
+- created_at (DATETIME)
+- updated_at (DATETIME)
+```
+
+#### `enrollment` table
+Student enrollments in programs with status tracking.
+```sql
+- id (PRIMARY KEY, AUTO_INCREMENT)
+- user_id (INT, FOREIGN KEY to user.id)
+- program_id (INT, FOREIGN KEY to program.id)
+- enrollment_date (DATETIME)
+- start_date (DATETIME)
+- completion_date (DATETIME)
+- status (ENUM) -- 'enrolled', 'in_progress', 'completed', 'suspended'
+- final_grade (DECIMAL)
+- attendance_percentage (DECIMAL)
+- notes (TEXT)
+- created_at (DATETIME)
+- updated_at (DATETIME)
+```
+
+#### `certificate` table
+Digital certificates for completed programs with QR verification.
+```sql
+- id (PRIMARY KEY, AUTO_INCREMENT)
+- enrollment_id (INT, FOREIGN KEY to enrollment.id)
+- certificate_number (VARCHAR, UNIQUE)
+- verification_token (VARCHAR, UNIQUE)
+- issue_date (DATETIME)
+- expiry_date (DATETIME)
+- status (ENUM) -- 'active', 'revoked', 'expired'
+- pdf_path (VARCHAR) -- Path to generated PDF
+- qr_code_path (VARCHAR) -- Path to QR code image
+- created_at (DATETIME)
+- updated_at (DATETIME)
+```
+
+#### `certificate_validation` table
+Audit log of certificate scans and validations.
+```sql
+- id (PRIMARY KEY, AUTO_INCREMENT)
+- certificate_id (INT, FOREIGN KEY to certificate.id)
+- verification_token (VARCHAR)
+- validated_at (DATETIME)
+- ip_address (VARCHAR)
+- user_agent (TEXT)
+- scan_count (INT, DEFAULT 1)
+- validation_result (ENUM) -- 'valid', 'invalid', 'expired', 'revoked'
+```
+
+### Key Relationships
+- **User ↔ Person**: One-to-one relationship (user.person_id → person.id)
+- **Program ↔ Content**: Many-to-many through program_content table
+- **User ↔ Program**: Many-to-many through enrollment table
+- **Enrollment ↔ Certificate**: One-to-one relationship for completed programs
+- **Certificate ↔ CertificateValidation**: One-to-many for audit trail
+
 ## Data Model Highlights
 - Programs and modules are scalable and support many-to-many relationships.
 - Favorite and most-searched flags are supported for programs.
 - Initial data is loaded via SQL scripts, including admin user and sample programs.
 - Certificate system with QR verification for program completion tracking.
 - Full audit trail of certificate validations and scans.
+- User types: 1=Admin, 2=Instructor, 3=Student for role-based access control.
+- Premium features supported through is_premium and premium_by fields.
 
 ## Usage
 - Backend endpoints for listing programs, favorites, and modules by program.

@@ -26,7 +26,8 @@ export const APP_CONFIG = {
       verification: '/verify',
       programs: '/programs',
       contents: '/contents',
-      users: '/users'
+      users: '/users',
+      students: '/students'
     }
 };
 
@@ -149,7 +150,9 @@ export const ENV = {
 
 // Build full API URLs helper
 export const buildApiUrl = (endpoint: string): string => {
-  return `${APP_CONFIG.api.baseUrl}${endpoint}`;
+  // Ensure endpoint starts with '/' 
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  return `${APP_CONFIG.api.baseUrl}${cleanEndpoint}`;
 };
 
 // Build verification URL helper

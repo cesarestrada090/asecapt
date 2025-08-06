@@ -1,6 +1,7 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { StudentService, Student, CreateStudentRequest, UpdateStudentRequest, StudentStatistics } from '../../services/student.service';
 import { EnrollmentService, Enrollment } from '../../services/enrollment.service';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -16,12 +17,16 @@ export class StudentsComponent implements OnInit {
   @Output() message = new EventEmitter<{ type: 'success' | 'error', message: string }>();
 
   // Data lists
+  allStudents: Student[] = [];
+  filteredStudents: Student[] = [];
   allEnrollments: Enrollment[] = [];
-  filteredEnrollments: Enrollment[] = [];
+  statistics: StudentStatistics = { totalStudents: 0, activeStudents: 0, inactiveStudents: 0 };
 
   // Loading states
+  isLoadingStudents: boolean = false;
   isLoadingEnrollments: boolean = false;
   isSearching: boolean = false;
+  isSaving: boolean = false;
 
   // Search form
   searchForm = {
@@ -30,18 +35,95 @@ export class StudentsComponent implements OnInit {
     programId: ''
   };
 
-  // Mock data for display (until we have proper user service)
-  mockStudents: any[] = [];
-  filteredStudents: any[] = [];
+  // Student form for create/edit
+  studentForm: CreateStudentRequest = {
+    firstName: '',
+    lastName: '',
+    documentNumber: '',
+    documentType: 'DNI',
+    email: '',
+    phoneNumber: '',
+    gender: '',
+    birthDate: '',
+    username: '',
+    password: ''
+  };
 
-  constructor(private enrollmentService: EnrollmentService) {}
+  // UI states
+  showStudentForm: boolean = false;
+  editingStudent: Student | null = null;
+
+  // Document types
+  documentTypes = [
+    { value: 'DNI', label: 'DNI' },
+    { value: 'CE', label: 'Carnet de Extranjería' },
+    { value: 'PASSPORT', label: 'Pasaporte' }
+  ];
+
+  // Genders
+  genders = [
+    { value: 'M', label: 'Masculino' },
+    { value: 'F', label: 'Femenino' },
+    { value: 'O', label: 'Otro' }
+  ];
+
+  // Status options
+  availableStatuses = [
+    { value: '', label: 'Todos los Estados' },
+    { value: 'true', label: 'Activo' },
+    { value: 'false', label: 'Inactivo' }
+  ];
+
+  // Program options for filtering
+  availablePrograms = [
+    { value: '', label: 'Todos los Programas' }
+  ];
+
+  // Recent enrollments for display
+  filteredEnrollments: Enrollment[] = [];
+
+  constructor(
+    private studentService: StudentService,
+    private enrollmentService: EnrollmentService
+  ) {}
 
   ngOnInit() {
+    this.loadStudents();
+    this.loadStatistics();
     this.loadEnrollments();
-    this.initializeMockData();
   }
 
   // === DATA LOADING ===
+
+  loadStudents() {
+    this.isLoadingStudents = true;
+    this.studentService.getAllStudents()
+      .pipe(
+        catchError(error => {
+          console.error('Error loading students:', error);
+          this.emitMessage('error', 'Error cargando estudiantes');
+          return of([]);
+        })
+      )
+      .subscribe(students => {
+        this.allStudents = students;
+        this.filteredStudents = [...students];
+        this.isLoadingStudents = false;
+      });
+  }
+
+  loadStatistics() {
+    this.studentService.getStudentStatistics()
+      .pipe(
+        catchError(error => {
+          console.error('Error loading statistics:', error);
+          return of({ totalStudents: 0, activeStudents: 0, inactiveStudents: 0 });
+        })
+      )
+      .subscribe(stats => {
+        this.statistics = stats;
+      });
+  }
 
   loadEnrollments() {
     this.isLoadingEnrollments = true;
@@ -49,227 +131,328 @@ export class StudentsComponent implements OnInit {
       .pipe(
         catchError(error => {
           console.error('Error loading enrollments:', error);
-          this.emitMessage('error', 'Error cargando información de estudiantes');
           return of([]);
         })
       )
       .subscribe(enrollments => {
         this.allEnrollments = enrollments;
-        this.filteredEnrollments = [...enrollments];
+        this.filteredEnrollments = enrollments.slice().reverse(); // Show newest first
         this.isLoadingEnrollments = false;
-        this.updateStudentList();
       });
   }
 
-  // === SEARCH ===
+  // === SEARCH AND FILTER ===
 
   searchStudents() {
     if (!this.searchForm.query.trim()) {
-      this.filteredStudents = [...this.mockStudents];
-      this.filteredEnrollments = this.allEnrollments.filter(enrollment => {
-        return (!this.searchForm.status || enrollment.status === this.searchForm.status) &&
-               (!this.searchForm.programId || enrollment.programId.toString() === this.searchForm.programId);
-      });
-      return;
+      this.filteredStudents = [...this.allStudents];
+    } else {
+      this.isSearching = true;
+      this.studentService.searchStudents(this.searchForm.query)
+        .pipe(
+          catchError(error => {
+            console.error('Error searching students:', error);
+            this.emitMessage('error', 'Error buscando estudiantes');
+            return of([]);
+          })
+        )
+        .subscribe(students => {
+          this.filteredStudents = students;
+          this.isSearching = false;
+        });
     }
 
-    this.isSearching = true;
-
-    // Filter enrollments based on search criteria
-    this.filteredEnrollments = this.allEnrollments.filter(enrollment => {
-      const matchesStatus = !this.searchForm.status || enrollment.status === this.searchForm.status;
-      const matchesProgram = !this.searchForm.programId || enrollment.programId.toString() === this.searchForm.programId;
-
-      // For now, we'll search by user ID since we don't have proper user names
-      const matchesQuery = enrollment.userId.toString().includes(this.searchForm.query);
-
-      return matchesStatus && matchesProgram && matchesQuery;
-    });
-
-    this.updateStudentList();
-    this.isSearching = false;
+    // Apply status filter
+    if (this.searchForm.status) {
+      const isActive = this.searchForm.status === 'true';
+      this.filteredStudents = this.filteredStudents.filter(student => student.active === isActive);
+    }
   }
 
   clearStudentSearch() {
-    this.searchForm.query = '';
-    this.searchForm.status = '';
-    this.searchForm.programId = '';
-    this.filteredStudents = [...this.mockStudents];
-    this.filteredEnrollments = [...this.allEnrollments];
+    this.searchForm = {
+      query: '',
+      status: '',
+      programId: ''
+    };
+    this.filteredStudents = [...this.allStudents];
   }
 
-  // === MOCK DATA ===
+  // === STUDENT MANAGEMENT ===
 
-  initializeMockData() {
-    // Generate mock student data for display purposes
-    this.mockStudents = [
-      {
-        id: 1,
-        name: 'Juan Pérez',
-        email: 'juan.perez@email.com',
-        document: '12345678',
-        phone: '+51 999 123 456',
-        enrollments: 3,
-        completedCourses: 2,
-        status: 'active'
-      },
-      {
-        id: 2,
-        name: 'María García',
-        email: 'maria.garcia@email.com',
-        document: '87654321',
-        phone: '+51 999 654 321',
-        enrollments: 2,
-        completedCourses: 2,
-        status: 'active'
-      },
-      {
-        id: 3,
-        name: 'Carlos López',
-        email: 'carlos.lopez@email.com',
-        document: '11223344',
-        phone: '+51 999 111 222',
-        enrollments: 4,
-        completedCourses: 1,
-        status: 'active'
-      }
-    ];
-    this.filteredStudents = [...this.mockStudents];
+  showCreateStudentForm() {
+    this.editingStudent = null;
+    this.resetStudentForm();
+    this.showStudentForm = true;
   }
 
-  updateStudentList() {
-    // Update student list based on enrollments
-    // This is a simplified version - in a real app, you'd fetch user details from a user service
-    const studentMap = new Map();
+  editStudent(student: Student) {
+    this.editingStudent = student;
+    this.studentForm = {
+      firstName: student.person.firstName,
+      lastName: student.person.lastName,
+      documentNumber: student.person.documentNumber,
+      documentType: student.person.documentType,
+      email: student.person.email,
+      phoneNumber: student.person.phoneNumber,
+      gender: student.person.gender || '',
+      birthDate: student.person.birthDate || '',
+      username: student.username,
+      password: '' // Don't show password
+    };
+    this.showStudentForm = true;
+  }
 
-    this.filteredEnrollments.forEach(enrollment => {
-      if (!studentMap.has(enrollment.userId)) {
-        studentMap.set(enrollment.userId, {
-          id: enrollment.userId,
-          name: `Estudiante #${enrollment.userId}`,
-          email: `estudiante${enrollment.userId}@example.com`,
-          document: `DOC${enrollment.userId.toString().padStart(6, '0')}`,
-          phone: `+51 999 ${enrollment.userId.toString().padStart(3, '0')} 000`,
-          enrollments: 0,
-          completedCourses: 0,
-          status: 'active'
+  saveStudent() {
+    if (!this.isStudentFormValid()) {
+      this.emitMessage('error', 'Por favor complete todos los campos obligatorios');
+      return;
+    }
+
+    this.isSaving = true;
+
+    if (this.editingStudent) {
+      // Update existing student
+      const updateRequest: UpdateStudentRequest = { ...this.studentForm };
+      
+      this.studentService.updateStudent(this.editingStudent.id, updateRequest)
+        .pipe(
+          catchError(error => {
+            console.error('Error updating student:', error);
+            this.emitMessage('error', error.error?.error || 'Error actualizando estudiante');
+            this.isSaving = false;
+            return of(null);
+          })
+        )
+        .subscribe(updatedStudent => {
+          if (updatedStudent) {
+            const index = this.allStudents.findIndex(s => s.id === updatedStudent.id);
+            if (index !== -1) {
+              this.allStudents[index] = updatedStudent;
+              this.filteredStudents = [...this.allStudents];
+            }
+            this.emitMessage('success', 'Estudiante actualizado exitosamente');
+            this.cancelStudentForm();
+          }
+          this.isSaving = false;
         });
-      }
-
-      const student = studentMap.get(enrollment.userId);
-      student.enrollments++;
-      if (enrollment.status === 'completed') {
-        student.completedCourses++;
-      }
-    });
-
-    // For display, we'll use a mix of mock data and real enrollment data
-    this.filteredStudents = Array.from(studentMap.values());
-  }
-
-  // === STUDENT ACTIONS ===
-
-  viewStudentDetails(student: any) {
-    // Show student enrollments
-    const studentEnrollments = this.allEnrollments.filter(e => e.userId === student.id);
-    console.log('Student enrollments:', studentEnrollments);
-
-  }
-
-  editStudent(student: any) {
-    // TODO: Implement student editing
-    this.emitMessage('success', `Editando información de ${student.name}`);
-  }
-
-  viewStudentCertificates(student: any) {
-    // TODO: Navigate to certificates view filtered by student
-    this.emitMessage('success', `Mostrando certificados de ${student.name}`);
-  }
-
-  // === UI HELPERS ===
-
-  getStatusBadgeClass(status: string): string {
-    switch (status) {
-      case 'completed': return 'badge bg-success';
-      case 'in_progress': return 'badge bg-primary';
-      case 'enrolled': return 'badge bg-info';
-      case 'active': return 'badge bg-success';
-      default: return 'badge bg-secondary';
+    } else {
+      // Create new student
+      this.studentService.createStudent(this.studentForm)
+        .pipe(
+          catchError(error => {
+            console.error('Error creating student:', error);
+            this.emitMessage('error', error.error?.error || 'Error creando estudiante');
+            this.isSaving = false;
+            return of(null);
+          })
+        )
+        .subscribe(newStudent => {
+          if (newStudent) {
+            this.allStudents.push(newStudent);
+            this.filteredStudents = [...this.allStudents];
+            this.loadStatistics(); // Refresh statistics
+            this.emitMessage('success', 'Estudiante creado exitosamente');
+            this.cancelStudentForm();
+          }
+          this.isSaving = false;
+        });
     }
   }
 
-  getStatusText(status: string): string {
+  toggleStudentStatus(student: Student) {
+    this.studentService.toggleStudentStatus(student.id)
+      .pipe(
+        catchError(error => {
+          console.error('Error toggling student status:', error);
+          this.emitMessage('error', 'Error cambiando estado del estudiante');
+          return of(null);
+        })
+      )
+      .subscribe(updatedStudent => {
+        if (updatedStudent) {
+          const index = this.allStudents.findIndex(s => s.id === updatedStudent.id);
+          if (index !== -1) {
+            this.allStudents[index] = updatedStudent;
+            this.filteredStudents = [...this.allStudents];
+          }
+          this.loadStatistics(); // Refresh statistics
+          const statusText = updatedStudent.active ? 'activado' : 'desactivado';
+          this.emitMessage('success', `Estudiante ${statusText} exitosamente`);
+        }
+      });
+  }
+
+  cancelStudentForm() {
+    this.showStudentForm = false;
+    this.editingStudent = null;
+    this.resetStudentForm();
+  }
+
+  resetStudentForm() {
+    this.studentForm = {
+      firstName: '',
+      lastName: '',
+      documentNumber: '',
+      documentType: 'DNI',
+      email: '',
+      phoneNumber: '',
+      gender: '',
+      birthDate: '',
+      username: '',
+      password: ''
+    };
+  }
+
+  isStudentFormValid(): boolean {
+    return !!(
+      this.studentForm.firstName?.trim() &&
+      this.studentForm.lastName?.trim() &&
+      this.studentForm.documentNumber?.trim() &&
+      this.studentForm.email?.trim() &&
+      this.studentForm.phoneNumber?.trim()
+    );
+  }
+
+  // === HELPER METHODS ===
+
+  getFullName(student: Student): string {
+    return `${student.person.firstName} ${student.person.lastName}`;
+  }
+
+  getStudentEnrollments(studentId: number): Enrollment[] {
+    return this.allEnrollments.filter(e => e.userId === studentId);
+  }
+
+  getCompletedEnrollments(studentId: number): Enrollment[] {
+    return this.getStudentEnrollments(studentId).filter(e => e.status === 'completed');
+  }
+
+  getStatusText(status: boolean | string): string {
+    if (typeof status === 'boolean') {
+      return status ? 'Activo' : 'Inactivo';
+    }
+    // Handle enrollment status strings
     switch (status) {
-      case 'completed': return 'Completado';
-      case 'in_progress': return 'En Progreso';
-      case 'enrolled': return 'Inscrito';
-      case 'active': return 'Activo';
-      default: return status;
+      case 'enrolled':
+        return 'Inscrito';
+      case 'in_progress':
+        return 'En Progreso';
+      case 'completed':
+        return 'Completado';
+      case 'suspended':
+        return 'Suspendido';
+      case 'cancelled':
+        return 'Cancelado';
+      default:
+        return 'Desconocido';
     }
   }
 
-  formatDate(date: string | Date | null): string {
-    if (!date) return 'N/A';
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('es-ES');
+  getStatusClass(active: boolean): string {
+    return active ? 'badge bg-success' : 'badge bg-secondary';
   }
 
+  getStatusBadgeClass(status: any): string {
+    if (typeof status === 'boolean') {
+      return status ? 'badge bg-success' : 'badge bg-secondary';
+    }
+    // Handle enrollment status
+    switch (status) {
+      case 'enrolled':
+      case 'in_progress':
+        return 'badge bg-primary';
+      case 'completed':
+        return 'badge bg-success';
+      case 'cancelled':
+        return 'badge bg-danger';
+      default:
+        return 'badge bg-secondary';
+    }
+  }
+
+  // Helper methods for student display
   getStudentName(enrollment: Enrollment): string {
-    // TODO: Implement proper student name retrieval
-    return `Estudiante #${enrollment.userId}`;
+    const student = this.allStudents.find(s => s.id === enrollment.userId);
+    return student ? this.getFullName(student) : 'Estudiante no encontrado';
   }
 
   getProgramName(enrollment: Enrollment): string {
-    // TODO: Implement proper program name retrieval
-    return `Programa #${enrollment.programId}`;
+    // For now, return the program ID as we don't have program data loaded
+    return `Programa ${enrollment.programId}`;
   }
 
-  // === FILTERS ===
-
-  get availableStatuses() {
-    return [
-      { value: '', label: 'Todos los estados' },
-      { value: 'enrolled', label: 'Inscritos' },
-      { value: 'in_progress', label: 'En Progreso' },
-      { value: 'completed', label: 'Completados' }
-    ];
+  formatDate(dateString: string | Date | null | undefined): string {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-ES');
+    } catch {
+      return 'Fecha inválida';
+    }
   }
 
-  get availablePrograms() {
-    const programs = [...new Set(this.allEnrollments.map(e => e.programId))];
-    return [
-      { value: '', label: 'Todos los programas' },
-      ...programs.map(id => ({ value: id.toString(), label: `Programa #${id}` }))
-    ];
+  // View methods for student actions
+  viewStudentDetails(student: Student): void {
+    // TODO: Implement student details view
+    console.log('View student details:', student);
+    // Note: Using success type for info messages since only success/error are supported
   }
 
-  // === STATISTICS ===
+  viewStudentCertificates(student: Student): void {
+    // TODO: Implement student certificates view
+    console.log('View student certificates:', student);
+    // Note: Using success type for info messages since only success/error are supported
+  }
+
+  // Computed properties for student display
+  getStudentDisplayName(student: Student): string {
+    return this.getFullName(student);
+  }
+
+  getStudentDocument(student: Student): string {
+    return student.person.documentNumber;
+  }
+
+  getStudentEmail(student: Student): string {
+    return student.person.email;
+  }
+
+  getStudentPhone(student: Student): string {
+    return student.person.phoneNumber;
+  }
+
+  getStudentEnrollmentCount(student: Student): number {
+    return this.allEnrollments.filter(e => e.userId === student.id).length;
+  }
+
+  getStudentCompletedCount(student: Student): number {
+    return this.allEnrollments.filter(e => e.userId === student.id && e.status === 'completed').length;
+  }
+
+  trackByStudentId(index: number, student: Student): number {
+    return student.id;
+  }
+
+  trackByEnrollmentId(index: number, enrollment: Enrollment): number {
+    return enrollment.id;
+  }
+
+  // === COMPUTED PROPERTIES ===
 
   get totalStudents(): number {
-    return this.filteredStudents.length;
+    return this.statistics.totalStudents;
   }
 
   get activeEnrollments(): number {
-    return this.filteredEnrollments.filter(e => e.status !== 'completed').length;
+    return this.allEnrollments.filter(e => e.status === 'enrolled' || e.status === 'in_progress').length;
   }
 
   get completedEnrollments(): number {
-    return this.filteredEnrollments.filter(e => e.status === 'completed').length;
+    return this.allEnrollments.filter(e => e.status === 'completed').length;
   }
-
-  // === UTILITY ===
 
   private emitMessage(type: 'success' | 'error', message: string) {
     this.message.emit({ type, message });
-  }
-
-  // === TRACKING ===
-
-  trackByStudentId(index: number, item: any): number {
-    return item.id;
-  }
-
-  trackByEnrollmentId(index: number, item: Enrollment): number {
-    return item.id;
   }
 }

@@ -15,8 +15,14 @@ public class Program {
     @Column(nullable = false, length = 255)
     private String title;
 
+    @Column(name = "name", nullable = false, length = 255)
+    private String name;
+
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Column(name = "hours", nullable = false)
+    private Integer hours;
 
     @Column(length = 50)
     private String type; // 'course', 'specialization', 'certification'

@@ -25,9 +25,6 @@
           <button class="btn btn-success btn-sm" (click)="createNewProgram()">
             <i class="fas fa-plus me-1"></i>Nuevo Programa
           </button>
-          <button class="btn btn-outline-success btn-sm" (click)="createNewContent()">
-            <i class="fas fa-puzzle-piece me-1"></i>Nuevo Contenido
-          </button>
         </div>
       </div>
     </div>
@@ -127,7 +124,7 @@
 
     <!-- Program Details Card (Full Width) -->
     <div class="card mb-4">
-      
+
       <!-- Read View -->
       <div *ngIf="!isEditingProgram">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -138,7 +135,7 @@
             <button class="btn btn-outline-primary btn-sm me-2" (click)="editProgram(selectedProgram)">
               <i class="fas fa-edit me-1"></i>Editar
             </button>
-            <button class="btn btn-sm me-2" 
+            <button class="btn btn-sm me-2"
                     [ngClass]="selectedProgram.status === 'active' ? 'btn-warning' : 'btn-success'"
                     (click)="toggleProgramStatus(selectedProgram)"
                     [disabled]="isSaving">
@@ -200,14 +197,14 @@
             <div class="row">
               <div class="col-md-8 mb-3">
                 <label class="form-label fw-bold">Título del Programa *</label>
-                <input type="text" class="form-control" 
-                       [(ngModel)]="editingProgramForm.title" 
+                <input type="text" class="form-control"
+                       [(ngModel)]="editingProgramForm.title"
                        name="title" required>
               </div>
               <div class="col-md-4 mb-3">
                 <label class="form-label fw-bold">Tipo *</label>
-                <select class="form-select" 
-                        [(ngModel)]="editingProgramForm.type" 
+                <select class="form-select"
+                        [(ngModel)]="editingProgramForm.type"
                         name="type" required>
                   <option *ngFor="let type of availableTypes" [value]="type.value" [disabled]="!type.value">
                     {{ type.label }}
@@ -220,14 +217,14 @@
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold">Categoría</label>
-                <input type="text" class="form-control" 
-                       [(ngModel)]="editingProgramForm.category" 
+                <input type="text" class="form-control"
+                       [(ngModel)]="editingProgramForm.category"
                        name="category">
               </div>
               <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold">Estado *</label>
-                <select class="form-select" 
-                        [(ngModel)]="editingProgramForm.status" 
+                <select class="form-select"
+                        [(ngModel)]="editingProgramForm.status"
                         name="status" required>
                   <option *ngFor="let status of availableStatuses" [value]="status.value" [disabled]="!status.value">
                     {{ status.label }}
@@ -239,8 +236,8 @@
             <!-- Description -->
             <div class="mb-3">
               <label class="form-label fw-bold">Descripción</label>
-              <textarea class="form-control" rows="3" 
-                        [(ngModel)]="editingProgramForm.description" 
+              <textarea class="form-control" rows="3"
+                        [(ngModel)]="editingProgramForm.description"
                         name="description"></textarea>
             </div>
 
@@ -248,22 +245,22 @@
             <div class="row">
               <div class="col-md-4 mb-3">
                 <label class="form-label fw-bold">Duración</label>
-                <input type="text" class="form-control" 
-                       [(ngModel)]="editingProgramForm.duration" 
-                       name="duration" 
+                <input type="text" class="form-control"
+                       [(ngModel)]="editingProgramForm.duration"
+                       name="duration"
                        placeholder="ej: 40 horas">
               </div>
               <div class="col-md-4 mb-3">
                 <label class="form-label fw-bold">Créditos</label>
-                <input type="number" class="form-control" 
-                       [(ngModel)]="editingProgramForm.credits" 
+                <input type="number" class="form-control"
+                       [(ngModel)]="editingProgramForm.credits"
                        name="credits" min="0">
               </div>
               <div class="col-md-4 mb-3">
                 <label class="form-label fw-bold">Precio</label>
-                <input type="text" class="form-control" 
-                       [(ngModel)]="editingProgramForm.price" 
-                       name="price" 
+                <input type="text" class="form-control"
+                       [(ngModel)]="editingProgramForm.price"
+                       name="price"
                        placeholder="ej: S/. 299">
               </div>
             </div>
@@ -272,14 +269,14 @@
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold">Instructor</label>
-                <input type="text" class="form-control" 
-                       [(ngModel)]="editingProgramForm.instructor" 
+                <input type="text" class="form-control"
+                       [(ngModel)]="editingProgramForm.instructor"
                        name="instructor">
               </div>
               <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold">Máximo Estudiantes</label>
-                <input type="number" class="form-control" 
-                       [(ngModel)]="editingProgramForm.maxStudents" 
+                <input type="number" class="form-control"
+                       [(ngModel)]="editingProgramForm.maxStudents"
                        name="maxStudents" min="0">
               </div>
             </div>
@@ -287,26 +284,26 @@
             <!-- Prerequisites -->
             <div class="mb-3">
               <label class="form-label fw-bold">Prerrequisitos</label>
-              <textarea class="form-control" rows="2" 
-                        [(ngModel)]="editingProgramForm.prerequisites" 
+              <textarea class="form-control" rows="2"
+                        [(ngModel)]="editingProgramForm.prerequisites"
                         name="prerequisites"></textarea>
             </div>
 
             <!-- Objectives -->
             <div class="mb-3">
               <label class="form-label fw-bold">Objetivos</label>
-              <textarea class="form-control" rows="2" 
-                        [(ngModel)]="editingProgramForm.objectives" 
+              <textarea class="form-control" rows="2"
+                        [(ngModel)]="editingProgramForm.objectives"
                         name="objectives"></textarea>
             </div>
 
             <!-- Action Buttons -->
             <div class="d-flex justify-content-end">
-              <button type="button" class="btn btn-outline-secondary me-2" 
+              <button type="button" class="btn btn-outline-secondary me-2"
                       (click)="cancelProgramEdit()">
                 <i class="fas fa-times me-1"></i>Cancelar
               </button>
-              <button type="button" class="btn btn-success" 
+              <button type="button" class="btn btn-success"
                       (click)="saveProgramEdit()"
                       [disabled]="isSaving">
                 <i class="fas fa-save me-1"></i>
@@ -352,10 +349,8 @@
         <div *ngIf="!isLoadingProgramContents && programContents.length === 0" class="text-center py-4">
           <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
           <h6>No hay contenidos asignados</h6>
-          <p class="text-muted">Agrega módulos y contenidos para estructurar este programa</p>
-          <button class="btn btn-primary" (click)="setCurrentView('content-library')">
-            <i class="fas fa-plus me-1"></i>Agregar Primer Contenido
-          </button>
+          <p class="text-muted">Agrega contenidos para estructurar este programa</p>
+
         </div>
 
         <div *ngIf="!isLoadingProgramContents && programContents.length > 0">
@@ -683,90 +678,7 @@
        </div>
      </div>
 
-    <!-- Modal for Add/Edit Program -->
-    <div class="modal fade" id="programModal" tabindex="-1" aria-labelledby="programModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <form (ngSubmit)="saveProgram()" #programForm="ngForm">
-            <div class="modal-header">
-              <h5 class="modal-title" id="programModalLabel">{{ editingProgram ? 'Editar Programa' : 'Nuevo Programa' }}</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label">Título del Programa</label>
-                  <input type="text" class="form-control" [(ngModel)]="programFormModel.title" name="title" required>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Tipo</label>
-                  <select class="form-select" [(ngModel)]="programFormModel.type" name="type" required>
-                    <option *ngFor="let type of availableTypes" [value]="type.value" [disabled]="!type.value">{{ type.label }}</option>
-                  </select>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Categoría</label>
-                  <input type="text" class="form-control" [(ngModel)]="programFormModel.category" name="category">
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Estado</label>
-                  <select class="form-select" [(ngModel)]="programFormModel.status" name="status" required>
-                    <option *ngFor="let status of availableStatuses" [value]="status.value" [disabled]="!status.value">{{ status.label }}</option>
-                  </select>
-                </div>
-                <div class="col-md-12">
-                  <label class="form-label">Descripción</label>
-                  <textarea class="form-control" [(ngModel)]="programFormModel.description" name="description" rows="3"></textarea>
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Duración</label>
-                  <input type="text" class="form-control" [(ngModel)]="programFormModel.duration" name="duration" placeholder="ej: 40 horas">
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Créditos</label>
-                  <input type="number" class="form-control" [(ngModel)]="programFormModel.credits" name="credits" min="0">
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Precio</label>
-                  <input type="text" class="form-control" [(ngModel)]="programFormModel.price" name="price" placeholder="ej: S/. 299">
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Fecha de Inicio</label>
-                  <input type="date" class="form-control" [(ngModel)]="programFormModel.startDate" name="startDate">
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Fecha de Fin</label>
-                  <input type="date" class="form-control" [(ngModel)]="programFormModel.endDate" name="endDate">
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Instructor</label>
-                  <input type="text" class="form-control" [(ngModel)]="programFormModel.instructor" name="instructor">
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Máximo Estudiantes</label>
-                  <input type="number" class="form-control" [(ngModel)]="programFormModel.maxStudents" name="maxStudents" min="0">
-                </div>
-                <div class="col-md-12">
-                  <label class="form-label">Prerrequisitos</label>
-                  <textarea class="form-control" [(ngModel)]="programFormModel.prerequisites" name="prerequisites" rows="2"></textarea>
-                </div>
-                <div class="col-md-12">
-                  <label class="form-label">Objetivos</label>
-                  <textarea class="form-control" [(ngModel)]="programFormModel.objectives" name="objectives" rows="2"></textarea>
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-              <button type="submit" class="btn btn-primary" [disabled]="!programForm.form.valid || isSaving">
-                <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
-                {{ editingProgram ? 'Guardar Cambios' : 'Crear Programa' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+
 
     <!-- Modal for Add/Edit Content -->
     <div class="modal fade" id="contentModal" tabindex="-1" aria-labelledby="contentModalLabel" aria-hidden="true">
@@ -829,13 +741,13 @@
           <i class="fas fa-times"></i>
         </button>
       </div>
-      
+
       <div class="modal-body">
         <!-- Crear Nuevo Contenido -->
         <div class="row">
           <div class="col-md-8 mb-3">
             <label class="form-label fw-bold">Título:</label>
-            <input type="text" class="form-control" [(ngModel)]="simpleAddForm.newContent.title" 
+            <input type="text" class="form-control" [(ngModel)]="simpleAddForm.newContent.title"
                    placeholder="Ingrese el título del contenido">
           </div>
           <div class="col-md-4 mb-3">
@@ -851,23 +763,23 @@
           </div>
           <div class="col-md-8 mb-3">
             <label class="form-label fw-bold">Tema:</label>
-            <input type="text" class="form-control" [(ngModel)]="simpleAddForm.newContent.topic" 
+            <input type="text" class="form-control" [(ngModel)]="simpleAddForm.newContent.topic"
                    placeholder="Ingrese el tema del contenido">
           </div>
           <div class="col-md-4 mb-3">
             <label class="form-label fw-bold">Número de Tema:</label>
-            <input type="number" class="form-control" [(ngModel)]="simpleAddForm.newContent.topicNumber" 
+            <input type="number" class="form-control" [(ngModel)]="simpleAddForm.newContent.topicNumber"
                    placeholder="Ej: 1, 2, 3..." min="1">
           </div>
           <div class="col-md-6 mb-3">
             <label class="form-label fw-bold">Duración:</label>
-            <input type="text" class="form-control" [(ngModel)]="simpleAddForm.newContent.duration" 
+            <input type="text" class="form-control" [(ngModel)]="simpleAddForm.newContent.duration"
                    placeholder="Ej: 2 horas, 45 minutos">
           </div>
           <div class="col-md-6 mb-3">
             <label class="form-label fw-bold">Obligatorio:</label>
             <div class="form-check mt-2">
-              <input class="form-check-input" type="checkbox" 
+              <input class="form-check-input" type="checkbox"
                      [(ngModel)]="simpleAddForm.isRequired" id="contentRequired">
               <label class="form-check-label" for="contentRequired">
                 Contenido obligatorio
@@ -876,28 +788,113 @@
           </div>
           <div class="col-12 mb-3">
             <label class="form-label fw-bold">Descripción:</label>
-            <textarea class="form-control" rows="2" [(ngModel)]="simpleAddForm.newContent.description" 
+            <textarea class="form-control" rows="2" [(ngModel)]="simpleAddForm.newContent.description"
                       placeholder="Descripción breve del contenido"></textarea>
           </div>
           <div class="col-12 mb-3">
             <label class="form-label fw-bold">Contenido Detallado:</label>
-            <textarea class="form-control" rows="3" [(ngModel)]="simpleAddForm.newContent.content" 
+            <textarea class="form-control" rows="3" [(ngModel)]="simpleAddForm.newContent.content"
                       placeholder="Describe en detalle qué aprenderán los estudiantes"></textarea>
           </div>
         </div>
       </div>
-      
+
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeSimpleAddModal()">
           <i class="fas fa-times me-1"></i>Cancelar
         </button>
-        <button type="button" class="btn btn-success" (click)="submitSimpleAddForm()" 
+        <button type="button" class="btn btn-success" (click)="submitSimpleAddForm()"
                 [disabled]="!isSimpleAddFormValid() || isSaving">
           <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
           <i *ngIf="!isSaving" class="fas fa-plus me-1"></i>
           Crear y Agregar
         </button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Add/Edit Program - Always Available -->
+<div class="modal fade" id="programModal" tabindex="-1" aria-labelledby="programModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form (ngSubmit)="saveProgram()" #programForm="ngForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="programModalLabel">{{ editingProgram ? 'Editar Programa' : 'Nuevo Programa' }}</h5>
+          <button type="button" class="btn-close" (click)="closeModal('programModal')" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Título del Programa</label>
+              <input type="text" class="form-control" [(ngModel)]="programFormModel.title" name="title" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Tipo</label>
+              <select class="form-select" [(ngModel)]="programFormModel.type" name="type" required>
+                <option *ngFor="let type of availableTypes" [value]="type.value" [disabled]="!type.value">{{ type.label }}</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Categoría</label>
+              <input type="text" class="form-control" [(ngModel)]="programFormModel.category" name="category">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Estado</label>
+              <select class="form-select" [(ngModel)]="programFormModel.status" name="status" required>
+                <option *ngFor="let status of availableStatuses" [value]="status.value" [disabled]="!status.value">{{ status.label }}</option>
+              </select>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">Descripción</label>
+              <textarea class="form-control" [(ngModel)]="programFormModel.description" name="description" rows="3"></textarea>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Duración</label>
+              <input type="text" class="form-control" [(ngModel)]="programFormModel.duration" name="duration" placeholder="ej: 40 horas">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Créditos</label>
+              <input type="number" class="form-control" [(ngModel)]="programFormModel.credits" name="credits" min="0">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Precio</label>
+              <input type="text" class="form-control" [(ngModel)]="programFormModel.price" name="price" placeholder="ej: S/. 299">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Fecha de Inicio</label>
+              <input type="date" class="form-control" [(ngModel)]="programFormModel.startDate" name="startDate">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Fecha de Fin</label>
+              <input type="date" class="form-control" [(ngModel)]="programFormModel.endDate" name="endDate">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Instructor</label>
+              <input type="text" class="form-control" [(ngModel)]="programFormModel.instructor" name="instructor">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Máximo Estudiantes</label>
+              <input type="number" class="form-control" [(ngModel)]="programFormModel.maxStudents" name="maxStudents" min="0">
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">Prerrequisitos</label>
+              <textarea class="form-control" [(ngModel)]="programFormModel.prerequisites" name="prerequisites" rows="2"></textarea>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">Objetivos</label>
+              <textarea class="form-control" [(ngModel)]="programFormModel.objectives" name="objectives" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal('programModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!programForm.form.valid || isSaving">
+            <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+            {{ editingProgram ? 'Guardar Cambios' : 'Crear Programa' }}
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

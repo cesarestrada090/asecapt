@@ -708,6 +708,7 @@ export class CoursesComponent implements OnInit {
   }
 
   createNewProgram() {
+    console.log('createNewProgram() called');
     this.editingProgram = null;
     this.programFormModel = {
       title: '',
@@ -725,11 +726,15 @@ export class CoursesComponent implements OnInit {
       prerequisites: '',
       objectives: ''
     };
+    
+    console.log('Form model reset:', this.programFormModel);
+    console.log('About to show modal...');
+    
+    // Try immediate and with delay
+    this.showModal('programModal');
     setTimeout(() => {
-      // @ts-ignore
-      const modal = new window.bootstrap.Modal(document.getElementById('programModal'));
-      modal.show();
-    }, 0);
+      this.showModal('programModal');
+    }, 200);
   }
 
   editProgram(program: Program) {
@@ -948,11 +953,126 @@ export class CoursesComponent implements OnInit {
 
   // === UTILITY METHODS ===
 
-  closeModal(modalId: string) {
+  showModal(modalId: string) {
+    console.log('Attempting to show modal:', modalId);
     setTimeout(() => {
-      // @ts-ignore
-      const modal = window.bootstrap.Modal.getInstance(document.getElementById(modalId));
-      if (modal) modal.hide();
+      const modalElement = document.getElementById(modalId);
+      console.log('Modal element found:', modalElement);
+      
+      if (modalElement) {
+        try {
+          // Check if Bootstrap is available
+          const bootstrapAvailable = typeof (window as any).bootstrap !== 'undefined';
+          console.log('Bootstrap available:', bootstrapAvailable);
+          
+          if (bootstrapAvailable) {
+            console.log('Using Bootstrap modal');
+            const modal = new (window as any).bootstrap.Modal(modalElement, {
+              backdrop: true,
+              keyboard: true,
+              focus: true
+            });
+            modal.show();
+          } else {
+            console.log('Using manual modal fallback');
+            // Fallback: manually show modal using CSS classes
+            modalElement.classList.add('show', 'd-block');
+            modalElement.style.display = 'block';
+            modalElement.style.opacity = '1';
+            modalElement.style.visibility = 'visible';
+            modalElement.setAttribute('aria-hidden', 'false');
+            modalElement.setAttribute('aria-modal', 'true');
+            
+            // Add backdrop if it doesn't exist
+            let backdrop = document.getElementById(modalId + '-backdrop');
+            if (!backdrop) {
+              backdrop = document.createElement('div');
+              backdrop.className = 'modal-backdrop fade show';
+              backdrop.id = modalId + '-backdrop';
+              backdrop.style.zIndex = '1040';
+              document.body.appendChild(backdrop);
+            }
+            
+            document.body.classList.add('modal-open');
+            document.body.style.overflow = 'hidden';
+            
+            // Focus on modal
+            modalElement.focus();
+          }
+          console.log('Modal should now be visible');
+        } catch (error) {
+          console.error('Error showing modal:', error);
+          // Emergency fallback method
+          console.log('Using emergency fallback');
+          modalElement.classList.add('show', 'd-block');
+          modalElement.style.display = 'block !important';
+          modalElement.style.opacity = '1';
+          modalElement.style.zIndex = '1050';
+          modalElement.style.position = 'fixed';
+          modalElement.style.top = '50%';
+          modalElement.style.left = '50%';
+          modalElement.style.transform = 'translate(-50%, -50%)';
+          modalElement.style.width = '90%';
+          modalElement.style.maxWidth = '800px';
+        }
+      } else {
+        console.error('Modal element not found:', modalId);
+      }
+    }, 100); // Increased timeout to ensure DOM is ready
+  }
+
+  closeModal(modalId: string) {
+    console.log('Attempting to close modal:', modalId);
+    setTimeout(() => {
+      const modalElement = document.getElementById(modalId);
+      if (modalElement) {
+        try {
+          // Try to use Bootstrap if available
+          const bootstrapAvailable = typeof (window as any).bootstrap !== 'undefined';
+          
+          if (bootstrapAvailable) {
+            const modal = (window as any).bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+              modal.hide();
+            } else {
+              // Manually hide if no instance
+              modalElement.classList.remove('show');
+              modalElement.style.display = 'none';
+            }
+          } else {
+            // Fallback: manually hide modal
+            modalElement.classList.remove('show', 'd-block');
+            modalElement.style.display = 'none';
+            modalElement.style.opacity = '';
+            modalElement.style.visibility = '';
+            modalElement.style.zIndex = '';
+            modalElement.style.position = '';
+            modalElement.style.top = '';
+            modalElement.style.left = '';
+            modalElement.style.transform = '';
+            modalElement.style.width = '';
+            modalElement.style.maxWidth = '';
+            modalElement.setAttribute('aria-hidden', 'true');
+            modalElement.removeAttribute('aria-modal');
+            
+            // Remove backdrop
+            const backdrop = document.getElementById(modalId + '-backdrop');
+            if (backdrop) {
+              backdrop.remove();
+            }
+            
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+          }
+        } catch (error) {
+          console.error('Error closing modal:', error);
+          // Emergency fallback method
+          modalElement.classList.remove('show', 'd-block');
+          modalElement.style.display = 'none';
+          modalElement.style.opacity = '';
+          modalElement.style.visibility = '';
+        }
+      }
     }, 0);
   }
 

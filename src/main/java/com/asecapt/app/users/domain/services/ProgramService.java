@@ -41,11 +41,13 @@ public class ProgramService {
     public Program createProgram(CreateProgramRequest request) {
         Program program = new Program();
         program.setTitle(request.getTitle());
+        program.setName(request.getTitle()); // Map title to required name field
         program.setDescription(request.getDescription());
         program.setType(request.getType());
         program.setCategory(request.getCategory());
         program.setStatus(request.getStatus());
         program.setDuration(request.getDuration());
+        program.setHours(extractHoursFromDuration(request.getDuration())); // Extract hours from duration
         program.setCredits(request.getCredits());
         program.setPrice(request.getPrice());
         program.setStartDate(request.getStartDate());
@@ -63,11 +65,13 @@ public class ProgramService {
         if (optionalProgram.isPresent()) {
             Program program = optionalProgram.get();
             program.setTitle(request.getTitle());
+            program.setName(request.getTitle()); // Map title to required name field
             program.setDescription(request.getDescription());
             program.setType(request.getType());
             program.setCategory(request.getCategory());
             program.setStatus(request.getStatus());
             program.setDuration(request.getDuration());
+            program.setHours(extractHoursFromDuration(request.getDuration())); // Extract hours from duration
             program.setCredits(request.getCredits());
             program.setPrice(request.getPrice());
             program.setStartDate(request.getStartDate());
@@ -259,11 +263,13 @@ public class ProgramService {
             // Create new program
             Program duplicatedProgram = new Program();
             duplicatedProgram.setTitle(newTitle);
+            duplicatedProgram.setName(newTitle); // Map title to required name field
             duplicatedProgram.setDescription(originalProgram.getDescription());
             duplicatedProgram.setType(originalProgram.getType());
             duplicatedProgram.setCategory(originalProgram.getCategory());
             duplicatedProgram.setStatus("inactive"); // New programs start as inactive
             duplicatedProgram.setDuration(originalProgram.getDuration());
+            duplicatedProgram.setHours(originalProgram.getHours()); // Copy hours from original
             duplicatedProgram.setCredits(originalProgram.getCredits());
             duplicatedProgram.setPrice(originalProgram.getPrice());
             duplicatedProgram.setStartDate(originalProgram.getStartDate());
@@ -347,6 +353,25 @@ public class ProgramService {
     private String calculateTotalDuration(List<Content> contents) {
         // Simple implementation - in real scenario, parse duration strings and sum them
         return contents.size() + " módulos";
+    }
+
+    private Integer extractHoursFromDuration(String duration) {
+        if (duration == null || duration.trim().isEmpty()) {
+            return 40; // Default value if no duration provided
+        }
+        
+        // Try to extract number from duration string (e.g., "20 horas" -> 20)
+        try {
+            String cleanDuration = duration.toLowerCase()
+                .replaceAll("[^0-9]", ""); // Remove all non-numeric characters
+            if (!cleanDuration.isEmpty()) {
+                return Integer.parseInt(cleanDuration);
+            }
+        } catch (NumberFormatException e) {
+            // If parsing fails, return default
+        }
+        
+        return 40; // Default fallback value
     }
 }
 

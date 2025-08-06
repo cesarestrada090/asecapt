@@ -10,9 +10,9 @@
       <div class="row g-3">
         <div class="col-md-4">
           <label class="form-label">Buscar Estudiante</label>
-          <input 
-            type="text" 
-            class="form-control" 
+          <input
+            type="text"
+            class="form-control"
             placeholder="Nombre, email, documento..."
             [(ngModel)]="searchForm.query"
             (input)="searchStudents()">
@@ -87,42 +87,42 @@
             <tr *ngFor="let student of filteredStudents; trackBy: trackByStudentId">
               <td>
                 <div>
-                  <strong>{{ student.name }}</strong>
-                  <div class="text-muted small">{{ student.document }}</div>
+                  <strong>{{ getStudentDisplayName(student) }}</strong>
+                  <div class="text-muted small">{{ getStudentDocument(student) }}</div>
                 </div>
               </td>
               <td>
                 <div>
-                  <div class="text-muted small">{{ student.email }}</div>
-                  <div class="text-muted small">{{ student.phone }}</div>
+                  <div class="text-muted small">{{ getStudentEmail(student) }}</div>
+                  <div class="text-muted small">{{ getStudentPhone(student) }}</div>
                 </div>
               </td>
               <td>
-                <span class="badge bg-info">{{ student.enrollments }}</span>
+                <span class="badge bg-info">{{ getStudentEnrollmentCount(student) }}</span>
               </td>
               <td>
-                <span class="badge bg-success">{{ student.completedCourses }}</span>
+                <span class="badge bg-success">{{ getStudentCompletedCount(student) }}</span>
               </td>
               <td>
-                <span [class]="getStatusBadgeClass(student.status)">
-                  {{ getStatusText(student.status) }}
+                <span [class]="getStatusBadgeClass(student.active)">
+                  {{ getStatusText(student.active) }}
                 </span>
               </td>
               <td>
                 <div class="btn-group btn-group-sm">
-                  <button 
+                  <button
                     class="btn btn-outline-primary"
                     (click)="viewStudentDetails(student)"
                     title="Ver detalles">
                     <i class="fas fa-eye"></i>
                   </button>
-                  <button 
+                  <button
                     class="btn btn-outline-success"
                     (click)="viewStudentCertificates(student)"
                     title="Ver certificados">
                     <i class="fas fa-certificate"></i>
                   </button>
-                  <button 
+                  <button
                     class="btn btn-outline-info"
                     (click)="editStudent(student)"
                     title="Editar">
@@ -149,34 +149,4 @@
       </div>
     </div>
   </div>
-
-  <!-- Recent Enrollments -->
-  <div class="card mt-4" *ngIf="filteredEnrollments.length > 0">
-    <div class="card-header">
-      <h6 class="card-title mb-0">Inscripciones Recientes</h6>
-    </div>
-    <div class="card-body">
-      <div class="row">
-        <div class="col-md-6 mb-3" *ngFor="let enrollment of filteredEnrollments.slice(0, 6); trackBy: trackByEnrollmentId">
-          <div class="enrollment-card">
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <strong>{{ getStudentName(enrollment) }}</strong>
-                <div class="text-muted small">{{ getProgramName(enrollment) }}</div>
-                <div class="text-muted small">
-                  Inicio: {{ formatDate(enrollment.startDate) }}
-                </div>
-                <div class="text-muted small" *ngIf="enrollment.completionDate">
-                  Completado: {{ formatDate(enrollment.completionDate) }}
-                </div>
-              </div>
-              <span [class]="getStatusBadgeClass(enrollment.status)">
-                {{ getStatusText(enrollment.status) }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div> 
+</div>

@@ -15,11 +15,21 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByEmailVerificationToken(String token);
     boolean existsByPersonEmail(String email);
     
-    // Búsqueda de entrenadores usando query methods
+    // Búsqueda por tipo de usuario
     List<User> findByType(Integer type);
+    Optional<User> findByIdAndType(Integer id, Integer type);
     
+    // Búsqueda por nombre
     List<User> findByTypeAndPersonFirstNameContainingIgnoreCase(Integer type, String firstName);
-    
     List<User> findByTypeAndPersonLastNameContainingIgnoreCase(Integer type, String lastName);
+    
+    // Contadores
+    long countByType(Integer type);
+    long countByTypeAndActive(Integer type, boolean active);
+    
+    // Búsqueda de estudiantes - simplified for now
+    // TODO: Implement search functionality properly
+    @Query("SELECT u FROM User u WHERE u.type = 3")
+    List<User> findStudentsByQuery(@Param("query") String query);
     
 }
