@@ -21,7 +21,8 @@ export class CertificatesComponent implements OnInit {
   // Data lists
   activeStudents: Student[] = [];
   filteredStudents: Student[] = [];
-  certificates: { [key: number]: Certificate[] } = {}; // student ID -> certificates
+  certificates: { [key: number]: Certificate[] } = {}; // student ID -> certificates array
+  completedCoursesCount: { [key: number]: number } = {}; // student ID -> completed courses count
   
   // Search and filters
   searchQuery: string = '';
@@ -71,11 +72,12 @@ export class CertificatesComponent implements OnInit {
       )
       .subscribe(students => {
         // Filter only active students
-        this.activeStudents = students.filter(student => student.active);
+        this.activeStudents = (students || []).filter(student => student && student.active);
         this.filteredStudents = [...this.activeStudents];
         
-        // Load certificates for each student
+        // Load certificates and completed courses for each student
         this.loadCertificatesForStudents();
+        this.loadCompletedCoursesCount();
         
         this.isLoading = false;
       });
@@ -86,16 +88,47 @@ export class CertificatesComponent implements OnInit {
    */
   loadCertificatesForStudents() {
     this.activeStudents.forEach(student => {
-      this.certificateService.getCertificatesByStudent(student.id)
-        .pipe(
-          catchError(error => {
-            console.log(`No certificates found for student ${student.id}:`, error);
-            return of([]);
-          })
-        )
-        .subscribe(certificates => {
-          this.certificates[student.id] = certificates;
-        });
+      if (student && student.id) {
+        this.certificateService.getCertificatesByStudent(student.id)
+          .pipe(
+            catchError(error => {
+              console.log(`No certificates found for student ${student.id}:`, error);
+              return of([]);
+            })
+          )
+          .subscribe(certificates => {
+            if (certificates && Array.isArray(certificates)) {
+              this.certificates[student.id] = certificates;
+            } else {
+              this.certificates[student.id] = [];
+            }
+          });
+      }
+    });
+  }
+
+  /**
+   * Load completed courses count for all students
+   */
+  loadCompletedCoursesCount() {
+    this.activeStudents.forEach(student => {
+      if (student && student.id) {
+        this.enrollmentService.getEnrollmentsByUser(student.id)
+          .pipe(
+            catchError(error => {
+              console.log(`No enrollments found for student ${student.id}:`, error);
+              return of([]);
+            })
+          )
+          .subscribe(enrollments => {
+            if (enrollments && Array.isArray(enrollments)) {
+              const completedCount = enrollments.filter(e => e && e.status === 'completed').length;
+              this.completedCoursesCount[student.id] = completedCount;
+            } else {
+              this.completedCoursesCount[student.id] = 0;
+            }
+          });
+      }
     });
   }
 
@@ -105,16 +138,18 @@ export class CertificatesComponent implements OnInit {
    * Search students by name, email, or document
    */
   searchStudents() {
-    if (!this.searchQuery.trim()) {
+    if (!this.searchQuery?.trim()) {
       this.filteredStudents = [...this.activeStudents];
       return;
     }
 
     const query = this.searchQuery.toLowerCase().trim();
     this.filteredStudents = this.activeStudents.filter(student => {
-      const fullName = `${student.person?.firstName || ''} ${student.person?.lastName || ''}`.toLowerCase();
-      const email = (student.person?.email || '').toLowerCase();
-      const document = (student.person?.documentNumber || '').toLowerCase();
+      if (!student || !student.person) return false;
+      
+      const fullName = `${student.person.firstName || ''} ${student.person.lastName || ''}`.toLowerCase();
+      const email = (student.person.email || '').toLowerCase();
+      const document = (student.person.documentNumber || '').toLowerCase();
       
       return fullName.includes(query) || 
              email.includes(query) || 
@@ -128,30 +163,48 @@ export class CertificatesComponent implements OnInit {
    * View completed courses for a student (for certificate management)
    */
   viewStudentCompletedCourses(student: Student) {
+    if (!student || !student.id) {
+      this.emitMessage('error', 'Estudiante no válido');
+      return;
+    }
+    
     this.selectedStudent = student;
     this.isLoadingStudentCourses = true;
     this.studentCourses = [];
     this.modalMessage = null;
     
     console.log('Loading completed courses for student:', student.id);
-    this.showModal('studentCoursesModal');
+    
+    // Ensure DOM is ready, then show modal
+    setTimeout(() => {
+      this.showModal('studentCoursesModal');
+    }, 150);
     
     // Load only completed enrollments
     this.enrollmentService.getEnrollmentsByUser(student.id)
       .pipe(
         switchMap(enrollments => {
           console.log('Loaded enrollments for student:', enrollments);
+          if (!enrollments || !Array.isArray(enrollments)) {
+            console.error('Invalid enrollments data:', enrollments);
+            return of([]);
+          }
           
           // Filter only completed enrollments
-          const completedEnrollments = enrollments.filter(e => e.status === 'completed');
+          const completedEnrollments = (enrollments || []).filter(e => e && e.status === 'completed');
           
-          if (completedEnrollments.length === 0) {
+          if (!completedEnrollments || completedEnrollments.length === 0) {
             return of([]);
           }
           
           // Get unique program IDs
-          const programIds = [...new Set(completedEnrollments.map(e => e.programId))];
+          const programIds = [...new Set(completedEnrollments.map(e => e && e.programId).filter(id => id))];
           console.log('Loading program details for completed courses:', programIds);
+          
+          if (!programIds || programIds.length === 0) {
+            console.log('No program IDs found');
+            return of([]);
+          }
           
           // Create requests for each program
           const programRequests = programIds.map(id => 
@@ -164,29 +217,38 @@ export class CertificatesComponent implements OnInit {
           );
           
           // Execute all program requests in parallel
-          return forkJoin(programRequests).pipe(
+          return forkJoin(programRequests || []).pipe(
             switchMap(programs => {
+              if (!programs || !Array.isArray(programs)) {
+                console.error('Invalid programs data:', programs);
+                return of([]);
+              }
               // Filter out null results and create program map
               const programMap = new Map();
-              programs.filter(p => p !== null).forEach(program => {
-                programMap.set(program.id, program);
+              (programs || []).filter(p => p !== null).forEach(program => {
+                if (program && program.id) {
+                  programMap.set(program.id, program);
+                }
               });
               
               console.log('Loaded programs:', programMap);
               
               // Enrich enrollments with program data
-              const enrichedEnrollments = completedEnrollments.map(enrollment => ({
-                ...enrollment,
-                program: programMap.get(enrollment.programId) || {
-                  id: enrollment.programId,
-                  title: `Programa ${enrollment.programId}`,
-                  description: 'Información no disponible',
-                  duration: 'N/A',
-                  credits: 0
-                }
-              }));
+              const enrichedEnrollments = completedEnrollments.map(enrollment => {
+                if (!enrollment) return null;
+                return {
+                  ...enrollment,
+                  program: programMap.get(enrollment.programId) || {
+                    id: enrollment.programId,
+                    title: `Programa ${enrollment.programId}`,
+                    description: 'Información no disponible',
+                    duration: 'N/A',
+                    credits: 0
+                  }
+                };
+              }).filter(enrollment => enrollment !== null);
               
-              return of(enrichedEnrollments);
+              return of(enrichedEnrollments || []);
             })
           );
         }),
@@ -199,7 +261,7 @@ export class CertificatesComponent implements OnInit {
       )
       .subscribe(enrichedCourses => {
         console.log('Final enriched completed courses:', enrichedCourses);
-        this.studentCourses = enrichedCourses;
+        this.studentCourses = enrichedCourses || [];
         this.isLoadingStudentCourses = false;
       });
   }
@@ -210,6 +272,11 @@ export class CertificatesComponent implements OnInit {
    * Show certificate upload form for a course
    */
   showCertificateUpload(course: any) {
+    if (!course || !course.id) {
+      this.showModalMessage('error', 'Curso no válido');
+      return;
+    }
+    
     this.selectedEnrollmentForCertificate = course;
     this.showCertificateUploadModal = true;
     this.certificateFile = null;
@@ -217,14 +284,14 @@ export class CertificatesComponent implements OnInit {
     // Show the modal after a brief delay to ensure DOM is updated
     setTimeout(() => {
       this.showModal('certificateUploadModal');
-    }, 100);
+    }, 150);
   }
 
   /**
    * Handle certificate file selection
    */
   onCertificateFileSelected(event: any) {
-    const file = event.target.files[0];
+    const file = event?.target?.files?.[0];
     if (file) {
       // Validate file type
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
@@ -248,7 +315,7 @@ export class CertificatesComponent implements OnInit {
    * Upload certificate for the selected enrollment
    */
   uploadCertificate() {
-    if (!this.selectedEnrollmentForCertificate || !this.certificateFile) {
+    if (!this.selectedEnrollmentForCertificate || !this.selectedEnrollmentForCertificate.id || !this.certificateFile) {
       this.showModalMessage('error', 'Seleccione un archivo de certificado');
       return;
     }
@@ -290,6 +357,8 @@ export class CertificatesComponent implements OnInit {
         if (studentId) {
           this.loadCertificatesForStudent(studentId);
         }
+      } else {
+        this.showModalMessage('error', 'Error al procesar el certificado');
       }
       this.isUploadingCertificate = false;
     });
@@ -315,6 +384,11 @@ export class CertificatesComponent implements OnInit {
    * Load certificates for a specific student
    */
   loadCertificatesForStudent(studentId: number) {
+    if (!studentId) {
+      console.error('Invalid student ID:', studentId);
+      return;
+    }
+    
     this.certificateService.getCertificatesByStudent(studentId)
       .pipe(
         catchError(error => {
@@ -323,7 +397,11 @@ export class CertificatesComponent implements OnInit {
         })
       )
       .subscribe(certificates => {
-        this.certificates[studentId] = certificates;
+        if (certificates && Array.isArray(certificates)) {
+          this.certificates[studentId] = certificates;
+        } else {
+          this.certificates[studentId] = [];
+        }
       });
   }
 
@@ -332,10 +410,10 @@ export class CertificatesComponent implements OnInit {
    */
   hasCertificate(course: any): boolean {
     const studentId = this.selectedStudent?.id;
-    if (!studentId) return false;
+    if (!studentId || !course || !course.id) return false;
     
     const studentCertificates = this.certificates[studentId] || [];
-    return studentCertificates.some(cert => cert.enrollment.id === course.id);
+    return studentCertificates.some(cert => cert.enrollment && cert.enrollment.id === course.id);
   }
 
   /**
@@ -343,10 +421,10 @@ export class CertificatesComponent implements OnInit {
    */
   getCertificate(course: any): Certificate | null {
     const studentId = this.selectedStudent?.id;
-    if (!studentId) return null;
+    if (!studentId || !course || !course.id) return null;
     
     const studentCertificates = this.certificates[studentId] || [];
-    return studentCertificates.find(cert => cert.enrollment.id === course.id) || null;
+    return studentCertificates.find(cert => cert.enrollment && cert.enrollment.id === course.id) || null;
   }
 
   /**
@@ -354,7 +432,7 @@ export class CertificatesComponent implements OnInit {
    */
   downloadCertificate(course: any) {
     const certificate = this.getCertificate(course);
-    if (!certificate) {
+    if (!certificate || !certificate.id) {
       this.showModalMessage('error', 'Certificado no encontrado');
       return;
     }
@@ -372,9 +450,11 @@ export class CertificatesComponent implements OnInit {
           const url = window.URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
-          link.download = certificate.fileName;
+          link.download = certificate.fileName || 'certificate.pdf';
           link.click();
           window.URL.revokeObjectURL(url);
+        } else {
+          this.showModalMessage('error', 'No se pudo descargar el archivo');
         }
       });
   }
@@ -384,7 +464,7 @@ export class CertificatesComponent implements OnInit {
    */
   downloadQRCode(course: any) {
     const certificate = this.getCertificate(course);
-    if (!certificate) {
+    if (!certificate || !certificate.id) {
       this.showModalMessage('error', 'Certificado no encontrado');
       return;
     }
@@ -402,9 +482,11 @@ export class CertificatesComponent implements OnInit {
           const url = window.URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
-          link.download = `${certificate.certificateCode}_QR.png`;
+          link.download = `${certificate.certificateCode || 'certificate'}_QR.png`;
           link.click();
           window.URL.revokeObjectURL(url);
+        } else {
+          this.showModalMessage('error', 'No se pudo descargar el código QR');
         }
       });
   }
@@ -413,8 +495,21 @@ export class CertificatesComponent implements OnInit {
    * View certificates issued for a student
    */
   viewStudentCertificates(student: Student) {
+    if (!student || !student.id) {
+      this.emitMessage('error', 'Estudiante no válido');
+      return;
+    }
     this.selectedStudent = student;
-    this.showModal('viewCertificatesModal');
+    
+    // Load certificates if not already loaded
+    if (!this.certificates[student.id]) {
+      this.loadCertificatesForStudent(student.id);
+    }
+    
+    // Ensure DOM is ready, then show modal
+    setTimeout(() => {
+      this.showModal('viewCertificatesModal');
+    }, 150);
   }
 
   // === UTILITY METHODS ===
@@ -423,6 +518,7 @@ export class CertificatesComponent implements OnInit {
    * Get student display name
    */
   getStudentDisplayName(student: Student): string {
+    if (!student) return 'Estudiante desconocido';
     if (student.person?.firstName && student.person?.lastName) {
       return `${student.person.firstName} ${student.person.lastName}`;
     }
@@ -433,6 +529,7 @@ export class CertificatesComponent implements OnInit {
    * Get student document number
    */
   getStudentDocument(student: Student): string {
+    if (!student) return 'Sin documento';
     return student.person?.documentNumber || 'Sin documento';
   }
 
@@ -440,6 +537,7 @@ export class CertificatesComponent implements OnInit {
    * Get student email
    */
   getStudentEmail(student: Student): string {
+    if (!student) return 'Sin email';
     return student.person?.email || 'Sin email';
   }
 
@@ -447,35 +545,40 @@ export class CertificatesComponent implements OnInit {
    * Get certificates count for a student
    */
   getCertificatesCount(student: Student): number {
-    return this.certificates[student.id]?.length || 0;
+    if (!student || !student.id) return 0;
+    const studentCertificates = this.certificates[student.id];
+    return studentCertificates ? studentCertificates.length : 0;
   }
 
   /**
    * Check if student has certificates (safe method for template)
    */
   hasStudentCertificates(student: Student | null): boolean {
-    return !!(student?.id && this.certificates[student.id]?.length > 0);
+    if (!student || !student.id) return false;
+    const studentCertificates = this.certificates[student.id];
+    return !!(studentCertificates && studentCertificates.length > 0);
   }
 
   /**
    * Get student certificates (safe method for template)
    */
   getStudentCertificates(student: Student | null): Certificate[] {
-    return student?.id ? (this.certificates[student.id] || []) : [];
+    if (!student || !student.id) return [];
+    return this.certificates[student.id] || [];
   }
 
   /**
    * Get completed courses count for display
    */
   getCompletedCoursesCount(student: Student): number {
-    // This could be optimized by storing completion counts
-    return this.getCertificatesCount(student); // Simplified for now
+    if (!student || !student.id) return 0;
+    return this.completedCoursesCount[student.id] || 0;
   }
 
   /**
    * Format date for display
    */
-  formatDate(dateString: string): string {
+  formatDate(dateString: string | null | undefined): string {
     if (!dateString) return 'N/A';
     try {
       return new Date(dateString).toLocaleDateString('es-ES');
@@ -487,7 +590,7 @@ export class CertificatesComponent implements OnInit {
   /**
    * Get course status badge class
    */
-  getCourseStatusBadgeClass(status: string): string {
+  getCourseStatusBadgeClass(status: string | null | undefined): string {
     switch (status?.toLowerCase()) {
       case 'completed':
         return 'bg-success';
@@ -499,7 +602,7 @@ export class CertificatesComponent implements OnInit {
   /**
    * Get course status text
    */
-  getCourseStatusText(status: string): string {
+  getCourseStatusText(status: string | null | undefined): string {
     switch (status?.toLowerCase()) {
       case 'completed':
         return 'Completado';
@@ -511,47 +614,102 @@ export class CertificatesComponent implements OnInit {
   // === MODAL MANAGEMENT ===
 
   /**
-   * Show modal with pure CSS manipulation
+   * Show modal using Bootstrap Modal API or fallback to CSS manipulation
    */
   showModal(modalId: string) {
+    if (!modalId) {
+      console.error('Modal ID is required');
+      return;
+    }
+    
     const modalElement = document.getElementById(modalId);
     if (!modalElement) {
       console.error('Modal element not found:', modalId);
       return;
     }
+    
+    console.log('Showing modal:', modalId);
+    
     try {
-      modalElement.classList.add('show');
-      modalElement.style.display = 'block';
-      modalElement.setAttribute('aria-modal', 'true');
-      modalElement.setAttribute('aria-hidden', 'false');
-      if (!document.querySelector('.modal-backdrop')) {
+      // Try using Bootstrap Modal API first
+      if ((window as any).bootstrap?.Modal) {
+        console.log('Using Bootstrap Modal API for:', modalId);
+        const modal = new (window as any).bootstrap.Modal(modalElement, {
+          backdrop: 'static',  // Prevent closing when clicking backdrop
+          keyboard: true,
+          focus: true
+        });
+        modal.show();
+      } else {
+        console.log('Using CSS fallback for modal:', modalId);
+        // Fallback to CSS manipulation
+        modalElement.classList.add('show');
+        modalElement.style.display = 'block';
+        modalElement.style.zIndex = '1050'; // Ensure modal is above backdrop
+        modalElement.setAttribute('aria-modal', 'true');
+        modalElement.setAttribute('aria-hidden', 'false');
+        
+        // Remove any existing backdrop first
+        const existingBackdrop = document.querySelector('.modal-backdrop');
+        if (existingBackdrop) {
+          existingBackdrop.remove();
+        }
+        
+        // Create new backdrop with forced visibility
         const backdrop = document.createElement('div');
         backdrop.className = 'modal-backdrop fade show';
+        backdrop.style.cssText = `
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          z-index: 1040 !important;
+          background-color: rgba(0, 0, 0, 0.7) !important;
+          opacity: 1 !important;
+        `;
         document.body.appendChild(backdrop);
+        document.body.classList.add('modal-open');
       }
-      document.body.classList.add('modal-open');
     } catch (error) {
       console.error('Error showing modal:', error);
     }
   }
 
   /**
-   * Close modal with pure CSS manipulation
+   * Close modal using Bootstrap Modal API or fallback to CSS manipulation
    */
   closeModal(modalId: string) {
+    if (!modalId) {
+      console.error('Modal ID is required');
+      return;
+    }
+    
     const modalElement = document.getElementById(modalId);
     if (!modalElement) return;
+    
     try {
-      modalElement.classList.remove('show');
-      modalElement.style.display = 'none';
-      modalElement.setAttribute('aria-modal', 'false');
-      modalElement.setAttribute('aria-hidden', 'true');
-      const backdrop = document.querySelector('.modal-backdrop');
-      if (backdrop) {
-        backdrop.remove();
+      // Try using Bootstrap Modal API first
+      if ((window as any).bootstrap?.Modal) {
+        const modal = (window as any).bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+          modal.hide();
+        }
+      } else {
+        // Fallback to CSS manipulation
+        modalElement.classList.remove('show');
+        modalElement.style.display = 'none';
+        modalElement.setAttribute('aria-modal', 'false');
+        modalElement.setAttribute('aria-hidden', 'true');
+        
+        // Remove all backdrops
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(backdrop => backdrop.remove());
+        
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = ''; // Remove any padding added by Bootstrap
       }
-      document.body.classList.remove('modal-open');
-      document.body.style.overflow = '';
     } catch (error) {
       console.error('Error closing modal:', error);
     }
@@ -561,6 +719,8 @@ export class CertificatesComponent implements OnInit {
    * Show modal message
    */
   showModalMessage(type: 'success' | 'error', text: string) {
+    if (!text) return;
+    
     this.modalMessage = { type, text };
     setTimeout(() => {
       this.modalMessage = null;
@@ -571,6 +731,7 @@ export class CertificatesComponent implements OnInit {
    * Emit message to parent component
    */
   emitMessage(type: 'success' | 'error', message: string) {
+    if (!message) return;
     this.message.emit({ type, message });
   }
 
@@ -578,13 +739,13 @@ export class CertificatesComponent implements OnInit {
    * Track by function for student list
    */
   trackByStudentId(index: number, student: Student): number {
-    return student.id;
+    return student?.id || index;
   }
 
   /**
    * Track by function for course list
    */
   trackByCourseId(index: number, course: any): number {
-    return course.id;
+    return course?.id || index;
   }
 }

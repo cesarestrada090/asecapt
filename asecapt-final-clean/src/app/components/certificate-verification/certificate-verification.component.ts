@@ -1,228 +1,300 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { VerificationService, CertificateVerificationResponse } from '../../services/verification.service';
+import { HttpClient } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { buildApiUrl } from '../../constants';
+
+interface CertificateVerificationResponse {
+  valid: boolean;
+  certificate?: {
+    certificateCode: string;
+    issuedDate: string;
+    createdAt: string;
+    student: {
+      firstName: string;
+      lastName: string;
+      documentNumber: string;
+      email: string;
+    };
+    program: {
+      title: string;
+      description: string;
+      duration: string;
+      credits: number;
+    };
+    enrollment: {
+      status: string;
+      enrollmentDate: string;
+      completionDate: string;
+      finalGrade: number;
+      attendancePercentage: number;
+    };
+  };
+  errorCode?: string;
+  errorMessage?: string;
+}
 
 @Component({
   selector: 'app-certificate-verification',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   templateUrl: './certificate-verification.component.html',
   styleUrl: './certificate-verification.component.css'
 })
 export class CertificateVerificationComponent implements OnInit {
-  
-  // Verification data
-  verificationToken: string | null = null;
-  verificationResult: CertificateVerificationResponse | null = null;
-  
-  // UI states
+  certificateCode: string = '';
+  certificateData: CertificateVerificationResponse | null = null;
   isLoading: boolean = false;
-  isValid: boolean = false;
-  errorMessage: string = '';
-  showDetails: boolean = false;
-
-  // Manual verification
-  manualToken: string = '';
-  showManualForm: boolean = false;
+  error: string = '';
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
-    private verificationService: VerificationService
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
-    // Get token from URL params
     this.route.params.subscribe(params => {
-      const token = params['token'];
-      if (token) {
-        this.verificationToken = token;
-        this.verifyCertificate(token);
-      } else {
-        this.showManualForm = true;
+      this.certificateCode = params['certificateCode'];
+      if (this.certificateCode) {
+        this.verifyCertificate();
       }
     });
   }
 
-  verifyCertificate(token: string) {
-    if (!token) {
-      this.errorMessage = 'Token de verificación requerido';
-      return;
-    }
-
-    // Validate token format
-    if (!this.verificationService.isValidTokenFormat(token)) {
-      this.errorMessage = 'Formato de token inválido';
-      return;
-    }
-
+  verifyCertificate() {
     this.isLoading = true;
-    this.errorMessage = '';
-    this.verificationResult = null;
-
-    this.verificationService.verifyCertificate(token)
+    this.error = '';
+    
+    const apiUrl = buildApiUrl(`public/certificate/${this.certificateCode}`);
+    
+    this.http.get<CertificateVerificationResponse>(apiUrl)
       .pipe(
         catchError(error => {
           console.error('Error verifying certificate:', error);
-          this.errorMessage = 'Error al verificar el certificado. Inténtelo nuevamente.';
+          this.error = 'Error al verificar el certificado. Por favor, intente nuevamente.';
           this.isLoading = false;
           return of(null);
         })
       )
       .subscribe(response => {
+        this.certificateData = response;
         this.isLoading = false;
-        if (response) {
-          this.verificationResult = response;
-          this.isValid = response.valid;
-          this.showDetails = response.valid;
-        } else {
-          this.errorMessage = 'No se pudo verificar el certificado';
+        
+        if (response && !response.valid) {
+          this.error = response.errorMessage || 'Certificado no válido';
         }
       });
   }
 
-  verifyManualToken() {
-    const token = this.manualToken.trim();
-    if (!token) {
-      this.errorMessage = 'Por favor ingrese un token de verificación';
-      return;
-    }
-
-    // Extract token from URL if needed
-    const extractedToken = this.verificationService.extractTokenFromUrl(token);
-    if (extractedToken) {
-      this.verificationToken = extractedToken;
-      this.verifyCertificate(extractedToken);
-      this.showManualForm = false;
-    } else {
-      this.errorMessage = 'Token o URL inválido';
-    }
-  }
-
-  // UI Helper methods
-  getStatusIcon(): string {
-    if (!this.verificationResult) return 'fas fa-question';
-    return this.verificationService.getStatusIcon(this.verificationResult.status);
-  }
-
-  getStatusColorClass(): string {
-    if (!this.verificationResult) return 'text-secondary';
-    return this.verificationService.getStatusColorClass(this.verificationResult.status);
-  }
-
-  getStatusBgClass(): string {
-    if (!this.verificationResult) return 'bg-light';
-    return this.verificationService.getStatusBgClass(this.verificationResult.status);
-  }
-
-  getStatusDisplayText(): string {
-    if (!this.verificationResult) return 'Estado Desconocido';
-    return this.verificationService.getStatusDisplayText(this.verificationResult.status);
-  }
-
+  /**
+   * Format date for display
+   */
   formatDate(dateString: string): string {
-    return this.verificationService.formatDate(dateString);
-  }
-
-  formatDateTime(dateString: string): string {
-    return this.verificationService.formatDateTime(dateString);
-  }
-
-  calculateCourseDuration(): string {
-    if (!this.verificationResult?.certificateInfo?.enrollment) return '';
-    const enrollment = this.verificationResult.certificateInfo.enrollment;
-    return this.verificationService.calculateCourseDuration(enrollment.startDate, enrollment.completionDate);
-  }
-
-  toggleDetails() {
-    this.showDetails = !this.showDetails;
-  }
-
-  printVerification() {
-    window.print();
-  }
-
-  generateReport(): string {
-    if (!this.verificationResult) return '';
-    return this.verificationService.generateVerificationReport(this.verificationResult);
-  }
-
-  downloadReport() {
-    const report = this.generateReport();
-    const blob = new Blob([report], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `verificacion_certificado_${this.verificationResult?.verificationToken}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  }
-
-  goBack() {
-    this.router.navigate(['/']);
-  }
-
-  verifyAnother() {
-    this.verificationToken = null;
-    this.verificationResult = null;
-    this.manualToken = '';
-    this.showManualForm = true;
-    this.errorMessage = '';
-    this.isValid = false;
-    this.showDetails = false;
-  }
-
-  // Share verification result
-  shareVerification() {
-    if (!this.verificationResult || !this.verificationToken) return;
-
-    const shareData = {
-      title: 'Verificación de Certificado ASECAPT',
-      text: `Certificado ${this.verificationResult.valid ? 'VÁLIDO' : 'INVÁLIDO'}: ${this.verificationResult.message}`,
-      url: `${window.location.origin}/verify/${this.verificationToken}`
-    };
-
-    if (navigator.share) {
-      navigator.share(shareData).catch(console.error);
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(shareData.url).then(() => {
-        alert('URL copiada al portapapeles');
-      }).catch(() => {
-        alert('No se pudo compartir automáticamente');
+    if (!dateString) return 'N/A';
+    try {
+      return new Date(dateString).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
       });
+    } catch (error) {
+      return 'Fecha inválida';
     }
   }
 
-  // Get grade color class based on score
+  /**
+   * Get status badge class
+   */
+  getStatusBadgeClass(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'badge bg-success';
+      case 'in_progress':
+        return 'badge bg-warning text-dark';
+      case 'enrolled':
+        return 'badge bg-info';
+      default:
+        return 'badge bg-secondary';
+    }
+  }
+
+  /**
+   * Get status text
+   */
+  getStatusText(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'Completado';
+      case 'in_progress':
+        return 'En Progreso';
+      case 'enrolled':
+        return 'Matriculado';
+      default:
+        return status || 'Desconocido';
+    }
+  }
+
+  /**
+   * Get grade color class
+   */
   getGradeColorClass(grade: number): string {
-    if (grade >= 90) return 'text-success';
-    if (grade >= 80) return 'text-primary';
+    if (grade >= 80) return 'text-success';
     if (grade >= 70) return 'text-warning';
     return 'text-danger';
   }
 
-  // Get attendance color class based on percentage
+  /**
+   * Get attendance color class
+   */
   getAttendanceColorClass(attendance: number): string {
-    if (attendance >= 95) return 'text-success';
-    if (attendance >= 90) return 'text-primary';
-    if (attendance >= 85) return 'text-warning';
+    if (attendance >= 80) return 'text-success';
+    if (attendance >= 70) return 'text-warning';
     return 'text-danger';
   }
 
-  // Format grade display
-  formatGrade(grade: number): string {
-    return `${grade.toFixed(1)}/100`;
+  /**
+   * Print certificate
+   */
+  printCertificate() {
+    window.print();
   }
 
-  // Format attendance display
-  formatAttendance(attendance: number): string {
-    return `${attendance.toFixed(1)}%`;
+  /**
+   * Get current date formatted
+   */
+  getCurrentDate(): string {
+    return this.formatDate(new Date().toISOString());
   }
-} 
+
+  // Safe getter methods to avoid null reference errors
+  
+  /**
+   * Safe access to certificate data
+   */
+  getCertificate() {
+    return this.certificateData?.certificate || null;
+  }
+
+  /**
+   * Safe access to student data
+   */
+  getStudent() {
+    return this.getCertificate()?.student || null;
+  }
+
+  /**
+   * Safe access to program data
+   */
+  getProgram() {
+    return this.getCertificate()?.program || null;
+  }
+
+  /**
+   * Safe access to enrollment data
+   */
+  getEnrollment() {
+    return this.getCertificate()?.enrollment || null;
+  }
+
+  /**
+   * Get student full name safely
+   */
+  getStudentFullName(): string {
+    const student = this.getStudent();
+    if (!student?.firstName || !student?.lastName) return 'N/A';
+    return `${student.firstName} ${student.lastName}`;
+  }
+
+  /**
+   * Get student document safely
+   */
+  getStudentDocument(): string {
+    return this.getStudent()?.documentNumber || 'N/A';
+  }
+
+  /**
+   * Get student email safely
+   */
+  getStudentEmail(): string {
+    return this.getStudent()?.email || 'N/A';
+  }
+
+  /**
+   * Get program title safely
+   */
+  getProgramTitle(): string {
+    return this.getProgram()?.title || 'N/A';
+  }
+
+  /**
+   * Get program description safely
+   */
+  getProgramDescription(): string {
+    return this.getProgram()?.description || 'N/A';
+  }
+
+  /**
+   * Get program duration safely
+   */
+  getProgramDuration(): string {
+    return this.getProgram()?.duration || 'N/A';
+  }
+
+  /**
+   * Get program credits safely
+   */
+  getProgramCredits(): number {
+    return this.getProgram()?.credits || 0;
+  }
+
+  /**
+   * Get enrollment status safely
+   */
+  getEnrollmentStatus(): string {
+    return this.getEnrollment()?.status || '';
+  }
+
+  /**
+   * Get final grade safely
+   */
+  getFinalGrade(): number {
+    return this.getEnrollment()?.finalGrade || 0;
+  }
+
+  /**
+   * Get attendance percentage safely
+   */
+  getAttendancePercentage(): number {
+    return this.getEnrollment()?.attendancePercentage || 0;
+  }
+
+  /**
+   * Get certificate code safely
+   */
+  getCertificateCode(): string {
+    return this.getCertificate()?.certificateCode || '';
+  }
+
+  /**
+   * Get issued date safely
+   */
+  getIssuedDate(): string {
+    return this.getCertificate()?.issuedDate || '';
+  }
+
+  /**
+   * Get enrollment date safely
+   */
+  getEnrollmentDate(): string {
+    return this.getEnrollment()?.enrollmentDate || '';
+  }
+
+  /**
+   * Get completion date safely
+   */
+  getCompletionDate(): string {
+    return this.getEnrollment()?.completionDate || '';
+  }
+}

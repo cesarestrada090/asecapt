@@ -10,9 +10,9 @@
       <div class="row g-3">
         <div class="col-md-4">
           <label class="form-label">Buscar Estudiante</label>
-          <input
-            type="text"
-            class="form-control"
+          <input 
+            type="text" 
+            class="form-control" 
             placeholder="Nombre, email, documento..."
             [(ngModel)]="searchForm.query"
             (input)="searchStudents()">
@@ -107,19 +107,19 @@
               </td>
               <td>
                 <div class="btn-group btn-group-sm">
-                  <button
+                  <button 
                     class="btn btn-outline-primary"
                     (click)="viewStudentDetails(student)"
                     title="Ver detalles">
                     <i class="fas fa-user"></i>
                   </button>
-                  <button
+                  <button 
                     class="btn btn-outline-warning"
                     (click)="viewStudentCertificates(student)"
                     title="Ver certificados">
                     <i class="fas fa-award"></i>
                   </button>
-                  <button
+                  <button 
                     class="btn btn-outline-info"
                     (click)="editStudent(student)"
                     title="Editar">
@@ -535,7 +535,7 @@
           <button type="button" class="btn-close" (click)="closeModal('studentDetailsModal')" aria-label="Close"></button>
         </div>
         <div class="modal-body" *ngIf="selectedStudent">
-          <div class="row">
+      <div class="row">
             <!-- Personal Information -->
             <div class="col-md-6">
               <div class="card h-100">
@@ -619,7 +619,7 @@
                     <p>
                       <span class="badge bg-warning">
                         <i class="fas fa-crown me-1"></i>Premium
-                      </span>
+              </span>
                     </p>
                   </div>
                   
@@ -787,4 +787,4 @@
       </div>
     </div>
   </div>
-</div>
+</div> 

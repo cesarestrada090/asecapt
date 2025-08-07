@@ -1,238 +1,320 @@
-.certificate-verification-page {
+/* Certificate Verification Container */
+.certificate-verification-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 2rem 0;
 }
 
-.verification-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+/* Loading Section */
+.loading-section {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.card {
-  border: none;
+.loading-section h4 {
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+/* Error Section */
+.error-section {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.error-section .card {
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.15);
   border-radius: 15px;
-  transition: all 0.3s ease;
 }
 
-.card:hover {
+.error-section .card-header {
+  border-radius: 15px 15px 0 0;
+}
+
+/* Certificate Display */
+.certificate-display {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Certificate Header */
+.certificate-header .card {
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.15);
+  border-radius: 15px;
+  border: 2px solid #28a745;
+}
+
+.certificate-header .card-header {
+  border-radius: 13px 13px 0 0;
+  background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.verification-badge {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Card Styles */
+.certificate-details .card {
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.certificate-details .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
 }
 
-.card-header {
-  border-radius: 15px 15px 0 0 !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-}
-
-.card-body {
-  border-radius: 0 0 15px 15px;
-}
-
-/* Status specific styles */
-.bg-success {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+.certificate-details .card-header {
+  background: linear-gradient(135deg, #007bff, #0056b3);
   color: white;
+  border-radius: 12px 12px 0 0;
+  border-bottom: none;
 }
 
-.bg-danger {
-  background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%) !important;
-  color: white;
+.certificate-details .card-header h5 {
+  margin-bottom: 0;
+  font-weight: 600;
 }
 
-.bg-warning {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
-  color: white;
+.certificate-details .card-body {
+  padding: 1.5rem;
 }
 
-.bg-secondary {
-  background: linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%) !important;
-  color: white;
+/* ASECAPT Branding */
+.certificate-details .card:first-of-type .card-header {
+  background: linear-gradient(135deg, #007bff, #6f42c1);
+  text-align: center;
+  padding: 2rem 1rem;
 }
 
-.bg-light {
-  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%) !important;
+.certificate-details .card:first-of-type h4 {
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-bottom: 0.5rem;
 }
 
-/* Form styles */
-.form-control-lg {
-  border-radius: 10px;
-  padding: 15px 20px;
-  border: 2px solid #e9ecef;
-  transition: all 0.3s ease;
+/* Status Badges */
+.badge {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  border-radius: 20px;
 }
 
-.form-control-lg:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-  transform: translateY(-1px);
+.badge.bg-success {
+  background: linear-gradient(135deg, #28a745, #20c997) !important;
 }
 
-/* Button styles */
-.btn {
-  border-radius: 10px;
-  padding: 10px 20px;
-  font-weight: 500;
-  transition: all 0.3s ease;
+.badge.bg-warning {
+  background: linear-gradient(135deg, #ffc107, #fd7e14) !important;
 }
 
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.badge.bg-info {
+  background: linear-gradient(135deg, #17a2b8, #007bff) !important;
 }
 
+.badge.bg-secondary {
+  background: linear-gradient(135deg, #6c757d, #495057) !important;
+}
+
+/* Grade and Attendance Colors */
+.text-success {
+  color: #28a745 !important;
+  font-weight: bold;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+  font-weight: bold;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+  font-weight: bold;
+}
+
+/* Code Display */
+code {
+  background-color: #f8f9fa;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #e83e8c;
+  border: 1px solid #e9ecef;
+}
+
+/* Action Buttons */
 .btn-lg {
-  padding: 15px 30px;
+  padding: 0.75rem 2rem;
   font-size: 1.1rem;
+  border-radius: 25px;
+  transition: all 0.3s ease-in-out;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #007bff, #0056b3);
   border: none;
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 123, 255, 0.3);
 }
 
-.btn-outline-primary {
-  border-color: #667eea;
-  color: #667eea;
+/* Footer */
+.certificate-details .card:last-child {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border: 1px solid #dee2e6;
 }
 
-.btn-outline-primary:hover {
-  background: #667eea;
-  border-color: #667eea;
+.certificate-details .card:last-child .card-body {
+  padding: 1rem;
 }
 
-/* Progress bars */
-.progress {
-  height: 10px;
-  border-radius: 10px;
-  background-color: rgba(0, 0, 0, 0.1);
+/* Links */
+a {
+  color: #007bff;
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
 }
 
-.progress-bar {
-  border-radius: 10px;
-  transition: width 0.6s ease;
+a:hover {
+  color: #0056b3;
+  text-decoration: underline;
 }
 
-/* Badge styles */
-.badge {
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-weight: 500;
-}
-
-.badge.fs-6 {
-  font-size: 1rem !important;
-  padding: 10px 15px;
-}
-
-/* Table styles */
-.table-borderless td {
-  padding: 8px 0;
-  border: none;
-  vertical-align: middle;
-}
-
-.table-borderless td:first-child {
-  width: 40%;
-  font-weight: 500;
-}
-
-/* Animation for loading */
-.spinner-border {
-  width: 3rem;
-  height: 3rem;
-}
-
-/* Alert styles */
-.alert {
-  border: none;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.alert-danger {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-  color: white;
-}
-
-/* Footer styles */
-footer {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .verification-header h1 {
-    font-size: 1.5rem;
-  }
-  
-  .card-body {
-    padding: 1.5rem;
-  }
-  
-  .btn-group {
-    flex-direction: column;
-  }
-  
-  .btn-group .btn {
-    margin-bottom: 0.5rem;
-    border-radius: 10px !important;
-  }
-  
-  .col-md-6 {
-    margin-bottom: 1rem;
-  }
-}
-
-/* Print styles */
+/* Print Styles */
 @media print {
-  .verification-header,
-  footer,
-  .btn,
-  .btn-group {
+  .certificate-verification-container {
+    background: white !important;
+    padding: 0 !important;
+  }
+  
+  .certificate-display .container {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+  
+  .btn {
     display: none !important;
   }
   
   .card {
-    box-shadow: none;
-    border: 1px solid #ddd;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    page-break-inside: avoid;
   }
   
-  .certificate-verification-page {
-    background: white;
+  .card-header {
+    background: #f8f9fa !important;
+    color: #333 !important;
+    -webkit-print-color-adjust: exact;
   }
 }
 
-/* Icon styles */
+/* Responsive Design */
+@media (max-width: 768px) {
+  .certificate-verification-container {
+    padding: 1rem 0;
+  }
+  
+  .certificate-details .card-body {
+    padding: 1rem;
+  }
+  
+  .certificate-header .card-header {
+    padding: 1.5rem 1rem;
+  }
+  
+  .certificate-header h3 {
+    font-size: 1.5rem;
+  }
+  
+  .verification-badge .fa-check-circle {
+    font-size: 3rem !important;
+  }
+  
+  .btn-lg {
+    padding: 0.5rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .certificate-verification-container {
+    padding: 0.5rem 0;
+  }
+  
+  .container {
+    padding: 0 1rem;
+  }
+  
+  .certificate-details .card-body .row {
+    margin: 0;
+  }
+  
+  .certificate-details .card-body .row .col-md-4,
+  .certificate-details .card-body .row .col-md-6 {
+    padding: 0.5rem 0;
+  }
+}
+
+/* Hover Effects */
+.card-header:hover {
+  transform: none;
+}
+
+.verification-badge:hover {
+  animation-play-state: paused;
+}
+
+/* Icons */
 .fas, .far {
   margin-right: 0.5rem;
 }
 
-/* Status icon large size */
-.card-body i[style*="font-size: 4rem"] {
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.fa-4x {
+  font-size: 4rem;
 }
 
-/* Hover effects for interactive elements */
-.table-borderless tr:hover {
-  background-color: rgba(0, 0, 0, 0.02);
-  border-radius: 5px;
+/* Text Utilities */
+.text-primary {
+  color: #007bff !important;
 }
 
-code {
-  background-color: rgba(0, 0, 0, 0.05);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: 'Courier New', monospace;
-  font-size: 0.9em;
+.text-muted {
+  color: #6c757d !important;
 }
 
-/* Smooth transitions */
-* {
-  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, 
-              border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-} 
+.small {
+  font-size: 0.875rem;
+}

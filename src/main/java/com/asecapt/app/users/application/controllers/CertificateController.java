@@ -139,12 +139,12 @@ public class CertificateController {
     }
     
     /**
-     * Download certificate file
+     * Download certificate file 
      */
     @GetMapping("/download/{certificateId}")
     public ResponseEntity<Resource> downloadCertificate(@PathVariable Integer certificateId) {
         try {
-            Optional<Certificate> certificateOpt = certificateService.getCertificateByCode(certificateId.toString());
+            Optional<Certificate> certificateOpt = certificateService.getCertificateById(certificateId);
             
             if (certificateOpt.isEmpty()) {
                 return ResponseEntity.notFound().build();
@@ -174,7 +174,7 @@ public class CertificateController {
     @GetMapping("/qr/{certificateId}")
     public ResponseEntity<Resource> downloadQRCode(@PathVariable Integer certificateId) {
         try {
-            Optional<Certificate> certificateOpt = certificateService.getCertificateByCode(certificateId.toString());
+            Optional<Certificate> certificateOpt = certificateService.getCertificateById(certificateId);
             
             if (certificateOpt.isEmpty()) {
                 return ResponseEntity.notFound().build();

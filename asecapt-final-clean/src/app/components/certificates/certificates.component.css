@@ -361,3 +361,54 @@
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+/* Modal backdrop enhancements - Force dark overlay */
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  z-index: 1040 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  opacity: 1 !important;
+}
+
+.modal-backdrop.show {
+  opacity: 1 !important;
+}
+
+.modal {
+  z-index: 1050 !important;
+  background-color: rgba(0, 0, 0, 0.5) !important; /* Additional backdrop for modal itself */
+}
+
+.modal.show {
+  display: block !important;
+}
+
+/* Ensure modals are properly layered */
+.modal-dialog {
+  z-index: 1051;
+  position: relative;
+  background-color: white;
+  border-radius: 8px;
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+  overflow: hidden !important;
+  padding-right: 0 !important;
+}
+
+/* Force backdrop visibility */
+.modal::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: -1;
+}

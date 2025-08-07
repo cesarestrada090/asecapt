@@ -91,6 +91,13 @@ public class CertificateService {
     }
     
     /**
+     * Get certificate by ID
+     */
+    public Optional<Certificate> getCertificateById(Integer certificateId) {
+        return certificateRepository.findById(certificateId);
+    }
+    
+    /**
      * Get certificate by code
      */
     public Optional<Certificate> getCertificateByCode(String certificateCode) {
