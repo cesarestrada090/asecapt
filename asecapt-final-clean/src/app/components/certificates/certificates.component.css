@@ -413,7 +413,71 @@ body.modal-open {
   z-index: -1;
 }
 
-/* Certificate validation styles */
+/* Certificate validation styles - COMPACT VERSION */
+.certificate-validation-compact {
+  min-width: 200px;
+  max-width: 250px;
+}
+
+.validation-message-compact {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  color: #856404;
+}
+
+.validation-message-compact .text-warning {
+  color: #f39c12 !important;
+  font-size: 0.75rem;
+}
+
+.validation-message-compact .validation-text {
+  color: #856404;
+  font-weight: 500;
+}
+
+/* Inline compact validation message */
+.validation-message-compact-inline {
+  display: inline-flex;
+  align-items: center;
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  line-height: 1.1;
+  color: #856404;
+}
+
+.validation-message-compact-inline .text-warning {
+  color: #f39c12 !important;
+  font-size: 0.7rem;
+}
+
+.validation-message-compact-inline .validation-text-small {
+  color: #856404;
+  font-weight: 500;
+  font-size: 0.7rem;
+}
+
+/* Compact table styles */
+.table-sm td {
+  padding: 0.5rem 0.25rem;
+  vertical-align: middle;
+}
+
+.table-sm .btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.table-sm .badge {
+  font-size: 0.7rem;
+}
+
 .btn-outline-secondary:disabled {
   background-color: #f8f9fa;
   border-color: #dee2e6;

@@ -151,6 +151,9 @@ export class StudentsComponent implements OnInit {
         })
       )
       .subscribe(enrollments => {
+        console.log('Received enrollments from backend:', enrollments);
+        console.log('Number of enrollments received:', enrollments.length);
+        
         this.allEnrollments = enrollments;
         this.filteredEnrollments = enrollments.slice().reverse(); // Show newest first
         this.isLoadingEnrollments = false;
@@ -631,6 +634,10 @@ export class StudentsComponent implements OnInit {
         .subscribe(() => {
           // Remove from local data
           this.studentCourses = this.studentCourses.filter(c => c.id !== course.id);
+          
+          // Reload all enrollments to update counts
+          this.loadEnrollments();
+          
           this.showModalMessage('success', `🗑️ Matrícula eliminada del curso "${course.program?.title || 'Sin título'}"`);
         });
     }
@@ -654,8 +661,14 @@ export class StudentsComponent implements OnInit {
   }
 
   getStudentEnrollmentCount(student: Student): number {
-    // Return count from real enrollments if available
-    return this.allEnrollments.filter(e => e.userId === student.id).length;
+    // Filter enrollments for this student
+    const studentEnrollments = this.allEnrollments.filter(e => e.userId === student.id);
+    
+    // Debug log to see what's happening
+    console.log(`Student ${student.id} enrollments:`, studentEnrollments);
+    console.log(`Total enrollments in component:`, this.allEnrollments.length);
+    
+    return studentEnrollments.length;
   }
 
   getStudentCompletedCount(student: Student): number {
@@ -940,6 +953,9 @@ export class StudentsComponent implements OnInit {
           
           // Show success message
           this.showModalMessage('success', `✅ Estudiante matriculado en "${course.title}" exitosamente`);
+          
+          // Reload enrollments to update counts
+          this.loadEnrollments();
           
           // Update statistics
           this.loadStatistics();

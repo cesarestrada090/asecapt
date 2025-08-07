@@ -17,25 +17,26 @@ public class EnrollmentService {
     }
 
     public List<Enrollment> getAllEnrollments() {
-        return enrollmentRepository.findAll();
+        // Return only active enrollments (not soft-deleted)
+        return enrollmentRepository.findByDeletedFalse();
     }
 
     public List<Enrollment> getEnrollmentsByUser(Integer userId) {
-        return enrollmentRepository.findByUserId(userId);
+        return enrollmentRepository.findByUserIdAndDeletedFalse(userId);
     }
 
     public List<Enrollment> getEnrollmentsByProgram(Integer programId) {
-        return enrollmentRepository.findByProgramId(programId);
+        return enrollmentRepository.findByProgramIdAndDeletedFalse(programId);
     }
 
     public List<Enrollment> getCompletedEnrollments() {
-        return enrollmentRepository.findByStatusOrderByCompletionDateDesc("completed");
+        return enrollmentRepository.findByStatusAndDeletedFalseOrderByCompletionDateDesc("completed");
     }
 
     public List<Enrollment> searchCompletedEnrollments(String query) {
         // For now, ignoring query parameter and returning all completed enrollments
         // TODO: Implement actual search functionality
-        return enrollmentRepository.findByStatusOrderByCompletionDateDesc("completed");
+        return enrollmentRepository.findByStatusAndDeletedFalseOrderByCompletionDateDesc("completed");
     }
 
     public Optional<Enrollment> getEnrollmentById(Integer id) {
@@ -47,18 +48,38 @@ public class EnrollmentService {
     }
 
     public Enrollment createEnrollment(Integer userId, Integer programId, LocalDate startDate) {
-        // Check if enrollment already exists
+        // Check if active enrollment already exists (not deleted)
         Optional<Enrollment> existing = enrollmentRepository.findByUserIdAndProgramId(userId, programId);
-        if (existing.isPresent()) {
+        if (existing.isPresent() && !existing.get().getDeleted()) {
             throw new RuntimeException("User is already enrolled in this program");
         }
+        
+        // If there's a soft-deleted enrollment, reactivate it instead of creating new one
+        if (existing.isPresent() && existing.get().getDeleted()) {
+            Enrollment enrollment = existing.get();
+            enrollment.setDeleted(false);
+            enrollment.setDeletedAt(null);
+            enrollment.setEnrollmentDate(LocalDate.now());
+            enrollment.setStartDate(startDate != null ? startDate : LocalDate.now());
+            enrollment.setStatus("enrolled");
+            
+            // Reset grades and completion data for fresh start
+            enrollment.setFinalGrade(null);
+            enrollment.setAttendancePercentage(null);
+            enrollment.setCompletionDate(null);
+            enrollment.setNotes(null);
+            
+            return enrollmentRepository.save(enrollment);
+        }
 
+        // Create new enrollment
         Enrollment enrollment = new Enrollment();
         enrollment.setUserId(userId);
         enrollment.setProgramId(programId);
         enrollment.setEnrollmentDate(LocalDate.now());
         enrollment.setStartDate(startDate != null ? startDate : LocalDate.now());
         enrollment.setStatus("enrolled");
+        enrollment.setDeleted(false);
 
         return enrollmentRepository.save(enrollment);
     }
@@ -129,13 +150,16 @@ public class EnrollmentService {
     }
 
     /**
-     * Delete enrollment by ID
+     * Soft delete enrollment by ID
      */
     public void deleteEnrollment(Integer enrollmentId) {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
             .orElseThrow(() -> new RuntimeException("Enrollment not found"));
         
-        // Physical deletion (complete removal from database)
-        enrollmentRepository.delete(enrollment);
+        // Soft delete: mark as deleted but keep in database for referential integrity
+        enrollment.setDeleted(true);
+        enrollment.setDeletedAt(java.time.LocalDateTime.now());
+        
+        enrollmentRepository.save(enrollment);
     }
 } 

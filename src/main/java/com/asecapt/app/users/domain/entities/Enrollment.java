@@ -48,6 +48,12 @@ public class Enrollment {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
+    @Column(name = "deleted", nullable = false)
+    private Boolean deleted = false;
+    
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+    
     // Relaciones JPA
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)

@@ -781,29 +781,52 @@ export class CertificatesComponent implements OnInit {
   }
 
   /**
+   * Get detailed validation status for certificate generation
+   */
+  getCertificateValidationDetails(course: any): { missingGrade: boolean, missingAttendance: boolean, lowGrade: boolean, lowAttendance: boolean, notCompleted: boolean } {
+    return {
+      notCompleted: course.status !== 'completed',
+      missingGrade: course.finalGrade === null || course.finalGrade === undefined || course.finalGrade <= 0,
+      missingAttendance: course.attendancePercentage === null || course.attendancePercentage === undefined || course.attendancePercentage <= 0,
+      lowGrade: course.finalGrade !== null && course.finalGrade !== undefined && course.finalGrade > 0 && course.finalGrade < 60,
+      lowAttendance: course.attendancePercentage !== null && course.attendancePercentage !== undefined && course.attendancePercentage > 0 && course.attendancePercentage < 80
+    };
+  }
+
+  /**
    * Get validation message for why a certificate cannot be generated
    */
   getCertificateValidationMessage(course: any): string {
     if (course.status !== 'completed') {
-      return 'El curso debe estar completado para generar certificado';
+      return 'Curso no completado';
     }
 
+    // Check for missing grade
     if (course.finalGrade === null || course.finalGrade === undefined || course.finalGrade <= 0) {
-      return 'El estudiante debe tener una nota final asignada';
+      return 'Falta asignar nota final';
     }
 
+    // Check for missing attendance
     if (course.attendancePercentage === null || course.attendancePercentage === undefined || course.attendancePercentage <= 0) {
-      return 'El estudiante debe tener un porcentaje de asistencia asignado';
+      return 'Falta asignar asistencia';
     }
 
+    // Check for both missing
+    if ((course.finalGrade === null || course.finalGrade === undefined || course.finalGrade <= 0) && 
+        (course.attendancePercentage === null || course.attendancePercentage === undefined || course.attendancePercentage <= 0)) {
+      return 'Falta nota y asistencia';
+    }
+
+    // Check minimum grade requirement
     if (course.finalGrade < 60) {
-      return 'La nota final debe ser mínimo 60 para generar certificado';
+      return `Nota insuficiente: ${course.finalGrade} (mín. 60)`;
     }
 
+    // Check minimum attendance requirement
     if (course.attendancePercentage < 80) {
-      return 'La asistencia debe ser mínimo 80% para generar certificado';
+      return `Asistencia insuficiente: ${course.attendancePercentage}% (mín. 80%)`;
     }
 
-    return 'Requisitos no cumplidos para generar certificado';
+    return 'Requisitos no cumplidos';
   }
 }

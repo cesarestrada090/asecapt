@@ -122,7 +122,7 @@
 
 <!-- Student Completed Courses Modal -->
 <div class="modal fade" id="studentCoursesModal" tabindex="-1" aria-labelledby="studentCoursesModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="true">
-  <div class="modal-dialog modal-xl">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="studentCoursesModalLabel">
@@ -160,30 +160,22 @@
         <!-- Courses List -->
         <div *ngIf="!isLoadingStudentCourses && studentCourses.length > 0">
           <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-hover table-sm">
               <thead>
                 <tr>
                   <th>Curso</th>
                   <th>Estado</th>
-                  <th>Nota Final</th>
+                  <th>Nota</th>
                   <th>Asistencia</th>
-                  <th>Fecha Completado</th>
+                  <th>Completado</th>
                   <th>Certificado</th>
-                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let course of studentCourses; trackBy: trackByCourseId">
                   <td>
-                    <div>
-                      <h6 class="mb-1">{{ course.program?.title || course.program?.name || 'Curso sin título' }}</h6>
-                      <p class="text-muted small mb-0">{{ course.program?.description || 'Sin descripción' }}</p>
-                      <small class="text-info">
-                        <i class="fas fa-clock me-1"></i>{{ course.program?.duration || 'N/A' }}
-                        <span class="mx-2">•</span>
-                        <i class="fas fa-star me-1"></i>{{ course.program?.credits || 0 }} créditos
-                      </small>
-                    </div>
+                    <div class="fw-semibold">{{ course.program?.title || course.program?.name || 'Curso sin título' }}</div>
+                    <small class="text-muted">{{ course.program?.duration || 'N/A' }} • {{ course.program?.credits || 0 }} créditos</small>
                   </td>
                   <td>
                     <span class="badge" [class]="getCourseStatusBadgeClass(course.status)">
@@ -217,59 +209,52 @@
                     </small>
                   </td>
                   <td>
-                    <span *ngIf="hasCertificate(course)" class="badge bg-success">
-                      <i class="fas fa-check me-1"></i>Emitido
-                    </span>
-                    <span *ngIf="!hasCertificate(course)" class="badge bg-warning">
-                      <i class="fas fa-clock me-1"></i>Pendiente
-                    </span>
-                  </td>
-                  <td>
-                    <!-- Certificate Actions -->
-                    <div class="btn-group btn-group-sm">
-                      <button
-                        *ngIf="!hasCertificate(course) && canGenerateCertificate(course)"
-                        class="btn btn-outline-primary"
-                        (click)="showCertificateUpload(course)"
-                        title="Subir certificado">
-                        <i class="fas fa-upload me-1"></i>Subir
-                      </button>
-                      
-                      <!-- Show validation message when certificate cannot be generated -->
-                      <div *ngIf="!hasCertificate(course) && !canGenerateCertificate(course)" class="d-flex align-items-center">
-                        <button
-                          class="btn btn-outline-secondary btn-sm"
-                          disabled
-                          [title]="getCertificateValidationMessage(course)">
-                          <i class="fas fa-exclamation-triangle me-1"></i>No disponible
-                        </button>
-                        <small class="text-muted ms-2" [title]="getCertificateValidationMessage(course)">
-                          <i class="fas fa-info-circle"></i>
-                        </small>
-                      </div>
-                      <div *ngIf="hasCertificate(course)" class="dropdown">
-                        <button class="btn btn-outline-success dropdown-toggle" 
+                    <!-- Certificate with actions -->
+                    <div *ngIf="hasCertificate(course)" class="d-flex align-items-center">
+                      <span class="badge bg-success me-2">
+                        <i class="fas fa-check me-1"></i>Emitido
+                      </span>
+                      <div class="dropdown">
+                        <button class="btn btn-outline-success btn-sm dropdown-toggle" 
                                 type="button" 
                                 data-bs-toggle="dropdown" 
                                 aria-expanded="false"
-                                title="Opciones de certificado">
-                          <i class="fas fa-certificate me-1"></i>Certificado
+                                title="Opciones">
+                          <i class="fas fa-certificate"></i>
                         </button>
                         <ul class="dropdown-menu">
                           <li>
                             <a class="dropdown-item" href="#" (click)="$event.preventDefault(); downloadCertificate(course)">
-                              <i class="fas fa-download me-2"></i>Descargar Certificado
+                              <i class="fas fa-download me-2"></i>Descargar
                             </a>
                           </li>
                           <li>
                             <a class="dropdown-item" href="#" (click)="$event.preventDefault(); downloadQRCode(course)">
-                              <i class="fas fa-qrcode me-2"></i>Descargar QR
+                              <i class="fas fa-qrcode me-2"></i>QR
                             </a>
                           </li>
-                          <li>
-                            <h6 class="dropdown-header">Código: {{ getCertificate(course)?.certificateCode }}</h6>
-                          </li>
                         </ul>
+                      </div>
+                    </div>
+
+                    <!-- Can generate certificate -->
+                    <div *ngIf="!hasCertificate(course) && canGenerateCertificate(course)" class="d-flex align-items-center">
+                      <span class="badge bg-warning me-2">
+                        <i class="fas fa-clock me-1"></i>Pendiente
+                      </span>
+                      <button
+                        class="btn btn-outline-primary btn-sm"
+                        (click)="showCertificateUpload(course)"
+                        title="Subir certificado">
+                        <i class="fas fa-upload"></i>
+                      </button>
+                    </div>
+                    
+                    <!-- Cannot generate certificate -->
+                    <div *ngIf="!hasCertificate(course) && !canGenerateCertificate(course)">
+                      <div class="validation-message-compact-inline mb-1">
+                        <i class="fas fa-exclamation-triangle text-warning me-1"></i>
+                        <span class="validation-text-small">{{ getCertificateValidationMessage(course) }}</span>
                       </div>
                     </div>
                   </td>
