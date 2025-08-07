@@ -14,18 +14,7 @@
         
         <nav class="sidebar-nav">
             <ul class="nav-list">
-                <li class="nav-item" [class.active]="activeSection === 'generate-certificates'">
-                    <a (click)="setActiveSection('generate-certificates')" class="nav-link">
-                        <i class="fas fa-certificate"></i>
-                        <span>Generar Certificados</span>
-                    </a>
-                </li>
-                <li class="nav-item" [class.active]="activeSection === 'search-certificates'">
-                    <a (click)="setActiveSection('search-certificates')" class="nav-link">
-                        <i class="fas fa-search"></i>
-                        <span>Buscar Certificados</span>
-                    </a>
-                </li>
+
                 <li class="nav-item" [class.active]="activeSection === 'students'">
                     <a (click)="setActiveSection('students')" class="nav-link">
                         <i class="fas fa-user-graduate"></i>
@@ -36,6 +25,12 @@
                     <a (click)="setActiveSection('courses')" class="nav-link">
                         <i class="fas fa-book"></i>
                         <span>Cursos</span>
+                    </a>
+                </li>
+                <li class="nav-item" [class.active]="activeSection === 'certificates'">
+                    <a (click)="setActiveSection('certificates')" class="nav-link">
+                        <i class="fas fa-certificate"></i>
+                        <span>Certificados</span>
                     </a>
                 </li>
             </ul>
@@ -82,16 +77,6 @@
 
         <!-- Content Area -->
         <div class="content-body">
-            <!-- Generate Certificates Section -->
-            <div *ngIf="activeSection === 'generate-certificates'">
-                <app-generate-certificates (message)="onMessage($event)"></app-generate-certificates>
-            </div>
-
-            <!-- Search Certificates Section -->
-            <div *ngIf="activeSection === 'search-certificates'">
-                <app-search-certificates (message)="onMessage($event)"></app-search-certificates>
-            </div>
-
             <!-- Students Section -->
             <div *ngIf="activeSection === 'students'">
                 <app-students (message)="onMessage($event)"></app-students>
@@ -100,6 +85,11 @@
             <!-- Courses Section -->
             <div *ngIf="activeSection === 'courses'">
                 <app-courses (message)="onMessage($event)" (navigate)="setActiveSection($event)"></app-courses>
+            </div>
+
+            <!-- Certificates Section -->
+            <div *ngIf="activeSection === 'certificates'">
+                <app-certificates (message)="onMessage($event)"></app-certificates>
             </div>
         </div>
     </div>

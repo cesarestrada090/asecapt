@@ -1,88 +1,143 @@
 package com.asecapt.app.users.domain.entities;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data
 @Entity
-@Table(name = "certificate")
+@Table(name = "certificates")
 public class Certificate {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     
-    @Column(name = "enrollment_id", nullable = false)
-    private Integer enrollmentId;
+    @Column(name = "certificate_code", unique = true, nullable = false)
+    private String certificateCode;
     
-    @Column(name = "certificate_number", length = 50, nullable = false, unique = true)
-    private String certificateNumber;
+    @ManyToOne
+    @JoinColumn(name = "enrollment_id", nullable = false)
+    private Enrollment enrollment;
     
-    @Column(name = "issue_date", nullable = false)
-    private LocalDate issueDate;
+    @Column(name = "file_path", nullable = false)
+    private String filePath;
     
-    @Column(name = "expiration_date")
-    private LocalDate expirationDate;
+    @Column(name = "file_name", nullable = false)
+    private String fileName;
     
-    @Column(name = "certificate_file_path", length = 500)
-    private String certificateFilePath;
+    @Column(name = "qr_code_path")
+    private String qrCodePath;
     
-    @Column(name = "verification_token", length = 100, nullable = false, unique = true)
-    private String verificationToken;
+    @Column(name = "issued_date", nullable = false)
+    private LocalDateTime issuedDate;
     
-    @Column(name = "verification_url", length = 500, nullable = false)
-    private String verificationUrl;
-    
-    @Column(name = "status", length = 20, nullable = false)
-    private String status = "active";
-    
-    @Column(name = "issued_by_user_id")
-    private Integer issuedByUserId;
-    
-    @Column(name = "scan_count", nullable = false)
-    private Integer scanCount = 0;
-    
-    @Column(name = "last_scanned_at")
-    private LocalDateTime lastScannedAt;
-    
-    @Column(name = "revoked_at")
-    private LocalDateTime revokedAt;
-    
-    @Column(name = "revoked_reason", columnDefinition = "TEXT")
-    private String revokedReason;
-    
-    @Column(name = "notes", columnDefinition = "TEXT")
-    private String notes;
-    
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    // Relaciones JPA
-    // TODO: Add relationships when needed for complex queries
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "enrollment_id", insertable = false, updatable = false)
-    // private Enrollment enrollment;
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
     
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "issued_by_user_id", insertable = false, updatable = false)
-    // private User issuedByUser;
+    // Constructors
+    public Certificate() {
+        this.createdAt = LocalDateTime.now();
+        this.isActive = true;
+    }
     
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-        if (issueDate == null) {
-            issueDate = LocalDate.now();
-        }
+    public Certificate(String certificateCode, Enrollment enrollment, String filePath, 
+                      String fileName, LocalDateTime issuedDate) {
+        this();
+        this.certificateCode = certificateCode;
+        this.enrollment = enrollment;
+        this.filePath = filePath;
+        this.fileName = fileName;
+        this.issuedDate = issuedDate;
+    }
+    
+    // Getters and Setters
+    public Integer getId() {
+        return id;
+    }
+    
+    public void setId(Integer id) {
+        this.id = id;
+    }
+    
+    public String getCertificateCode() {
+        return certificateCode;
+    }
+    
+    public void setCertificateCode(String certificateCode) {
+        this.certificateCode = certificateCode;
+    }
+    
+    public Enrollment getEnrollment() {
+        return enrollment;
+    }
+    
+    public void setEnrollment(Enrollment enrollment) {
+        this.enrollment = enrollment;
+    }
+    
+    public String getFilePath() {
+        return filePath;
+    }
+    
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+    
+    public String getFileName() {
+        return fileName;
+    }
+    
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+    
+    public String getQrCodePath() {
+        return qrCodePath;
+    }
+    
+    public void setQrCodePath(String qrCodePath) {
+        this.qrCodePath = qrCodePath;
+    }
+    
+    public LocalDateTime getIssuedDate() {
+        return issuedDate;
+    }
+    
+    public void setIssuedDate(LocalDateTime issuedDate) {
+        this.issuedDate = issuedDate;
+    }
+    
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+    
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+    
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+    
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+    
+    public Boolean getIsActive() {
+        return isActive;
+    }
+    
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
     
     @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
-} 
+}

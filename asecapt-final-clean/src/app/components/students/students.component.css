@@ -758,4 +758,62 @@
 
 #studentCoursesModal .form-control.is-valid {
   border-color: #28a745;
+}
+
+/* Certificate Upload Modal Styles */
+#certificateUploadModal .modal-content {
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+#certificateUploadModal .modal-header {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border-radius: 12px 12px 0 0;
+}
+
+#certificateUploadModal .btn-close {
+  filter: invert(1);
+}
+
+#certificateUploadModal .alert-info {
+  border-left: 4px solid #17a2b8;
+}
+
+#certificateUploadModal .alert-warning {
+  border-left: 4px solid #ffc107;
+}
+
+#certificateUploadModal .alert-success {
+  border-left: 4px solid #28a745;
+}
+
+#certificateUploadModal .form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Certificate dropdown styles */
+.dropdown-menu {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 0.5rem 0;
+}
+
+.dropdown-item {
+  padding: 0.5rem 1rem;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.dropdown-header {
+  font-size: 0.8rem;
+  color: #6c757d;
+  padding: 0.25rem 1rem;
+  margin: 0;
+  border-top: 1px solid #dee2e6;
 } 

@@ -1,20 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { GenerateCertificatesComponent } from '../generate-certificates/generate-certificates.component';
-import { SearchCertificatesComponent } from '../search-certificates/search-certificates.component';
 import { StudentsComponent } from '../students/students.component';
 import { CoursesComponent } from '../courses/courses.component';
+import { CertificatesComponent } from '../certificates/certificates.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
     CommonModule,
-    GenerateCertificatesComponent,
-    SearchCertificatesComponent,
     StudentsComponent,
-    CoursesComponent
+    CoursesComponent,
+    CertificatesComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
@@ -48,20 +46,18 @@ export class DashboardComponent implements OnInit {
 
   getSectionTitle(): string {
     switch (this.activeSection) {
-      case 'generate-certificates': return 'Generar Certificados';
-      case 'search-certificates': return 'Buscar Certificados';
       case 'students': return 'Gestión de Alumnos';
       case 'courses': return 'Gestión de Cursos';
+      case 'certificates': return 'Gestión de Certificados';
       default: return 'Dashboard Administrativo';
     }
   }
 
   getSectionDescription(): string {
     switch (this.activeSection) {
-      case 'generate-certificates': return 'Genera certificados con QR de verificación para estudiantes que han completado programas';
-      case 'search-certificates': return 'Busca y gestiona certificados existentes por estudiante, curso o número de certificado';
       case 'students': return 'Visualiza y gestiona información de estudiantes que han completado programas';
       case 'courses': return 'Administra cursos, especializaciones y programas disponibles';
+      case 'certificates': return 'Gestiona certificados para estudiantes con cursos completados - subir, descargar y generar QR';
       default: return 'Panel de administración ASECAPT - Gestión completa de certificados y usuarios';
     }
   }

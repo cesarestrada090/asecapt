@@ -49,14 +49,13 @@ public class Enrollment {
     private LocalDateTime updatedAt;
     
     // Relaciones JPA
-    // TODO: Add relationships when needed for complex queries
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "user_id", insertable = false, updatable = false)
-    // private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private User user;
     
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "program_id", insertable = false, updatable = false)
-    // private Program program;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "program_id", insertable = false, updatable = false)
+    private Program program;
     
     @PrePersist
     protected void onCreate() {

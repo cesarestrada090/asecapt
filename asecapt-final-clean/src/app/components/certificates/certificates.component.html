@@ -1,0 +1,404 @@
+<div class="certificates-container">
+  <!-- Header Section -->
+  <div class="certificates-header">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="mb-2">
+          <i class="fas fa-certificate me-2 text-primary"></i>
+          Gestión de Certificados
+        </h2>
+        <p class="text-muted mb-0">Administra certificados para estudiantes con cursos completados</p>
+      </div>
+      <div class="text-end">
+        <small class="text-muted">
+          <i class="fas fa-users me-1"></i>{{ filteredStudents.length }} estudiantes activos
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="search-filters-section mb-4">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="search-box">
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="fas fa-search"></i>
+            </span>
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Buscar por nombre, email o documento..."
+              [(ngModel)]="searchQuery"
+              (input)="searchStudents()">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-section">
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary mb-3" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted">Cargando estudiantes...</p>
+    </div>
+  </div>
+
+  <!-- Students List -->
+  <div *ngIf="!isLoading" class="students-section">
+    <div *ngIf="filteredStudents.length === 0" class="empty-state">
+      <div class="text-center py-5">
+        <i class="fas fa-user-graduate fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">No se encontraron estudiantes activos</h5>
+        <p class="text-muted">No hay estudiantes que coincidan con los criterios de búsqueda.</p>
+      </div>
+    </div>
+
+    <div *ngIf="filteredStudents.length > 0" class="students-grid">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Estudiante</th>
+              <th>Documento</th>
+              <th>Email</th>
+              <th class="text-center">Certificados</th>
+              <th class="text-center">Cursos Completados</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let student of filteredStudents; trackBy: trackByStudentId">
+              <td>
+                <div class="student-info">
+                  <div class="student-avatar">
+                    <i class="fas fa-user-circle fa-2x text-primary"></i>
+                  </div>
+                  <div class="student-details ms-2">
+                    <h6 class="mb-0">{{ getStudentDisplayName(student) }}</h6>
+                    <small class="text-muted">ID: {{ student.id }}</small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark">{{ getStudentDocument(student) }}</span>
+              </td>
+              <td>
+                <small class="text-muted">{{ getStudentEmail(student) }}</small>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-success">{{ getCertificatesCount(student) }}</span>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-info">{{ getCompletedCoursesCount(student) }}</span>
+              </td>
+              <td class="text-center">
+                <div class="btn-group btn-group-sm">
+                  <button
+                    class="btn btn-outline-primary"
+                    (click)="viewStudentCertificates(student)"
+                    title="Ver certificados emitidos">
+                    <i class="fas fa-eye me-1"></i>Ver Certificados
+                  </button>
+                  <button
+                    class="btn btn-outline-success"
+                    (click)="viewStudentCompletedCourses(student)"
+                    title="Gestionar certificados">
+                    <i class="fas fa-certificate me-1"></i>Gestionar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Student Completed Courses Modal -->
+<div class="modal fade" id="studentCoursesModal" tabindex="-1" aria-labelledby="studentCoursesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="studentCoursesModalLabel">
+          <i class="fas fa-graduation-cap me-2"></i>
+          Cursos Completados - {{ selectedStudent?.person?.firstName }} {{ selectedStudent?.person?.lastName }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeModal('studentCoursesModal')" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Modal Messages -->
+        <div *ngIf="modalMessage" 
+             class="alert alert-dismissible fade show mb-3"
+             [class.alert-success]="modalMessage.type === 'success'"
+             [class.alert-danger]="modalMessage.type === 'error'"
+             role="alert">
+          {{ modalMessage.text }}
+          <button type="button" class="btn-close" (click)="modalMessage = null" aria-label="Close"></button>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoadingStudentCourses" class="text-center py-4">
+          <div class="spinner-border text-primary mb-3" role="status">
+            <span class="visually-hidden">Cargando cursos...</span>
+          </div>
+          <p class="text-muted">Cargando cursos completados...</p>
+        </div>
+
+        <!-- No Courses -->
+        <div *ngIf="!isLoadingStudentCourses && studentCourses.length === 0" class="text-center py-4">
+          <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+          <h5 class="text-muted">No hay cursos completados</h5>
+          <p class="text-muted">Este estudiante aún no ha completado ningún curso.</p>
+        </div>
+
+        <!-- Courses List -->
+        <div *ngIf="!isLoadingStudentCourses && studentCourses.length > 0">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Curso</th>
+                  <th>Estado</th>
+                  <th>Nota Final</th>
+                  <th>Asistencia</th>
+                  <th>Fecha Completado</th>
+                  <th>Certificado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let course of studentCourses; trackBy: trackByCourseId">
+                  <td>
+                    <div>
+                      <h6 class="mb-1">{{ course.program?.title || course.program?.name || 'Curso sin título' }}</h6>
+                      <p class="text-muted small mb-0">{{ course.program?.description || 'Sin descripción' }}</p>
+                      <small class="text-info">
+                        <i class="fas fa-clock me-1"></i>{{ course.program?.duration || 'N/A' }}
+                        <span class="mx-2">•</span>
+                        <i class="fas fa-star me-1"></i>{{ course.program?.credits || 0 }} créditos
+                      </small>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge" [class]="getCourseStatusBadgeClass(course.status)">
+                      {{ getCourseStatusText(course.status) }}
+                    </span>
+                  </td>
+                  <td>
+                    <div *ngIf="course.finalGrade !== null && course.finalGrade !== undefined">
+                      <span class="badge bg-success">{{ course.finalGrade }}</span>
+                    </div>
+                    <span *ngIf="course.finalGrade === null || course.finalGrade === undefined" class="text-muted">
+                      <small>Pendiente</small>
+                    </span>
+                  </td>
+                  <td>
+                    <div *ngIf="course.attendancePercentage !== null && course.attendancePercentage !== undefined">
+                      <span class="text-muted">
+                        <small>{{ course.attendancePercentage }}%</small>
+                      </span>
+                    </div>
+                    <span *ngIf="course.attendancePercentage === null || course.attendancePercentage === undefined" class="text-muted">
+                      <small>N/A</small>
+                    </span>
+                  </td>
+                  <td>
+                    <small class="text-muted" *ngIf="course.completionDate">
+                      {{ formatDate(course.completionDate) }}
+                    </small>
+                    <small class="text-muted" *ngIf="!course.completionDate">
+                      No disponible
+                    </small>
+                  </td>
+                  <td>
+                    <span *ngIf="hasCertificate(course)" class="badge bg-success">
+                      <i class="fas fa-check me-1"></i>Emitido
+                    </span>
+                    <span *ngIf="!hasCertificate(course)" class="badge bg-warning">
+                      <i class="fas fa-clock me-1"></i>Pendiente
+                    </span>
+                  </td>
+                  <td>
+                    <!-- Certificate Actions -->
+                    <div class="btn-group btn-group-sm">
+                      <button
+                        *ngIf="!hasCertificate(course)"
+                        class="btn btn-outline-primary"
+                        (click)="showCertificateUpload(course)"
+                        title="Subir certificado">
+                        <i class="fas fa-upload me-1"></i>Subir
+                      </button>
+                      <div *ngIf="hasCertificate(course)" class="dropdown">
+                        <button class="btn btn-outline-success dropdown-toggle" 
+                                type="button" 
+                                data-bs-toggle="dropdown" 
+                                aria-expanded="false"
+                                title="Opciones de certificado">
+                          <i class="fas fa-certificate me-1"></i>Certificado
+                        </button>
+                        <ul class="dropdown-menu">
+                          <li>
+                            <a class="dropdown-item" href="#" (click)="$event.preventDefault(); downloadCertificate(course)">
+                              <i class="fas fa-download me-2"></i>Descargar Certificado
+                            </a>
+                          </li>
+                          <li>
+                            <a class="dropdown-item" href="#" (click)="$event.preventDefault(); downloadQRCode(course)">
+                              <i class="fas fa-qrcode me-2"></i>Descargar QR
+                            </a>
+                          </li>
+                          <li>
+                            <h6 class="dropdown-header">Código: {{ getCertificate(course)?.certificateCode }}</h6>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal('studentCoursesModal')">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Certificates Modal -->
+<div class="modal fade" id="viewCertificatesModal" tabindex="-1" aria-labelledby="viewCertificatesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewCertificatesModalLabel">
+          <i class="fas fa-certificate me-2"></i>
+          Certificados Emitidos - {{ selectedStudent?.person?.firstName }} {{ selectedStudent?.person?.lastName }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeModal('viewCertificatesModal')" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="selectedStudent && !hasStudentCertificates(selectedStudent)" class="text-center py-4">
+          <i class="fas fa-certificate fa-3x text-muted mb-3"></i>
+          <h5 class="text-muted">No hay certificados emitidos</h5>
+          <p class="text-muted">Este estudiante no tiene certificados emitidos aún.</p>
+        </div>
+
+        <div *ngIf="selectedStudent && hasStudentCertificates(selectedStudent)">
+          <div class="list-group">
+            <div *ngFor="let certificate of getStudentCertificates(selectedStudent)" class="list-group-item">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="ms-2 me-auto">
+                  <div class="fw-bold">{{ certificate.certificateCode }}</div>
+                  <p class="mb-1">Archivo: {{ certificate.fileName }}</p>
+                  <small class="text-muted">Emitido: {{ formatDate(certificate.issuedDate) }}</small>
+                </div>
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-primary" (click)="downloadCertificate({id: certificate.enrollment.id})">
+                    <i class="fas fa-download"></i>
+                  </button>
+                  <button class="btn btn-outline-success" (click)="downloadQRCode({id: certificate.enrollment.id})">
+                    <i class="fas fa-qrcode"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal('viewCertificatesModal')">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Certificate Upload Modal -->
+<div class="modal fade" id="certificateUploadModal" tabindex="-1" aria-labelledby="certificateUploadModalLabel" aria-hidden="true" *ngIf="showCertificateUploadModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="certificateUploadModalLabel">
+          <i class="fas fa-certificate me-2"></i>Subir Certificado
+        </h5>
+        <button type="button" class="btn-close" (click)="cancelCertificateUpload()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Course Info -->
+        <div class="alert alert-info" *ngIf="selectedEnrollmentForCertificate">
+          <h6><i class="fas fa-graduation-cap me-2"></i>{{ selectedEnrollmentForCertificate.program?.title || selectedEnrollmentForCertificate.program?.name }}</h6>
+          <p class="mb-0">
+            <strong>Estudiante:</strong> {{ selectedStudent?.person?.firstName }} {{ selectedStudent?.person?.lastName }}
+          </p>
+          <p class="mb-0">
+            <strong>Estado:</strong> 
+            <span class="badge bg-success">{{ getCourseStatusText(selectedEnrollmentForCertificate.status) }}</span>
+          </p>
+        </div>
+
+        <!-- File Upload -->
+        <div class="mb-3">
+          <label for="certificateFileInput" class="form-label">
+            <i class="fas fa-file-upload me-2"></i>Archivo del Certificado
+          </label>
+          <input 
+            type="file" 
+            class="form-control" 
+            id="certificateFileInput"
+            (change)="onCertificateFileSelected($event)"
+            accept=".jpg,.jpeg,.png,.pdf"
+            [disabled]="isUploadingCertificate">
+          <div class="form-text">
+            Formatos permitidos: JPG, PNG, PDF (máximo 10MB)
+          </div>
+        </div>
+
+        <!-- File Preview -->
+        <div class="mb-3" *ngIf="certificateFile">
+          <div class="alert alert-success">
+            <i class="fas fa-file me-2"></i>
+            <strong>Archivo seleccionado:</strong> {{ certificateFile.name }}
+            <br>
+            <small>Tamaño: {{ (certificateFile.size / 1024 / 1024).toFixed(2) }} MB</small>
+          </div>
+        </div>
+
+        <!-- Upload Instructions -->
+        <div class="alert alert-warning">
+          <h6><i class="fas fa-info-circle me-2"></i>Instrucciones:</h6>
+          <ul class="mb-0">
+            <li>Suba una imagen escaneada o foto clara del certificado físico firmado</li>
+            <li>El sistema generará automáticamente un código QR único</li>
+            <li>El código QR permitirá verificar la autenticidad del certificado</li>
+            <li>Asegúrese de que el archivo sea legible antes de subirlo</li>
+          </ul>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelCertificateUpload()" [disabled]="isUploadingCertificate">
+          <i class="fas fa-times me-2"></i>Cancelar
+        </button>
+        <button type="button" 
+                class="btn btn-primary" 
+                (click)="uploadCertificate()"
+                [disabled]="!certificateFile || isUploadingCertificate">
+          <span *ngIf="isUploadingCertificate" class="spinner-border spinner-border-sm me-2"></span>
+          <i class="fas fa-upload me-2" *ngIf="!isUploadingCertificate"></i>
+          {{ isUploadingCertificate ? 'Subiendo...' : 'Subir Certificado' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
