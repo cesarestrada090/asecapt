@@ -246,7 +246,7 @@ export class StudentsComponent implements OnInit {
 
   saveStudent() {
     if (!this.isStudentFormValid()) {
-      this.emitMessage('error', 'Por favor complete todos los campos obligatorios');
+      this.showModalMessage('error', 'Por favor complete todos los campos obligatorios');
       return;
     }
 
@@ -265,7 +265,7 @@ export class StudentsComponent implements OnInit {
         .pipe(
           catchError(error => {
             console.error('Error updating student:', error);
-            this.emitMessage('error', error.error?.error || 'Error actualizando estudiante');
+            this.showModalMessage('error', error.error?.error || 'Error actualizando estudiante');
             this.isSaving = false;
             return of(null);
           })
@@ -277,8 +277,11 @@ export class StudentsComponent implements OnInit {
               this.allStudents[index] = updatedStudent;
               this.filteredStudents = [...this.allStudents];
             }
-            this.emitMessage('success', 'Estudiante actualizado exitosamente');
-            this.cancelStudentForm();
+            this.showModalMessage('success', 'Estudiante actualizado exitosamente');
+            // Close modal after successful update
+            setTimeout(() => {
+              this.cancelStudentForm();
+            }, 1500);
           }
           this.isSaving = false;
         });
@@ -288,7 +291,7 @@ export class StudentsComponent implements OnInit {
         .pipe(
           catchError(error => {
             console.error('Error creating student:', error);
-            this.emitMessage('error', error.error?.error || 'Error creando estudiante');
+            this.showModalMessage('error', error.error?.error || 'Error creando estudiante');
             this.isSaving = false;
             return of(null);
           })
@@ -298,8 +301,11 @@ export class StudentsComponent implements OnInit {
             this.allStudents.push(newStudent);
             this.filteredStudents = [...this.allStudents];
             this.loadStatistics(); // Refresh statistics
-            this.emitMessage('success', 'Estudiante creado exitosamente');
-            this.cancelStudentForm();
+            this.showModalMessage('success', 'Estudiante creado exitosamente');
+            // Close modal after successful creation
+            setTimeout(() => {
+              this.cancelStudentForm();
+            }, 1500);
           }
           this.isSaving = false;
         });
@@ -558,10 +564,20 @@ export class StudentsComponent implements OnInit {
 
   private showModalMessage(type: 'success' | 'error', text: string) {
     this.modalMessage = { type, text };
-    // Auto-hide message after 4 seconds
+    
+    // Scroll to top of modal to ensure message is visible
+    setTimeout(() => {
+      const modalBody = document.querySelector('#studentModal .modal-body');
+      if (modalBody) {
+        modalBody.scrollTop = 0;
+      }
+    }, 100);
+    
+    // Auto-hide message after different durations based on type
+    const duration = type === 'error' ? 8000 : 4000; // 8 seconds for errors, 4 for success
     setTimeout(() => {
       this.modalMessage = null;
-    }, 4000);
+    }, duration);
   }
 
 
@@ -801,6 +817,11 @@ export class StudentsComponent implements OnInit {
   // === MODAL MANAGEMENT ===
 
   showModal(modalId: string) {
+    // Clear modal messages when opening studentModal
+    if (modalId === 'studentModal') {
+      this.modalMessage = null;
+    }
+    
     const modalElement = document.getElementById(modalId);
     if (!modalElement) {
       console.error('Modal element not found:', modalId);

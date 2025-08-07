@@ -861,4 +861,57 @@
   font-weight: 600;
   font-size: 0.9rem;
   line-height: 1.2;
+}
+
+/* Modal message sticky styling */
+.modal-message-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 1055;
+  margin-bottom: 1rem !important;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideDown 0.3s ease-out;
+}
+
+.modal-message-sticky.alert-danger {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+  font-weight: 500;
+}
+
+.modal-message-sticky.alert-success {
+  background-color: #d1edff;
+  border-color: #bee5eb;
+  color: #0c5460;
+  font-weight: 500;
+}
+
+.modal-message-sticky .fas {
+  font-size: 1.1rem;
+}
+
+.modal-message-sticky .btn-close {
+  padding: 0.5rem;
+  margin: -0.25rem -0.25rem -0.25rem auto;
+}
+
+/* Animation for message appearance */
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Enhanced modal body for better scroll behavior */
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-top: 0;
 } 

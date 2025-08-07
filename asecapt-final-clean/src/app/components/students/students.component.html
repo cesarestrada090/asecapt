@@ -159,6 +159,32 @@
           <button type="button" class="btn-close" (click)="closeModal('studentModal')" aria-label="Close"></button>
         </div>
         <div class="modal-body">
+          <!-- Modal Messages -->
+          <div 
+            *ngIf="modalMessage" 
+            class="alert alert-dismissible fade show mb-3 modal-message-sticky"
+            [class.alert-success]="modalMessage.type === 'success'"
+            [class.alert-danger]="modalMessage.type === 'error'"
+            role="alert">
+            <div class="d-flex align-items-start">
+              <i class="fas" 
+                 [class.fa-check-circle]="modalMessage.type === 'success'"
+                 [class.fa-exclamation-triangle]="modalMessage.type === 'error'"
+                 [class.text-success]="modalMessage.type === 'success'"
+                 [class.text-danger]="modalMessage.type === 'error'"
+                 style="margin-top: 2px; margin-right: 8px;"></i>
+              <div class="flex-grow-1">
+                {{ modalMessage.text }}
+              </div>
+            </div>
+            <button 
+              type="button" 
+              class="btn-close" 
+              (click)="modalMessage = null"
+              aria-label="Close">
+            </button>
+          </div>
+
           <form>
             <div class="row">
               <!-- Personal Information -->
