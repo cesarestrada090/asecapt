@@ -144,6 +144,13 @@ public class CertificateService {
     }
     
     /**
+     * Get all certificates for a student by document number
+     */
+    public List<Certificate> getCertificatesByStudentDocument(String documentNumber) {
+        return certificateRepository.findByStudentDocumentNumber(documentNumber);
+    }
+    
+    /**
      * Generate unique certificate code
      */
     private String generateCertificateCode(Enrollment enrollment) {

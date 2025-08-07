@@ -56,59 +56,106 @@
 
           <!-- Resultados de búsqueda -->
           <div *ngIf="searchResult" class="result-card"
-               [ngClass]="searchResult.found ? 'result-success' : 'result-error'">
+               [ngClass]="searchResult.success ? 'result-success' : 'result-error'">
 
-            <!-- Certificado encontrado -->
-            <div *ngIf="searchResult.found">
+            <!-- Certificados encontrados -->
+            <div *ngIf="searchResult.success && searchResult.certificates && searchResult.certificates.length > 0">
               <div class="d-flex align-items-center mb-3">
                 <i class="fas fa-check-circle text-success me-3" style="font-size: 24px;"></i>
                 <div>
-                  <h5 class="mb-1 text-success">¡Certificado Válido!</h5>
-                  <p class="mb-0 text-muted">El certificado fue encontrado en nuestra base de datos</p>
+                  <h5 class="mb-1 text-success">¡Certificados Encontrados!</h5>
+                  <p class="mb-0 text-muted">
+                    Se {{ searchResult.certificates.length === 1 ? 'encontró' : 'encontraron' }} 
+                    {{ searchResult.certificates.length }} 
+                    certificado{{ searchResult.certificates.length === 1 ? '' : 's' }} 
+                    en nuestra base de datos
+                  </p>
                 </div>
               </div>
 
-              <div class="certificate-info">
-                <div class="info-row">
-                  <span class="info-label">Estudiante:</span>
-                  <span class="info-value">{{ searchResult.certificate.studentName }}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Curso:</span>
-                  <span class="info-value">{{ searchResult.certificate.courseTitle }}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Fecha de Finalización:</span>
-                  <span class="info-value">{{ searchResult.certificate.completionDate }}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Número de Certificado:</span>
-                  <span class="info-value">{{ searchResult.certificate.certificateNumber }}</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">Instructor:</span>
-                  <span class="info-value">{{ searchResult.certificate.instructor }}</span>
+              <!-- Lista de certificados -->
+              <div class="certificates-list">
+                <div *ngFor="let certificate of searchResult.certificates; trackBy: trackByCertificateCode" 
+                     class="certificate-card mb-3">
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-md-8">
+                          <h6 class="card-title mb-2">
+                            <i class="fas fa-certificate text-primary me-2"></i>
+                            {{ getProgramTitle(certificate) }}
+                          </h6>
+                          <div class="certificate-details">
+                            <div class="info-row">
+                              <span class="info-label">Estudiante:</span>
+                              <span class="info-value">{{ getStudentName(certificate) }}</span>
+                            </div>
+                            <div class="info-row">
+                              <span class="info-label">Código:</span>
+                              <span class="info-value">{{ certificate.certificateCode || 'N/A' }}</span>
+                            </div>
+                            <div class="info-row">
+                              <span class="info-label">Fecha de Emisión:</span>
+                              <span class="info-value">{{ formatDate(certificate.issuedDate) }}</span>
+                            </div>
+                            <div class="info-row">
+                              <span class="info-label">Estado:</span>
+                              <span [class]="getStatusBadgeClass(certificate.enrollment?.status || '')">
+                                {{ getStatusText(certificate.enrollment?.status || '') }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                          <button class="btn btn-primary" 
+                                  (click)="viewCertificate(certificate)"
+                                  [disabled]="!certificate.certificateCode">
+                            <i class="fas fa-eye me-2"></i>
+                            Ver Certificado
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Certificado no encontrado -->
-            <div *ngIf="!searchResult.found">
+            <!-- Sin certificados encontrados -->
+            <div *ngIf="searchResult.success && (!searchResult.certificates || searchResult.certificates.length === 0)">
               <div class="d-flex align-items-center mb-3">
-                <i class="fas fa-times-circle text-danger me-3" style="font-size: 24px;"></i>
+                <i class="fas fa-info-circle text-warning me-3" style="font-size: 24px;"></i>
                 <div>
-                  <h5 class="mb-1 text-danger">Certificado No Encontrado</h5>
-                  <p class="mb-0 text-muted">No se encontró ningún certificado asociado a este documento</p>
+                  <h5 class="mb-1 text-warning">Sin Certificados</h5>
+                  <p class="mb-0 text-muted">No se encontraron certificados para este documento</p>
                 </div>
               </div>
 
-              <div class="alert alert-warning">
+              <div class="alert alert-info">
                 <p class="mb-2"><strong>Posibles causas:</strong></p>
                 <ul class="mb-0">
                   <li>El número de documento no coincide con nuestros registros</li>
-                  <li>El certificado aún está en proceso de emisión</li>
-                  <li>El curso no ha sido completado satisfactoriamente</li>
+                  <li>Los certificados aún están en proceso de emisión</li>
+                  <li>Los cursos no han sido completados satisfactoriamente</li>
+                  <li>Los certificados pueden estar inactivos</li>
                 </ul>
+              </div>
+            </div>
+
+            <!-- Error de búsqueda -->
+            <div *ngIf="!searchResult.success">
+              <div class="d-flex align-items-center mb-3">
+                <i class="fas fa-exclamation-triangle text-danger me-3" style="font-size: 24px;"></i>
+                <div>
+                  <h5 class="mb-1 text-danger">Error en la Búsqueda</h5>
+                  <p class="mb-0 text-muted">{{ searchResult.errorMessage || 'Ocurrió un error inesperado' }}</p>
+                </div>
+              </div>
+
+              <div class="alert alert-danger" *ngIf="searchResult.errorCode === 'NETWORK_ERROR'">
+                <p class="mb-0">
+                  <strong>Error de conexión:</strong> Verifica tu conexión a internet e intenta nuevamente.
+                </p>
               </div>
             </div>
 

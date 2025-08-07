@@ -11,12 +11,44 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/public/certificate")
+@RequestMapping("/api/public/certificate")
 @CrossOrigin(origins = "*")
 public class PublicCertificateController {
 
     @Autowired
     private CertificateService certificateService;
+
+    /**
+     * Search certificates by student document number
+     */
+    @GetMapping("/search")
+    public ResponseEntity<Map<String, Object>> searchCertificatesByDocument(@RequestParam String documentNumber) {
+        try {
+            System.out.println("Searching certificates for document: " + documentNumber);
+            
+            var certificates = certificateService.getCertificatesByStudentDocument(documentNumber);
+            
+            if (certificates.isEmpty()) {
+                return ResponseEntity.ok(createSearchErrorResponse("NO_CERTIFICATES_FOUND", "No se encontraron certificados para este documento"));
+            }
+            
+            // Create response with certificates list
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("certificates", certificates.stream()
+                .filter(Certificate::getIsActive) // Only active certificates
+                .map(this::createCertificateInfo)
+                .toArray());
+            response.put("count", certificates.size());
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            System.err.println("Error searching certificates: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.ok(createSearchErrorResponse("INTERNAL_ERROR", "Error interno del servidor"));
+        }
+    }
 
     /**
      * Public endpoint to verify and display certificate information
@@ -110,11 +142,22 @@ public class PublicCertificateController {
     }
     
     /**
-     * Create error response
+     * Create error response for verification
      */
     private Map<String, Object> createErrorResponse(String errorCode, String errorMessage) {
         Map<String, Object> response = new HashMap<>();
         response.put("valid", false);
+        response.put("errorCode", errorCode);
+        response.put("errorMessage", errorMessage);
+        return response;
+    }
+    
+    /**
+     * Create error response for search
+     */
+    private Map<String, Object> createSearchErrorResponse(String errorCode, String errorMessage) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", false);
         response.put("errorCode", errorCode);
         response.put("errorMessage", errorMessage);
         return response;

@@ -116,6 +116,44 @@
   margin-top: 20px;
 }
 
+/* Certificate cards styles */
+.certificates-list {
+  margin-top: 20px;
+}
+
+.certificate-card .card {
+  border: 1px solid #e0e6ed;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.certificate-card .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.certificate-card .card-title {
+  color: #273044;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.certificate-details .info-row {
+  margin-bottom: 8px;
+}
+
+.certificate-details .info-label {
+  font-weight: 600;
+  color: #6c757d;
+  min-width: 120px;
+  display: inline-block;
+}
+
+.certificate-details .info-value {
+  color: #273044;
+}
+
 .certificate-info .info-row {
   display: flex;
   justify-content: space-between;
