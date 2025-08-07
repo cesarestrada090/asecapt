@@ -336,15 +336,15 @@
           <!-- Courses List -->
           <div *ngIf="!isLoadingStudentCourses && studentCourses.length > 0">
             <div class="table-responsive">
-              <table class="table table-hover">
+              <table class="table table-hover table-sm">
                 <thead>
                   <tr>
                     <th>Curso</th>
                     <th>Estado</th>
-                    <th>Progreso</th>
-                    <th>Nota Final</th>
+                    <th>Nota</th>
                     <th>Asistencia</th>
-                    <th>Fecha Inscripción</th>
+                    <th>Inscripción</th>
+                    <th>Estado del Curso</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
@@ -352,15 +352,8 @@
                   <tr *ngFor="let course of studentCourses; trackBy: trackByCourseId"
                       [class.editing]="editingStudentCourse[course.id]">
                     <td>
-                      <div>
-                        <h6 class="mb-1">{{ course.program?.title || course.program?.name || 'Curso sin título' }}</h6>
-                        <p class="text-muted small mb-0">{{ course.program?.description || 'Sin descripción' }}</p>
-                        <small class="text-info">
-                          <i class="fas fa-clock me-1"></i>{{ course.program?.duration || 'N/A' }}
-                          <span class="mx-2">•</span>
-                          <i class="fas fa-star me-1"></i>{{ course.program?.credits || 0 }} créditos
-                        </small>
-                      </div>
+                      <div class="fw-semibold">{{ course.program?.title || course.program?.name || 'Curso sin título' }}</div>
+                      <small class="text-muted">{{ course.program?.duration || 'N/A' }} • {{ course.program?.credits || 0 }} créditos</small>
                     </td>
                     <td>
                       <!-- View Mode -->
@@ -387,17 +380,7 @@
                         <option value="suspended">Suspendido</option>
                       </select>
                     </td>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <div class="progress me-2" style="width: 60px; height: 8px;">
-                          <div 
-                            class="progress-bar bg-primary" 
-                            [style.width.%]="getCourseProgress(course)">
-                          </div>
-                        </div>
-                        <small class="text-muted">{{ getCourseProgress(course) }}%</small>
-                      </div>
-                    </td>
+
                     <td>
                       <!-- View Mode - Nota Final -->
                       <div *ngIf="!editingStudentCourse[course.id]">
@@ -451,27 +434,35 @@
                       </small>
                     </td>
                     <td>
-                      <!-- View Mode - Action Buttons -->
+                      <!-- Estado del Curso - Botones de cambio de estado -->
+                      <div *ngIf="!editingStudentCourse[course.id]" class="d-flex flex-column gap-1">
+                        <button
+                          *ngIf="course.status !== 'completed'"
+                          class="btn btn-outline-success btn-sm"
+                          (click)="markCourseAsCompleted(course)"
+                          title="Marcar como completado">
+                          <i class="fas fa-check me-1"></i>Completar
+                        </button>
+                        <button
+                          *ngIf="course.status === 'completed'"
+                          class="btn btn-outline-warning btn-sm"
+                          (click)="markCourseAsInProgress(course)"
+                          title="Revertir a en progreso">
+                          <i class="fas fa-undo me-1"></i>Revertir
+                        </button>
+                        <span *ngIf="course.status === 'enrolled'" class="text-muted small">
+                          <i class="fas fa-hourglass-start me-1"></i>Recién inscrito
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <!-- Acciones de Edición/Eliminación -->
                       <div *ngIf="!editingStudentCourse[course.id]" class="btn-group btn-group-sm">
                         <button
                           class="btn btn-outline-primary"
                           (click)="startEditingStudentCourse(course)"
-                          title="Editar">
+                          title="Editar notas y asistencia">
                           <i class="fas fa-edit"></i>
-                        </button>
-                        <button
-                          *ngIf="course.status !== 'completed'"
-                          class="btn btn-outline-success"
-                          (click)="markCourseAsCompleted(course)"
-                          title="Marcar como completado">
-                          <i class="fas fa-check"></i>
-                        </button>
-                        <button
-                          *ngIf="course.status === 'completed'"
-                          class="btn btn-outline-warning"
-                          (click)="markCourseAsInProgress(course)"
-                          title="Marcar como en progreso">
-                          <i class="fas fa-undo"></i>
                         </button>
                         <button
                           class="btn btn-outline-danger"
@@ -487,14 +478,14 @@
                         <button class="btn btn-success" 
                                 (click)="saveStudentCourseChanges(course)"
                                 [disabled]="isUpdatingStudentCourse[course.id]"
-                                title="Guardar">
+                                title="Guardar cambios">
                           <span *ngIf="isUpdatingStudentCourse[course.id]" class="spinner-border spinner-border-sm me-1"></span>
-                          <i class="fas fa-check" *ngIf="!isUpdatingStudentCourse[course.id]"></i>
+                          <i class="fas fa-save" *ngIf="!isUpdatingStudentCourse[course.id]"></i>
                         </button>
                         <button class="btn btn-secondary" 
                                 (click)="cancelEditingStudentCourse(course.id)"
                                 [disabled]="isUpdatingStudentCourse[course.id]"
-                                title="Cancelar">
+                                title="Cancelar edición">
                           <i class="fas fa-times"></i>
                         </button>
                       </div>

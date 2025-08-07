@@ -816,4 +816,49 @@
   padding: 0.25rem 1rem;
   margin: 0;
   border-top: 1px solid #dee2e6;
+}
+
+/* Compact table styles for student courses modal */
+.table-sm td {
+  padding: 0.5rem 0.25rem;
+  vertical-align: middle;
+}
+
+.table-sm .btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.table-sm .badge {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Status action column styles */
+.d-flex.flex-column.gap-1 {
+  gap: 0.25rem !important;
+}
+
+.d-flex.flex-column.gap-1 .btn-sm {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.4rem;
+  white-space: nowrap;
+}
+
+/* Compact input fields in edit mode */
+.form-control-sm, .form-select-sm {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Course actions column */
+.btn-group-sm .btn {
+  border-radius: 0.2rem;
+}
+
+/* Course title styling */
+.fw-semibold {
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.2;
 } 
