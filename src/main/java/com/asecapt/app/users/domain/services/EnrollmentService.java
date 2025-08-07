@@ -127,4 +127,15 @@ public class EnrollmentService {
 
         return enrollmentRepository.save(enrollment);
     }
+
+    /**
+     * Delete enrollment by ID
+     */
+    public void deleteEnrollment(Integer enrollmentId) {
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+            .orElseThrow(() -> new RuntimeException("Enrollment not found"));
+        
+        // Physical deletion (complete removal from database)
+        enrollmentRepository.delete(enrollment);
+    }
 } 

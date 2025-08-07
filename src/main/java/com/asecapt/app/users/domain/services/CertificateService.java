@@ -54,6 +54,24 @@ public class CertificateService {
             throw new RuntimeException("Certificate can only be created for completed enrollments");
         }
         
+        // Validate that student has grade and attendance percentage
+        if (enrollment.getFinalGrade() == null || enrollment.getFinalGrade().intValue() <= 0) {
+            throw new RuntimeException("Cannot create certificate: Student must have a valid final grade");
+        }
+        
+        if (enrollment.getAttendancePercentage() == null || enrollment.getAttendancePercentage().intValue() <= 0) {
+            throw new RuntimeException("Cannot create certificate: Student must have a valid attendance percentage");
+        }
+        
+        // Additional validation for minimum passing requirements
+        if (enrollment.getFinalGrade().intValue() < 60) {
+            throw new RuntimeException("Cannot create certificate: Student must have a passing grade (minimum 60)");
+        }
+        
+        if (enrollment.getAttendancePercentage().intValue() < 80) {
+            throw new RuntimeException("Cannot create certificate: Student must have minimum 80% attendance");
+        }
+        
         // Check if certificate already exists
         if (certificateRepository.existsByEnrollmentIdAndIsActiveTrue(enrollmentId)) {
             throw new RuntimeException("Certificate already exists for this enrollment");

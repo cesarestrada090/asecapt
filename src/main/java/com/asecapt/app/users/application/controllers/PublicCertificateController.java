@@ -3,9 +3,16 @@ package com.asecapt.app.users.application.controllers;
 import com.asecapt.app.users.domain.entities.Certificate;
 import com.asecapt.app.users.domain.services.CertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -92,6 +99,7 @@ public class PublicCertificateController {
         Map<String, Object> certInfo = new HashMap<>();
         
         // Basic certificate info
+        certInfo.put("id", certificate.getId());
         certInfo.put("certificateCode", certificate.getCertificateCode());
         certInfo.put("issuedDate", certificate.getIssuedDate());
         certInfo.put("createdAt", certificate.getCreatedAt());
@@ -161,5 +169,41 @@ public class PublicCertificateController {
         response.put("errorCode", errorCode);
         response.put("errorMessage", errorMessage);
         return response;
+    }
+    
+    /**
+     * Public endpoint to download certificate file
+     */
+    @GetMapping("/download/{certificateId}")
+    public ResponseEntity<Resource> downloadCertificate(@PathVariable Integer certificateId) {
+        try {
+            Optional<Certificate> certificateOpt = certificateService.getCertificateById(certificateId);
+            
+            if (certificateOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Certificate certificate = certificateOpt.get();
+            
+            // Check if certificate is active
+            if (!certificate.getIsActive()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Path filePath = Paths.get(certificate.getFilePath());
+            Resource resource = new UrlResource(filePath.toUri());
+            
+            if (resource.exists() && resource.isReadable()) {
+                return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + certificate.getFileName() + "\"")
+                    .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+            
+        } catch (MalformedURLException e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }

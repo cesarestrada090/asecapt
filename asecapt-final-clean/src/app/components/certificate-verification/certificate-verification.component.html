@@ -186,6 +186,13 @@
                 <i class="fas fa-print me-2"></i>
                 Imprimir Certificado
               </button>
+              <button class="btn btn-success btn-lg" 
+                      (click)="downloadCertificate()" 
+                      [disabled]="isDownloading">
+                <span *ngIf="isDownloading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                <i *ngIf="!isDownloading" class="fas fa-download me-2"></i>
+                {{ isDownloading ? 'Descargando...' : 'Descargar Certificado' }}
+              </button>
             </div>
 
             <!-- Footer -->

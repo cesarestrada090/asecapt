@@ -412,3 +412,33 @@ body.modal-open {
   background-color: rgba(0, 0, 0, 0.6);
   z-index: -1;
 }
+
+/* Certificate validation styles */
+.btn-outline-secondary:disabled {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.btn-outline-secondary:disabled:hover {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+  color: #6c757d;
+  transform: none;
+}
+
+/* Info icon for validation messages */
+.text-muted .fa-info-circle {
+  color: #6c757d;
+  cursor: help;
+}
+
+.text-muted .fa-info-circle:hover {
+  color: #495057;
+}
+
+/* Validation message tooltip styling */
+[title] {
+  cursor: help;
+}

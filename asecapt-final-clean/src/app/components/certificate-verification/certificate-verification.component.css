@@ -318,3 +318,29 @@ a:hover {
 .small {
   font-size: 0.875rem;
 }
+
+/* Download button styles */
+.btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+  transform: translateY(-1px);
+}
+
+.btn-success:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Loading spinner for download button */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}

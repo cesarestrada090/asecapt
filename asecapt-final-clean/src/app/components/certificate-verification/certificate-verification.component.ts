@@ -9,6 +9,7 @@ import { buildApiUrl } from '../../constants';
 interface CertificateVerificationResponse {
   valid: boolean;
   certificate?: {
+    id: number;
     certificateCode: string;
     issuedDate: string;
     createdAt: string;
@@ -47,6 +48,7 @@ export class CertificateVerificationComponent implements OnInit {
   certificateCode: string = '';
   certificateData: CertificateVerificationResponse | null = null;
   isLoading: boolean = false;
+  isDownloading: boolean = false;
   error: string = '';
 
   constructor(
@@ -166,6 +168,57 @@ export class CertificateVerificationComponent implements OnInit {
    */
   getCurrentDate(): string {
     return this.formatDate(new Date().toISOString());
+  }
+
+  /**
+   * Download certificate file
+   */
+  downloadCertificate(): void {
+    if (!this.certificateData?.certificate?.id) {
+      console.error('No certificate ID available for download');
+      return;
+    }
+
+    this.isDownloading = true;
+    
+    const certificateId = this.certificateData.certificate.id;
+    const downloadUrl = buildApiUrl(`public/certificate/download/${certificateId}`);
+    
+    this.http.get(downloadUrl, { 
+      responseType: 'blob',
+      observe: 'response'
+    }).pipe(
+      catchError(error => {
+        console.error('Error downloading certificate:', error);
+        alert('Error al descargar el certificado. Por favor, intente nuevamente.');
+        return of(null);
+      })
+    ).subscribe(response => {
+      this.isDownloading = false;
+      
+      if (response && response.body) {
+        // Get filename from Content-Disposition header or use default
+        let filename = 'certificado.pdf';
+        const contentDisposition = response.headers.get('Content-Disposition');
+        if (contentDisposition) {
+          const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(contentDisposition);
+          if (matches != null && matches[1]) {
+            filename = matches[1].replace(/['"]/g, '');
+          }
+        }
+        
+        // Create download link
+        const blob = new Blob([response.body], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }
+    });
   }
 
   // Safe getter methods to avoid null reference errors

@@ -928,8 +928,12 @@ export class StudentsComponent implements OnInit {
         if (newEnrollment) {
           console.log('Student enrolled successfully:', newEnrollment);
           
-          // Add to student courses list
-          this.studentCourses.push(newEnrollment);
+          // Add to student courses list with program information included
+          const enrollmentWithProgram = {
+            ...newEnrollment,
+            program: course // Include the full program information
+          };
+          this.studentCourses.push(enrollmentWithProgram);
           
           // Remove from available courses
           this.availableCourses = this.availableCourses.filter(c => c.id !== course.id);

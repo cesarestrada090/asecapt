@@ -114,6 +114,17 @@ public class EnrollmentController {
         }
     }
 
+    // Delete enrollment
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEnrollment(@PathVariable Integer id) {
+        try {
+            enrollmentService.deleteEnrollment(id);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     // DTOs for request bodies
     public static class CreateEnrollmentRequest {
         private Integer userId;

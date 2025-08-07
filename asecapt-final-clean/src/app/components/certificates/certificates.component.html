@@ -228,12 +228,25 @@
                     <!-- Certificate Actions -->
                     <div class="btn-group btn-group-sm">
                       <button
-                        *ngIf="!hasCertificate(course)"
+                        *ngIf="!hasCertificate(course) && canGenerateCertificate(course)"
                         class="btn btn-outline-primary"
                         (click)="showCertificateUpload(course)"
                         title="Subir certificado">
                         <i class="fas fa-upload me-1"></i>Subir
                       </button>
+                      
+                      <!-- Show validation message when certificate cannot be generated -->
+                      <div *ngIf="!hasCertificate(course) && !canGenerateCertificate(course)" class="d-flex align-items-center">
+                        <button
+                          class="btn btn-outline-secondary btn-sm"
+                          disabled
+                          [title]="getCertificateValidationMessage(course)">
+                          <i class="fas fa-exclamation-triangle me-1"></i>No disponible
+                        </button>
+                        <small class="text-muted ms-2" [title]="getCertificateValidationMessage(course)">
+                          <i class="fas fa-info-circle"></i>
+                        </small>
+                      </div>
                       <div *ngIf="hasCertificate(course)" class="dropdown">
                         <button class="btn btn-outline-success dropdown-toggle" 
                                 type="button" 
