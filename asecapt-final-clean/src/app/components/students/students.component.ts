@@ -449,11 +449,7 @@ export class StudentsComponent implements OnInit {
     this.showModal('studentDetailsModal');
   }
 
-  viewStudentCertificates(student: Student): void {
-    // TODO: Implement student certificates view
-    console.log('View student certificates:', student);
-    // Note: Using success type for info messages since only success/error are supported
-  }
+
 
   viewStudentCourses(student: Student) {
     this.selectedStudent = student;
