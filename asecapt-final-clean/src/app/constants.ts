@@ -48,7 +48,7 @@ export const APP_CONFIG = {
 
 // QR Configuration
 export const QR_CONFIG = {
-  verificationUrlBase: 'https://asecapt.com/verify',
+  verificationUrlBase: isProduction ? 'https://asecapt.com/verify' : 'http://localhost:4200/verify',
   size: 300,
   errorCorrectionLevel: 'M' as const,
   format: 'PNG' as const,
