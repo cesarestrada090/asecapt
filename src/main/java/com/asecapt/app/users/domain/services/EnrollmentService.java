@@ -129,6 +129,10 @@ public class EnrollmentService {
             enrollment.setCompletionDate(request.getCompletionDate());
         }
         
+        if (request.getEnrollmentDate() != null) {
+            enrollment.setEnrollmentDate(request.getEnrollmentDate());
+        }
+        
         // If status is being set to completed and no completion date is provided, set it to today
         if ("completed".equals(request.getStatus()) && enrollment.getCompletionDate() == null) {
             enrollment.setCompletionDate(LocalDate.now());
@@ -162,4 +166,4 @@ public class EnrollmentService {
         
         enrollmentRepository.save(enrollment);
     }
-} 
+}

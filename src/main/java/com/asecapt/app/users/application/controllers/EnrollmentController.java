@@ -152,6 +152,7 @@ public class EnrollmentController {
         private BigDecimal finalGrade;
         private BigDecimal attendancePercentage;
         private LocalDate completionDate;
+        private LocalDate enrollmentDate; // Add enrollmentDate field
 
         public String getStatus() { return status; }
         public void setStatus(String status) { this.status = status; }
@@ -161,6 +162,8 @@ public class EnrollmentController {
         public void setAttendancePercentage(BigDecimal attendancePercentage) { this.attendancePercentage = attendancePercentage; }
         public LocalDate getCompletionDate() { return completionDate; }
         public void setCompletionDate(LocalDate completionDate) { this.completionDate = completionDate; }
+        public LocalDate getEnrollmentDate() { return enrollmentDate; }
+        public void setEnrollmentDate(LocalDate enrollmentDate) { this.enrollmentDate = enrollmentDate; }
     }
 
     public static class CompleteEnrollmentRequest {
@@ -172,4 +175,4 @@ public class EnrollmentController {
         public BigDecimal getAttendancePercentage() { return attendancePercentage; }
         public void setAttendancePercentage(BigDecimal attendancePercentage) { this.attendancePercentage = attendancePercentage; }
     }
-} 
+}

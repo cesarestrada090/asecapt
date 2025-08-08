@@ -1513,7 +1513,8 @@ export class CoursesComponent implements OnInit {
     const updateRequest: any = {
       finalGrade: formData.finalGrade,
       attendancePercentage: formData.attendancePercentage,
-      status: formData.status as 'enrolled' | 'in_progress' | 'completed' | 'suspended'
+      status: formData.status as 'enrolled' | 'in_progress' | 'completed' | 'suspended',
+      enrollmentDate: formData.enrollmentDate // Add enrollmentDate to the request
     };
 
     // If marking as completed, set completion date
