@@ -673,7 +673,6 @@
            </div>
          </div>
        </div>
-     </div>
 
 
 
@@ -896,176 +895,196 @@
   </div>
 </div>
 
-<!-- Program Students Modal -->
+<!-- Program Students Modal - Compact and optimized -->
 <div class="modal fade" id="programStudentsModal" tabindex="-1" aria-labelledby="programStudentsModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="programStudentsModalLabel">
-          <i class="fas fa-users me-2"></i>
-          Estudiantes Matriculados: {{ selectedProgramForStudents?.title }}
+          <i class="fas fa-users me-2"></i>Estudiantes de {{ selectedProgramForStudents?.title }}
         </h5>
         <button type="button" class="btn-close" (click)="closeModal('programStudentsModal')" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <!-- Modal Message -->
-        <div 
-          *ngIf="programStudentsModalMessage" 
-          class="alert alert-dismissible fade show mb-3"
+        <div
+          *ngIf="programStudentsModalMessage"
+          class="alert alert-dismissible fade show"
           [class.alert-success]="programStudentsModalMessage.type === 'success'"
           [class.alert-danger]="programStudentsModalMessage.type === 'error'"
           role="alert">
           {{ programStudentsModalMessage.text }}
-          <button type="button" class="btn-close" (click)="programStudentsModalMessage = null" aria-label="Close"></button>
+          <button
+            type="button"
+            class="btn-close"
+            (click)="programStudentsModalMessage = null"
+            aria-label="Close">
+          </button>
         </div>
+
         <!-- Loading State -->
         <div class="text-center py-4" *ngIf="isLoadingProgramStudents">
           <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Cargando estudiantes...</span>
           </div>
-          <p class="mt-2">Cargando estudiantes matriculados...</p>
+          <p class="mt-2 text-muted">Cargando estudiantes del programa...</p>
         </div>
 
-        <!-- Students Table -->
+        <!-- Students List -->
         <div *ngIf="!isLoadingProgramStudents && programStudents.length > 0">
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <h6 class="mb-0">Total de Estudiantes: <span class="badge bg-primary">{{ programStudents.length }}</span></h6>
-            </div>
-            <div class="col-md-6 text-end">
-              <small class="text-muted">Programa: {{ selectedProgramForStudents?.category }} | {{ selectedProgramForStudents?.duration }}</small>
-            </div>
-          </div>
-          
           <div class="table-responsive">
-            <table class="table table-hover align-middle">
-              <thead class="table-light">
+            <table class="table table-hover table-sm">
+              <thead>
                 <tr>
                   <th>Estudiante</th>
-                  <th>Email</th>
                   <th>Estado</th>
-                  <th>Fecha Inscripción</th>
-                  <th>Progreso</th>
                   <th>Nota Final</th>
-                  <th>Asistencia</th>
+                  <th>Asistencia %</th>
+                  <th>Fecha Matrícula</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let enrollment of programStudents; trackBy: trackByEnrollmentId" 
+                <tr *ngFor="let enrollment of programStudents; trackBy: trackByEnrollmentId"
                     [class.editing]="editingEnrollment[enrollment.id]">
                   <td>
-                    <div class="d-flex align-items-center">
-                      <div class="student-avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
-                        <i class="fas fa-user"></i>
-                      </div>
-                      <div>
-                        <h6 class="mb-0">{{ getStudentFullName(enrollment.student) }}</h6>
-                        <small class="text-muted">ID: {{ enrollment.student?.id || enrollment.userId }}</small>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <small class="text-muted">{{ enrollment.student?.person?.email || 'No disponible' }}</small>
+                    <div class="fw-semibold">{{ getStudentFullName(enrollment.student) }}</div>
+                    <small class="text-muted">{{ enrollment.student?.person?.email || 'Email no disponible' }}</small>
                   </td>
                   <td>
                     <!-- View Mode -->
-                    <span *ngIf="!editingEnrollment[enrollment.id]" class="badge" [class]="getEnrollmentStatusBadgeClass(enrollment.status)">
-                      {{ getEnrollmentStatusText(enrollment.status) }}
-                    </span>
-                    
+                    <div *ngIf="!editingEnrollment[enrollment.id]">
+                      <span class="badge" [class]="getEnrollmentStatusBadgeClass(enrollment.status)">
+                        {{ getEnrollmentStatusText(enrollment.status) }}
+                      </span>
+                      <div class="mt-1" *ngIf="enrollment.completionDate">
+                        <small class="text-success">
+                          <i class="fas fa-check-circle me-1"></i>
+                          {{ formatDate(enrollment.completionDate) }}
+                        </small>
+                      </div>
+                    </div>
+
                     <!-- Edit Mode -->
-                    <select *ngIf="editingEnrollment[enrollment.id]" 
-                            class="form-select form-select-sm" 
+                    <select *ngIf="editingEnrollment[enrollment.id]"
+                            class="form-select form-select-sm"
                             [(ngModel)]="enrollmentEditForm[enrollment.id].status"
-                            style="width: 120px;">
+                            (change)="onEnrollmentStatusChange(enrollment, $event)">
                       <option value="enrolled">Matriculado</option>
                       <option value="in_progress">En Progreso</option>
                       <option value="completed">Completado</option>
                       <option value="suspended">Suspendido</option>
                     </select>
                   </td>
+
                   <td>
-                    <small class="text-muted">{{ formatDate(enrollment.enrollmentDate) }}</small>
-                  </td>
-                  <td>
-                    <div class="d-flex align-items-center">
-                      <div class="progress me-2" style="width: 80px; height: 6px;">
-                        <div 
-                          class="progress-bar" 
-                          [class]="getProgressBarClass(enrollment.status)"
-                          [style.width.%]="getEnrollmentProgress(enrollment)">
-                        </div>
-                      </div>
-                      <small class="text-muted">{{ getEnrollmentProgress(enrollment) }}%</small>
-                    </div>
-                  </td>
-                  <td>
-                    <!-- View Mode -->
+                    <!-- View Mode - Nota Final -->
                     <div *ngIf="!editingEnrollment[enrollment.id]">
-                      <span *ngIf="enrollment.finalGrade !== null && enrollment.finalGrade !== undefined" class="badge" [class]="getGradeBadgeClass(enrollment.finalGrade)">
+                      <span *ngIf="enrollment.finalGrade !== null && enrollment.finalGrade !== undefined"
+                            class="badge" [class]="getGradeBadgeClass(enrollment.finalGrade)">
                         {{ enrollment.finalGrade }}
                       </span>
-                      <span *ngIf="enrollment.finalGrade === null || enrollment.finalGrade === undefined" class="text-muted">
+                      <span *ngIf="enrollment.finalGrade === null || enrollment.finalGrade === undefined"
+                            class="text-muted">
                         <small>Pendiente</small>
                       </span>
                     </div>
-                    
-                    <!-- Edit Mode -->
-                    <input *ngIf="editingEnrollment[enrollment.id]" 
-                           type="number" 
-                           class="form-control form-control-sm" 
+
+                    <!-- Edit Mode - Nota Final -->
+                    <input *ngIf="editingEnrollment[enrollment.id]"
+                           type="number"
+                           class="form-control form-control-sm"
                            [(ngModel)]="enrollmentEditForm[enrollment.id].finalGrade"
-                           min="0" 
-                           max="100" 
+                           min="0"
+                           max="100"
                            step="0.1"
-                           placeholder="0-100"
-                           style="width: 80px;">
+                           placeholder="0-100">
                   </td>
                   <td>
-                    <!-- View Mode -->
+                    <!-- View Mode - Asistencia -->
                     <div *ngIf="!editingEnrollment[enrollment.id]">
-                      <span *ngIf="enrollment.attendancePercentage !== null && enrollment.attendancePercentage !== undefined" class="text-muted">
-                        <small>{{ enrollment.attendancePercentage }}%</small>
+                      <span *ngIf="enrollment.attendancePercentage !== null && enrollment.attendancePercentage !== undefined"
+                            class="text-muted">
+                        {{ enrollment.attendancePercentage }}%
                       </span>
-                      <span *ngIf="enrollment.attendancePercentage === null || enrollment.attendancePercentage === undefined" class="text-muted">
-                        <small>N/A</small>
+                      <span *ngIf="enrollment.attendancePercentage === null || enrollment.attendancePercentage === undefined"
+                            class="text-muted">
+                        N/A
                       </span>
                     </div>
-                    
-                    <!-- Edit Mode -->
-                    <input *ngIf="editingEnrollment[enrollment.id]" 
-                           type="number" 
-                           class="form-control form-control-sm" 
+
+                    <!-- Edit Mode - Asistencia -->
+                    <input *ngIf="editingEnrollment[enrollment.id]"
+                           type="number"
+                           class="form-control form-control-sm"
                            [(ngModel)]="enrollmentEditForm[enrollment.id].attendancePercentage"
-                           min="0" 
-                           max="100" 
+                           min="0"
+                           max="100"
                            step="0.1"
-                           placeholder="0-100%"
-                           style="width: 80px;">
+                           placeholder="0-100">
                   </td>
                   <td>
-                    <!-- View Mode - Edit Button -->
-                    <button *ngIf="!editingEnrollment[enrollment.id]" 
-                            class="btn btn-outline-primary btn-sm" 
-                            (click)="startEditingEnrollment(enrollment)"
-                            title="Editar">
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    
+                    <!-- View Mode - Fecha de Matrícula -->
+                    <div *ngIf="!editingEnrollment[enrollment.id]">
+                      <small class="text-muted" *ngIf="enrollment.enrollmentDate">
+                        {{ formatDate(enrollment.enrollmentDate) }}
+                      </small>
+                      <small class="text-muted" *ngIf="!enrollment.enrollmentDate">
+                        No disponible
+                      </small>
+                    </div>
+
+                    <!-- Edit Mode - Fecha de Matrícula -->
+                    <input *ngIf="editingEnrollment[enrollment.id]"
+                           type="date"
+                           class="form-control form-control-sm"
+                           [(ngModel)]="enrollmentEditForm[enrollment.id].enrollmentDate"
+                           [max]="today">
+                  </td>
+                  <td>
+                    <!-- View Mode - Acciones -->
+                    <div *ngIf="!editingEnrollment[enrollment.id]" class="btn-group-vertical btn-group-sm">
+                      <button
+                        class="btn btn-outline-primary btn-sm mb-1"
+                        (click)="startEditingEnrollment(enrollment)"
+                        title="Editar matrícula">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button
+                        *ngIf="enrollment.status !== 'completed'"
+                        class="btn btn-outline-success btn-sm mb-1"
+                        (click)="markEnrollmentAsCompleted(enrollment)"
+                        title="Completar">
+                        <i class="fas fa-check"></i>
+                      </button>
+                      <button
+                        *ngIf="enrollment.status === 'completed'"
+                        class="btn btn-outline-warning btn-sm mb-1"
+                        (click)="markEnrollmentAsInProgress(enrollment)"
+                        title="En progreso">
+                        <i class="fas fa-arrow-rotate-left"></i>
+                      </button>
+                      <button
+                        class="btn btn-outline-danger btn-sm"
+                        (click)="deleteStudentEnrollment(enrollment)"
+                        title="Eliminar matrícula">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+
                     <!-- Edit Mode - Save/Cancel Buttons -->
-                    <div *ngIf="editingEnrollment[enrollment.id]" class="btn-group btn-group-sm">
-                      <button class="btn btn-success" 
+                    <div *ngIf="editingEnrollment[enrollment.id]" class="btn-group-vertical btn-group-sm">
+                      <button class="btn btn-success btn-sm mb-1"
                               (click)="saveEnrollmentChanges(enrollment)"
                               [disabled]="isUpdatingEnrollment[enrollment.id]"
-                              title="Guardar">
-                        <span *ngIf="isUpdatingEnrollment[enrollment.id]" class="spinner-border spinner-border-sm me-1"></span>
-                        <i class="fas fa-check" *ngIf="!isUpdatingEnrollment[enrollment.id]"></i>
+                              title="Guardar cambios">
+                        <span *ngIf="isUpdatingEnrollment[enrollment.id]" class="spinner-border spinner-border-sm"></span>
+                        <i class="fas fa-save" *ngIf="!isUpdatingEnrollment[enrollment.id]"></i>
                       </button>
-                      <button class="btn btn-secondary" 
+                      <button class="btn btn-secondary btn-sm"
                               (click)="cancelEditingEnrollment(enrollment.id)"
                               [disabled]="isUpdatingEnrollment[enrollment.id]"
-                              title="Cancelar">
+                              title="Cancelar edición">
                         <i class="fas fa-times"></i>
                       </button>
                     </div>
@@ -1077,9 +1096,9 @@
         </div>
 
         <!-- Empty State -->
-        <div class="text-center py-5" *ngIf="!isLoadingProgramStudents && programStudents.length === 0">
-          <i class="fas fa-user-graduate fa-3x text-muted mb-3"></i>
-          <h5>Sin Estudiantes Matriculados</h5>
+        <div class="text-center py-4" *ngIf="!isLoadingProgramStudents && programStudents.length === 0">
+          <i class="fas fa-users fa-3x text-muted mb-3"></i>
+          <h5>Sin estudiantes matriculados</h5>
           <p class="text-muted">Este programa aún no tiene estudiantes matriculados</p>
         </div>
       </div>

@@ -78,11 +78,22 @@ export class CoursesComponent implements OnInit {
   programContents: ProgramContent[] = [];
   isLoadingProgramContents: boolean = false;
 
+  // === STUDENT ENROLLMENT MANAGEMENT ===
+
+
+  modalMessage: {type: 'success' | 'error', text: string} | null = null;
+
+  // Student course editing properties
+  editingStudentEnrollment: { [key: number]: boolean } = {};
+  studentEnrollmentEditForm: { [key: number]: { finalGrade: number | null, attendancePercentage: number | null, status: string, enrollmentDate: string } } = {};
+  isUpdatingStudentEnrollment: { [key: number]: boolean } = {};
+  today: string = new Date().toISOString().split('T')[0];
+
   // === ADD CONTENT WITH OPTIONS ===
   selectedContentToAdd: number | null = null;
   newContentIsRequired: boolean = false;
   showAddContentForm: boolean = false;
-  
+
   // === ADD CONTENT POPUP ===
   showAddContentPopup: boolean = false;
 
@@ -117,7 +128,7 @@ export class CoursesComponent implements OnInit {
   programStudents: (Enrollment & { student?: Student })[] = [];
   isLoadingProgramStudents: boolean = false;
   editingEnrollment: { [key: number]: boolean } = {};
-  enrollmentEditForm: { [key: number]: { finalGrade: number | null, attendancePercentage: number | null, status: string } } = {};
+  enrollmentEditForm: { [key: number]: { finalGrade: number | null, attendancePercentage: number | null, status: string, enrollmentDate: string } } = {};
   isUpdatingEnrollment: { [key: number]: boolean } = {};
   programStudentsModalMessage: {type: 'success' | 'error', text: string} | null = null;
 
@@ -290,18 +301,18 @@ export class CoursesComponent implements OnInit {
   }
 
   // === ADD CONTENT POPUP METHODS ===
-  
+
   openAddContentPopup() {
     console.log('🔵 Opening add content popup');
     console.log('🔵 selectedProgram:', this.selectedProgram);
     console.log('🔵 unassignedContents:', this.unassignedContents.length);
-    
+
     if (!this.selectedProgram) {
       console.error('❌ No program selected');
       this.emitMessage('error', 'Debe seleccionar un programa primero');
       return;
     }
-    
+
     this.showAddContentPopup = true;
     console.log('🔵 showAddContentPopup set to:', this.showAddContentPopup);
   }
@@ -356,7 +367,7 @@ export class CoursesComponent implements OnInit {
           // Add to local contents arrays
           this.allContents.unshift(newContent);
           this.availableContents = [...this.allContents];
-          
+
           // Now add it to the program
           const request = {
             programId: this.selectedProgram!.id,
@@ -391,10 +402,10 @@ export class CoursesComponent implements OnInit {
       this.emitMessage('error', 'Debe seleccionar un programa primero');
       return;
     }
-    
+
     // Reset form
     this.resetSimpleAddForm();
-    
+
     // Show modal using Angular state
     this.showSimpleAddModal = true;
   }
@@ -532,9 +543,9 @@ export class CoursesComponent implements OnInit {
     if (!this.editingContentForm || !this.editingProgramContent) return;
 
     this.isSaving = true;
-    const updateRequest: UpdateContentRequest = { 
-      ...this.editingContentForm, 
-      id: this.editingContentForm.id 
+    const updateRequest: UpdateContentRequest = {
+      ...this.editingContentForm,
+      id: this.editingContentForm.id
     };
 
     this.contentService.updateContent(this.editingContentForm.id, updateRequest)
@@ -554,7 +565,7 @@ export class CoursesComponent implements OnInit {
             this.allContents[index] = updatedContent;
             this.availableContents = [...this.allContents];
           }
-          
+
           this.emitMessage('success', 'Contenido actualizado exitosamente');
           this.cancelProgramContentEdit();
         }
@@ -619,7 +630,7 @@ export class CoursesComponent implements OnInit {
 
   toggleProgramStatus(program: Program) {
     this.isSaving = true; // Show loading state
-    
+
     this.programService.toggleProgramStatus(program.id)
       .pipe(
         catchError(error => {
@@ -636,17 +647,17 @@ export class CoursesComponent implements OnInit {
             this.allPrograms[index] = updatedProgram;
             this.filteredPrograms = [...this.allPrograms];
           }
-          
+
           // Update selected program if it's the same one being toggled
           if (this.selectedProgram && this.selectedProgram.id === program.id) {
             this.selectedProgram = updatedProgram;
           }
-          
+
           const statusText = updatedProgram.status === 'active' ? 'activado' : 'inactivado';
           this.emitMessage('success', `Programa ${statusText}: ${updatedProgram.title}`);
         }
         this.isSaving = false; // Hide loading state
-        
+
         // Close dropdown after action completes
         setTimeout(() => this.closeAllDropdowns(), 100);
       });
@@ -666,7 +677,7 @@ export class CoursesComponent implements OnInit {
           this.allPrograms = this.allPrograms.filter(p => p.id !== program.id);
           this.filteredPrograms = [...this.allPrograms];
           this.emitMessage('success', `Programa eliminado: ${program.title}`);
-          
+
           // Close dropdown after action completes
           setTimeout(() => this.closeAllDropdowns(), 100);
         });
@@ -693,31 +704,31 @@ export class CoursesComponent implements OnInit {
 
   viewProgramStudents(program: Program) {
     console.log('Loading students for program:', program.title);
-    
+
     this.selectedProgramForStudents = program;
     this.programStudents = [];
     this.isLoadingProgramStudents = true;
     this.programStudentsModalMessage = null; // Clear any previous messages
-    
+
     // Show the modal
     this.showModal('programStudentsModal');
-    
+
     // Load enrollments for this program and then get student details
     this.enrollmentService.getEnrollmentsByProgram(program.id)
       .pipe(
         switchMap(enrollments => {
           console.log('Found enrollments for program:', enrollments);
-          
+
           if (enrollments.length === 0) {
             return of([]);
           }
-          
+
           // Get unique student IDs
           const studentIds = [...new Set(enrollments.map(e => e.userId))];
           console.log('Loading student details for IDs:', studentIds);
-          
+
           // Create requests for each student
-          const studentRequests = studentIds.map(id => 
+          const studentRequests = studentIds.map(id =>
             this.studentService.getStudentById(id).pipe(
               catchError(error => {
                 console.error(`Error loading student ${id}:`, error);
@@ -725,7 +736,7 @@ export class CoursesComponent implements OnInit {
               })
             )
           );
-          
+
           // Execute all student requests in parallel
           return forkJoin(studentRequests).pipe(
             switchMap(students => {
@@ -734,9 +745,9 @@ export class CoursesComponent implements OnInit {
               students.filter(s => s !== null).forEach(student => {
                 studentMap.set(student.id, student);
               });
-              
+
               console.log('Loaded students:', studentMap);
-              
+
               // Enrich enrollments with student data
               const enrichedEnrollments = enrollments.map(enrollment => ({
                 ...enrollment,
@@ -749,7 +760,7 @@ export class CoursesComponent implements OnInit {
                   }
                 }
               }));
-              
+
               return of(enrichedEnrollments);
             })
           );
@@ -776,7 +787,7 @@ export class CoursesComponent implements OnInit {
   // Toggle individual content isRequired status
   toggleContentRequiredStatus(contentId: number) {
     if (!this.selectedProgram) return;
-    
+
     this.programService.toggleContentRequiredStatus(this.selectedProgram.id, contentId)
       .pipe(
         catchError(error => {
@@ -792,7 +803,7 @@ export class CoursesComponent implements OnInit {
           if (index > -1) {
             this.programContents[index] = updatedProgramContent;
           }
-          
+
           const statusText = updatedProgramContent.isRequired ? 'obligatorio' : 'opcional';
           this.emitMessage('success', `Contenido marcado como ${statusText}`);
         }
@@ -818,10 +829,10 @@ export class CoursesComponent implements OnInit {
       prerequisites: '',
       objectives: ''
     };
-    
+
     console.log('Form model reset:', this.programFormModel);
     console.log('About to show modal...');
-    
+
     // Try immediate and with delay
     this.showModal('programModal');
     setTimeout(() => {
@@ -845,9 +856,9 @@ export class CoursesComponent implements OnInit {
 
     this.isSaving = true;
 
-    const updateRequest: UpdateProgramRequest = { 
-      ...this.editingProgramForm, 
-      id: this.selectedProgram.id 
+    const updateRequest: UpdateProgramRequest = {
+      ...this.editingProgramForm,
+      id: this.selectedProgram.id
     };
 
     this.programService.updateProgram(this.selectedProgram.id, updateRequest)
@@ -863,7 +874,7 @@ export class CoursesComponent implements OnInit {
         if (updatedProgram) {
           // Update the selected program
           this.selectedProgram = updatedProgram;
-          
+
           // Update in the programs list
           const index = this.allPrograms.findIndex(p => p.id === updatedProgram.id);
           if (index !== -1) {
@@ -1050,13 +1061,13 @@ export class CoursesComponent implements OnInit {
     setTimeout(() => {
       const modalElement = document.getElementById(modalId);
       console.log('Modal element found:', modalElement);
-      
+
       if (modalElement) {
         try {
           // Check if Bootstrap is available
           const bootstrapAvailable = typeof (window as any).bootstrap !== 'undefined';
           console.log('Bootstrap available:', bootstrapAvailable);
-          
+
           if (bootstrapAvailable) {
             console.log('Using Bootstrap modal');
             const modal = new (window as any).bootstrap.Modal(modalElement, {
@@ -1074,7 +1085,7 @@ export class CoursesComponent implements OnInit {
             modalElement.style.visibility = 'visible';
             modalElement.setAttribute('aria-hidden', 'false');
             modalElement.setAttribute('aria-modal', 'true');
-            
+
             // Add backdrop if it doesn't exist
             let backdrop = document.getElementById(modalId + '-backdrop');
             if (!backdrop) {
@@ -1084,10 +1095,10 @@ export class CoursesComponent implements OnInit {
               backdrop.style.zIndex = '1040';
               document.body.appendChild(backdrop);
             }
-            
+
             document.body.classList.add('modal-open');
             document.body.style.overflow = 'hidden';
-            
+
             // Focus on modal
             modalElement.focus();
           }
@@ -1121,7 +1132,7 @@ export class CoursesComponent implements OnInit {
         try {
           // Try to use Bootstrap if available
           const bootstrapAvailable = typeof (window as any).bootstrap !== 'undefined';
-          
+
           if (bootstrapAvailable) {
             const modal = (window as any).bootstrap.Modal.getInstance(modalElement);
             if (modal) {
@@ -1146,13 +1157,13 @@ export class CoursesComponent implements OnInit {
             modalElement.style.maxWidth = '';
             modalElement.setAttribute('aria-hidden', 'true');
             modalElement.removeAttribute('aria-modal');
-            
+
             // Remove backdrop
             const backdrop = document.getElementById(modalId + '-backdrop');
             if (backdrop) {
               backdrop.remove();
             }
-            
+
             document.body.classList.remove('modal-open');
             document.body.style.overflow = '';
           }
@@ -1204,12 +1215,12 @@ export class CoursesComponent implements OnInit {
       .subscribe(counts => {
         // Clear existing counts
         this.programContentCounts.clear();
-        
+
         // Set counts from server response
         Object.entries(counts).forEach(([programId, count]) => {
           this.programContentCounts.set(Number(programId), Number(count));
         });
-        
+
         console.log('✅ Loaded all content counts in single request:', this.programContentCounts);
       });
   }
@@ -1380,18 +1391,18 @@ export class CoursesComponent implements OnInit {
     if (enrollment.status === 'completed') {
       return 100;
     }
-    
+
     if (enrollment.attendancePercentage) {
       return Math.round(enrollment.attendancePercentage);
     }
-    
+
     // Estimate progress based on time if start date is available
     if (enrollment.startDate) {
       try {
         const startDate = new Date(enrollment.startDate);
         const currentDate = new Date();
         const daysPassed = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-        
+
         // Rough estimation: assume 30 days for most programs
         const estimatedDays = 30;
         const progress = Math.min(Math.max((daysPassed / estimatedDays) * 100, 0), 95);
@@ -1400,7 +1411,7 @@ export class CoursesComponent implements OnInit {
         console.error('Error calculating progress:', error);
       }
     }
-    
+
     return enrollment.status === 'enrolled' ? 15 : 0;
   }
 
@@ -1423,7 +1434,7 @@ export class CoursesComponent implements OnInit {
     if (grade === null || grade === undefined) {
       return 'badge bg-secondary';
     }
-    
+
     if (grade >= 90) {
       return 'badge bg-success';
     } else if (grade >= 80) {
@@ -1449,23 +1460,24 @@ export class CoursesComponent implements OnInit {
 
   startEditingEnrollment(enrollment: any) {
     console.log('Starting to edit enrollment:', enrollment);
-    
+
     // Initialize edit form with current values
     this.enrollmentEditForm[enrollment.id] = {
       finalGrade: enrollment.finalGrade,
       attendancePercentage: enrollment.attendancePercentage,
-      status: enrollment.status
+      status: enrollment.status,
+      enrollmentDate: enrollment.enrollmentDate // Add enrollmentDate here
     };
-    
+
     // Mark as editing
     this.editingEnrollment[enrollment.id] = true;
-    
+
     console.log('Edit form initialized:', this.enrollmentEditForm[enrollment.id]);
   }
 
   cancelEditingEnrollment(enrollmentId: number) {
     console.log('Canceling edit for enrollment:', enrollmentId);
-    
+
     // Remove from editing state
     delete this.editingEnrollment[enrollmentId];
     delete this.enrollmentEditForm[enrollmentId];
@@ -1475,20 +1487,20 @@ export class CoursesComponent implements OnInit {
   saveEnrollmentChanges(enrollment: any) {
     const enrollmentId = enrollment.id;
     const formData = this.enrollmentEditForm[enrollmentId];
-    
+
     if (!formData) {
       console.error('No form data found for enrollment:', enrollmentId);
       return;
     }
 
     console.log('Saving enrollment changes:', { enrollmentId, formData });
-    
+
     // Validate data
     if (formData.finalGrade !== null && (formData.finalGrade < 0 || formData.finalGrade > 100)) {
       this.showProgramStudentsModalMessage('error', 'La nota debe estar entre 0 y 100');
       return;
     }
-    
+
     if (formData.attendancePercentage !== null && (formData.attendancePercentage < 0 || formData.attendancePercentage > 100)) {
       this.showProgramStudentsModalMessage('error', 'La asistencia debe estar entre 0% y 100%');
       return;
@@ -1524,7 +1536,7 @@ export class CoursesComponent implements OnInit {
       .subscribe(updatedEnrollment => {
         if (updatedEnrollment) {
           console.log('Enrollment updated successfully:', updatedEnrollment);
-          
+
           // Update the local data
           const enrollmentIndex = this.programStudents.findIndex(e => e.id === enrollmentId);
           if (enrollmentIndex !== -1) {
@@ -1533,23 +1545,206 @@ export class CoursesComponent implements OnInit {
               ...updatedEnrollment
             };
           }
-          
+
           // Clean up editing state
           this.cancelEditingEnrollment(enrollmentId);
-          
+
           // Show success message in the modal
           this.showProgramStudentsModalMessage('success', 'Matrícula actualizada exitosamente');
         }
-        
+
         this.isUpdatingEnrollment[enrollmentId] = false;
       });
   }
 
-  private showProgramStudentsModalMessage(type: 'success' | 'error', text: string) {
+  markEnrollmentAsCompleted(enrollment: any) {
+    console.log('Marking enrollment as completed:', enrollment);
+
+    // Validate required fields before completing
+    const missingFields = [];
+
+    if (enrollment.finalGrade === null || enrollment.finalGrade === undefined || enrollment.finalGrade === '') {
+      missingFields.push('Nota Final');
+    }
+
+    if (enrollment.attendancePercentage === null || enrollment.attendancePercentage === undefined || enrollment.attendancePercentage === '') {
+      missingFields.push('Porcentaje de Asistencia');
+    }
+
+    if (!enrollment.enrollmentDate) {
+      missingFields.push('Fecha de Matriculación');
+    }
+
+    if (missingFields.length > 0) {
+      const missingFieldsText = missingFields.join(', ');
+      this.showProgramStudentsModalMessage('error', `Para completar el programa, los siguientes campos son obligatorios: ${missingFieldsText}. Por favor, edite la matrícula y complete estos campos antes de marcar como completado.`);
+      return;
+    }
+
+    // Additional validation for grade and attendance ranges
+    if (enrollment.finalGrade < 0 || enrollment.finalGrade > 100) {
+      this.showProgramStudentsModalMessage('error', 'La nota final debe estar entre 0 y 100 para poder completar el programa.');
+      return;
+    }
+
+    if (enrollment.attendancePercentage < 0 || enrollment.attendancePercentage > 100) {
+      this.showProgramStudentsModalMessage('error', 'El porcentaje de asistencia debe estar entre 0% y 100% para poder completar el programa.');
+      return;
+    }
+
+    const studentName = this.getStudentFullName(enrollment.student);
+    const programName = this.selectedProgramForStudents?.title || 'Sin título';
+
+    // Show confirmation dialog
+    const confirmMessage = `¿Está seguro de que desea marcar como completado el programa "${programName}" para el estudiante ${studentName}?\n\nNota Final: ${enrollment.finalGrade}\nAsistencia: ${enrollment.attendancePercentage}%\nFecha de Matriculación: ${this.formatDate(enrollment.enrollmentDate)}`;
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    // Call API to update enrollment status to completed
+    this.enrollmentService.updateEnrollmentStatus(enrollment.id, 'completed')
+      .pipe(
+        catchError(error => {
+          console.error('Error updating enrollment status:', error);
+          this.showProgramStudentsModalMessage('error', 'Error marcando programa como completado');
+          return of(null);
+        })
+      )
+      .subscribe(updatedEnrollment => {
+        if (updatedEnrollment) {
+          // Update local data
+          const enrollmentIndex = this.programStudents.findIndex(e => e.id === enrollment.id);
+          if (enrollmentIndex !== -1) {
+            this.programStudents[enrollmentIndex] = {
+              ...this.programStudents[enrollmentIndex],
+              ...updatedEnrollment
+            };
+          }
+          this.showProgramStudentsModalMessage('success', `✅ Programa "${programName}" marcado como completado para ${studentName}`);
+        }
+      });
+  }
+
+  markEnrollmentAsInProgress(enrollment: any) {
+    console.log('Marking enrollment as in progress:', enrollment);
+
+    // Call API to update enrollment status to in_progress
+    this.enrollmentService.updateEnrollmentStatus(enrollment.id, 'in_progress')
+      .pipe(
+        catchError(error => {
+          console.error('Error updating enrollment status:', error);
+          this.showProgramStudentsModalMessage('error', 'Error marcando programa como en progreso');
+          return of(null);
+        })
+      )
+      .subscribe(updatedEnrollment => {
+        if (updatedEnrollment) {
+          // Update local data
+          const enrollmentIndex = this.programStudents.findIndex(e => e.id === enrollment.id);
+          if (enrollmentIndex !== -1) {
+            this.programStudents[enrollmentIndex] = {
+              ...this.programStudents[enrollmentIndex],
+              ...updatedEnrollment
+            };
+          }
+          const studentName = this.getStudentFullName(enrollment.student);
+          const programName = this.selectedProgramForStudents?.title || 'Sin título';
+          this.showProgramStudentsModalMessage('success', `🔄 Programa "${programName}" marcado como en progreso para ${studentName}`);
+        }
+      });
+  }
+
+  deleteStudentEnrollment(enrollment: any) {
+    const studentName = this.getStudentFullName(enrollment.student);
+    const programName = this.selectedProgramForStudents?.title || 'Sin título';
+
+    if (confirm(`¿Estás seguro de que deseas eliminar la matrícula del estudiante ${studentName} del programa "${programName}"?`)) {
+      console.log('Deleting enrollment:', enrollment);
+
+      // Call API to delete enrollment
+      this.enrollmentService.deleteEnrollment(enrollment.id)
+        .pipe(
+          catchError(error => {
+            console.error('Error deleting enrollment:', error);
+            this.showProgramStudentsModalMessage('error', 'Error eliminando matrícula');
+            return of(null);
+          })
+        )
+        .subscribe(() => {
+          // Remove from local data
+          this.programStudents = this.programStudents.filter(e => e.id !== enrollment.id);
+          this.showProgramStudentsModalMessage('success', `🗑️ Matrícula eliminada para ${studentName}`);
+        });
+    }
+  }
+
+  // Method to show modal messages for program students management
+  showProgramStudentsModalMessage(type: 'success' | 'error', text: string) {
     this.programStudentsModalMessage = { type, text };
-    // Auto-hide message after 4 seconds
-    setTimeout(() => {
-      this.programStudentsModalMessage = null;
-    }, 4000);
+
+    // Auto-hide success messages after 5 seconds
+    if (type === 'success') {
+      setTimeout(() => {
+        this.programStudentsModalMessage = null;
+      }, 5000);
+    }
+  }
+
+  // Method to handle enrollment status changes with validation
+  onEnrollmentStatusChange(enrollment: any, event: any) {
+    const newStatus = event.target.value;
+    const enrollmentId = enrollment.id;
+
+    // If trying to change to "completed", validate required fields
+    if (newStatus === 'completed') {
+      const formData = this.enrollmentEditForm[enrollmentId];
+      const missingFields = [];
+
+      // Check if required fields are filled
+      if (formData.finalGrade === null || formData.finalGrade === undefined) {
+        missingFields.push('Nota Final');
+      }
+
+      if (formData.attendancePercentage === null || formData.attendancePercentage === undefined) {
+        missingFields.push('Porcentaje de Asistencia');
+      }
+
+      if (!enrollment.enrollmentDate) {
+        missingFields.push('Fecha de Matriculación');
+      }
+
+      // If there are missing fields, show error and revert the selection
+      if (missingFields.length > 0) {
+        const missingFieldsText = missingFields.join(', ');
+        this.showProgramStudentsModalMessage('error', `Para marcar como completado, debe llenar los siguientes campos: ${missingFieldsText}`);
+
+        // Revert the select to the previous value
+        setTimeout(() => {
+          this.enrollmentEditForm[enrollmentId].status = enrollment.status;
+        }, 100);
+        return;
+      }
+
+      // Additional validation for grade and attendance ranges
+      if (formData.finalGrade !== null && formData.finalGrade !== undefined && (formData.finalGrade < 0 || formData.finalGrade > 100)) {
+        this.showProgramStudentsModalMessage('error', 'La nota final debe estar entre 0 y 100 para poder completar el programa.');
+        setTimeout(() => {
+          this.enrollmentEditForm[enrollmentId].status = enrollment.status;
+        }, 100);
+        return;
+      }
+
+      if (formData.attendancePercentage !== null && formData.attendancePercentage !== undefined && (formData.attendancePercentage < 0 || formData.attendancePercentage > 100)) {
+        this.showProgramStudentsModalMessage('error', 'El porcentaje de asistencia debe estar entre 0% y 100% para poder completar el programa.');
+        setTimeout(() => {
+          this.enrollmentEditForm[enrollmentId].status = enrollment.status;
+        }, 100);
+        return;
+      }
+    }
+
+    // If validation passed or it's not changing to completed, allow the change
+    console.log(`Status changed to: ${newStatus} for enrollment: ${enrollmentId}`);
   }
 }
