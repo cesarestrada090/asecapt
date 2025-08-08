@@ -3,32 +3,47 @@
  * Centralized configuration for ASECAPT application
  */
 
+// Environment Detection
+const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+
 // Base Configuration
 export const APP_CONFIG = {
   // API Configuration
   api: {
-    baseUrl: 'http://localhost:8081/api',
+    baseUrl: isProduction ? 'https://asecapt.com/api' : 'http://localhost:8081/api',
+    baseUrlV1: isProduction ? 'https://asecapt.com/v1' : 'http://localhost:8081/v1',
     timeout: 30000,
     retryAttempts: 3
   },
-  
+
   // Frontend Configuration
   frontend: {
-    baseUrl: 'http://localhost:4200',
+    baseUrl: isProduction ? 'https://asecapt.com' : 'http://localhost:4200',
     pageSize: 10,
     maxPageSize: 100
   },
-  
-      // API Endpoints
-    endpoints: {
-      enrollments: '/enrollments',
-      certificates: '/certificates',
-      verification: '/verify',
-      programs: '/programs',
-      contents: '/contents',
-      users: '/users',
-      students: '/students'
-    }
+
+  // API Endpoints (usando /api)
+  endpoints: {
+    enrollments: '/enrollments',
+    certificates: '/certificates',
+    verification: '/verify',
+    programs: '/programs',
+    contents: '/contents',
+    users: '/users',
+    students: '/students'
+  },
+
+  // V1 API Endpoints (usando /v1)
+  endpointsV1: {
+    userType: '/app/user-type',
+    clients: '/app/clients',
+    person: '/app/person',
+    user: '/app/user',
+    profile: '/app/profile',
+    serviceTypes: '/app/service-types',
+    logs: '/logs'
+  }
 };
 
 // QR Configuration
@@ -141,16 +156,9 @@ export const SUCCESS_MESSAGES = {
   }
 };
 
-// Environment Detection
-export const ENV = {
-  production: false,
-  development: true,
-  testing: false
-};
-
 // Build full API URLs helper
 export const buildApiUrl = (endpoint: string): string => {
-  // Ensure endpoint starts with '/' 
+  // Ensure endpoint starts with '/'
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   return `${APP_CONFIG.api.baseUrl}${cleanEndpoint}`;
 };
@@ -163,4 +171,4 @@ export const buildVerificationUrl = (token: string): string => {
 // Build frontend URL helper
 export const buildFrontendUrl = (path: string): string => {
   return `${APP_CONFIG.frontend.baseUrl}${path}`;
-}; 
+};
