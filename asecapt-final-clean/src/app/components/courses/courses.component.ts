@@ -1449,6 +1449,14 @@ export class CoursesComponent implements OnInit {
   formatDate(dateString: string | Date | null | undefined): string {
     if (!dateString) return 'N/A';
     try {
+      // Si es una fecha en formato YYYY-MM-DD (solo fecha), crear Date de manera local
+      if (typeof dateString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        const [year, month, day] = dateString.split('-').map(Number);
+        const date = new Date(year, month - 1, day); // month - 1 porque Date usa 0-indexado para meses
+        return date.toLocaleDateString('es-ES');
+      }
+
+      // Para otros formatos de fecha, usar el comportamiento normal
       const date = new Date(dateString);
       return date.toLocaleDateString('es-ES');
     } catch {
