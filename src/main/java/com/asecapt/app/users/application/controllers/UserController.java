@@ -113,23 +113,7 @@ public class UserController extends BaseController {
         }
     }
 
-    @PutMapping("/{id}/upgrade-premium")
-    public ResponseEntity<?> upgradeToPremium(@PathVariable("id") Integer userId, @RequestBody Map<String, String> body) {
-        try {
-            String planType = body.get("planType");
-            
-            UserResponseDto updatedUser = userService.upgradeToPremium(userId, planType);
-            return ResponseEntity.ok(Map.of(
-                "message", "Usuario actualizado a Premium exitosamente",
-                "user", updatedUser
-            ));
-        } catch (Exception e) {
-            log.severe("Error al actualizar usuario a premium: " + e.getMessage());
-            return ResponseEntity.badRequest().body(Map.of(
-                "error", "Error al actualizar a premium: " + e.getMessage()
-            ));
-        }
-    }
+
 
     @PutMapping("/{id}/active")
     @PreAuthorize("hasRole('ADMIN')")

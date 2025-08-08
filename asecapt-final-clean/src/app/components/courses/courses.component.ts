@@ -935,7 +935,7 @@ export class CoursesComponent implements OnInit {
     // Update course status to active/inactive
     course.status = course.status === 'active' ? 'inactive' : 'active';
     const action = course.status === 'active' ? 'activado' : 'inactivado';
-    this.emitMessage('success', `Curso ${action}: ${course.name}`);
+            this.emitMessage('success', `Programa ${action}: ${course.name}`);
   }
 
   viewCourseStudents(course: any) {
@@ -1234,7 +1234,7 @@ export class CoursesComponent implements OnInit {
 
   getTypeText(type: string): string {
     switch (type) {
-      case 'course': return 'Curso';
+      case 'course': return 'Programa';
       case 'specialization': return 'Especialización';
       case 'certification': return 'Certificación';
       default: return type;
@@ -1296,7 +1296,7 @@ export class CoursesComponent implements OnInit {
   get availableTypes() {
     return [
       { value: '', label: 'Todos los tipos' },
-      { value: 'course', label: 'Cursos' },
+      { value: 'course', label: 'Programas' },
       { value: 'specialization', label: 'Especializaciones' },
       { value: 'certification', label: 'Certificaciones' }
     ];

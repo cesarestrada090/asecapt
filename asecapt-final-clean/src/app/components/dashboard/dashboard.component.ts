@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { StudentsComponent } from '../students/students.component';
 import { CoursesComponent } from '../courses/courses.component';
 import { CertificatesComponent } from '../certificates/certificates.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -26,10 +27,16 @@ export class DashboardComponent implements OnInit {
   errorMessage: string = '';
   successMessage: string = '';
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
-    // Initialize dashboard
+    // Initialize dashboard and verify authentication
+    if (!this.authService.isAuthenticated() || !this.authService.isAdmin()) {
+      this.router.navigate(['/virtual-classroom']);
+    }
   }
 
   // === NAVIGATION ===
@@ -47,7 +54,7 @@ export class DashboardComponent implements OnInit {
   getSectionTitle(): string {
     switch (this.activeSection) {
       case 'students': return 'Gestión de Alumnos';
-      case 'courses': return 'Gestión de Cursos';
+      case 'courses': return 'Gestión de Programas';
       case 'certificates': return 'Gestión de Certificados';
       default: return 'Dashboard Administrativo';
     }
@@ -56,8 +63,8 @@ export class DashboardComponent implements OnInit {
   getSectionDescription(): string {
     switch (this.activeSection) {
       case 'students': return 'Visualiza y gestiona información de estudiantes que han completado programas';
-      case 'courses': return 'Administra cursos, especializaciones y programas disponibles';
-      case 'certificates': return 'Gestiona certificados para estudiantes con cursos completados - subir, descargar y generar QR';
+      case 'courses': return 'Administra programas, especializaciones y cursos disponibles';
+      case 'certificates': return 'Gestiona certificados para estudiantes con programas completados - subir, descargar y generar QR';
       default: return 'Panel de administración ASECAPT - Gestión completa de certificados y usuarios';
     }
   }
@@ -69,14 +76,7 @@ export class DashboardComponent implements OnInit {
     this.successMessage = '';
   }
 
-  logout() {
-    // Clear any stored auth data
-    localStorage.removeItem('admin_token');
-    sessionStorage.clear();
-    
-    // Navigate to login
-    this.router.navigate(['/virtual-classroom']);
-  }
+
 
   // === MESSAGE HANDLING ===
 
@@ -92,5 +92,33 @@ export class DashboardComponent implements OnInit {
     setTimeout(() => {
       this.clearMessages();
     }, 5000);
+  }
+
+  // === AUTHENTICATION ===
+
+  logout() {
+    this.authService.logout().subscribe({
+      next: () => {
+        console.log('Logout successful');
+        this.router.navigate(['/virtual-classroom']);
+      },
+      error: (error) => {
+        console.error('Logout error:', error);
+        // Navigate anyway
+        this.router.navigate(['/virtual-classroom']);
+      }
+    });
+  }
+
+  getCurrentUser() {
+    return this.authService.getCurrentUser();
+  }
+
+  getUserFullName(): string {
+    return this.authService.getUserFullName();
+  }
+
+  getUserTypeText(): string {
+    return this.authService.getUserTypeText();
   }
 } 

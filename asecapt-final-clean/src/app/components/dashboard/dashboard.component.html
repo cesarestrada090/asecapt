@@ -24,7 +24,7 @@
                 <li class="nav-item" [class.active]="activeSection === 'courses'">
                     <a (click)="setActiveSection('courses')" class="nav-link">
                         <i class="fas fa-book"></i>
-                        <span>Cursos</span>
+                        <span>Programas</span>
                     </a>
                 </li>
                 <li class="nav-item" [class.active]="activeSection === 'certificates'">
@@ -57,8 +57,32 @@
                         <p class="text-muted mb-0">{{ getSectionDescription() }}</p>
                     </div>
                 </div>
-                <div class="user-info">
-                    <span class="badge bg-primary">Administrador</span>
+                <div class="user-info d-flex align-items-center">
+                    <div class="me-3">
+                        <div class="fw-semibold">{{ getUserFullName() }}</div>
+                        <small class="text-muted">{{ getUserTypeText() }}</small>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" 
+                                type="button" 
+                                data-bs-toggle="dropdown" 
+                                aria-expanded="false">
+                            <i class="fas fa-user me-1"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <h6 class="dropdown-header">
+                                    <i class="fas fa-user me-2"></i>{{ getUserFullName() }}
+                                </h6>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="#" (click)="logout(); $event.preventDefault()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>

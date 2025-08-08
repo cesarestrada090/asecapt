@@ -8,6 +8,8 @@ import com.asecapt.app.users.domain.entities.User;
 import com.asecapt.app.users.application.dto.UserLoginRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Optional;
+
 public interface UserService {
     UserDto save(UserDto userDto);
     UserDto update(Integer id, UserDto dto);
@@ -17,9 +19,10 @@ public interface UserService {
     UserResponseDto getById(Integer id);
     User getUserEntityById(Integer id);
     User getUserEntityByUsername(String username);
+    Optional<User> findByUsername(String username);
     ResultPage<UserResponseDto> getAll(Pageable paging);
     UserResponseDto verifyEmail(String token) throws Exception;
     LoginResponseDto login(String username, String password);
-    UserResponseDto upgradeToPremium(Integer userId, String planType);
+
     void saveUserEntity(User user);
 }

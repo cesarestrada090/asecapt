@@ -28,11 +28,7 @@ public class UserResponseDto implements Serializable {
     @Schema(description = "Person information associated with the user")
     private PersonDto person;
     
-    @Schema(description = "Whether user has premium access", example = "false")
-    private boolean isPremium = false;
-    
-    @Schema(description = "How premium access was obtained", example = "NONE")
-    private PremiumBy premiumBy = PremiumBy.NONE;
+
 
     @Schema(description = "Whether user is active", example = "true")
     private boolean active = true;
@@ -96,21 +92,7 @@ public class UserResponseDto implements Serializable {
         this.person = person;
     }
 
-    public boolean isPremium() {
-        return isPremium;
-    }
 
-    public void setPremium(boolean premium) {
-        isPremium = premium;
-    }
-
-    public PremiumBy getPremiumBy() {
-        return premiumBy;
-    }
-
-    public void setPremiumBy(PremiumBy premiumBy) {
-        this.premiumBy = premiumBy;
-    }
 
     public boolean isActive() {
         return active;
@@ -135,8 +117,7 @@ public class UserResponseDto implements Serializable {
                 ", updatedAt=" + updatedAt +
                 ", isEmailVerified=" + isEmailVerified +
                 ", person=" + person +
-                ", isPremium=" + isPremium +
-                ", premiumBy=" + premiumBy +
+
                 ", active=" + active +
                 '}';
     }

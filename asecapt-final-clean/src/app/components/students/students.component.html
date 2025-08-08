@@ -72,7 +72,7 @@
             <tr>
               <th>Estudiante</th>
               <th>Contacto</th>
-              <th>Cursos</th>
+                              <th>Programas</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
@@ -95,8 +95,8 @@
                 <button
                   class="btn btn-outline-info btn-sm"
                   (click)="viewStudentCourses(student)"
-                  title="Ver cursos matriculados">
-                  <i class="fas fa-book me-1"></i>Ver Cursos
+                                      title="Ver programas matriculados">
+                    <i class="fas fa-book me-1"></i>Ver Programas
                   <span class="badge bg-secondary ms-1">{{ getStudentEnrollmentCount(student) }}</span>
                 </button>
               </td>
@@ -327,7 +327,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="studentCoursesModalLabel">
-            <i class="fas fa-book me-2"></i>Cursos de {{ selectedStudent?.person?.firstName }} {{ selectedStudent?.person?.lastName }}
+            <i class="fas fa-book me-2"></i>Programas de {{ selectedStudent?.person?.firstName }} {{ selectedStudent?.person?.lastName }}
           </h5>
           <button type="button" class="btn-close" (click)="closeModal('studentCoursesModal')" aria-label="Close"></button>
         </div>
@@ -351,7 +351,7 @@
           <!-- Loading State -->
           <div class="text-center py-4" *ngIf="isLoadingStudentCourses">
             <div class="spinner-border" role="status"></div>
-            <p class="mt-2 text-muted">Cargando cursos...</p>
+            <p class="mt-2 text-muted">Cargando programas...</p>
           </div>
 
           <!-- Courses List -->
@@ -360,12 +360,12 @@
               <table class="table table-hover table-sm">
                 <thead>
                   <tr>
-                    <th>Curso</th>
+                    <th>Programa</th>
                     <th>Estado</th>
                     <th>Nota</th>
                     <th>Asistencia</th>
                     <th>Inscripción</th>
-                    <th>Estado del Curso</th>
+                    <th>Estado del Programa</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
@@ -373,7 +373,7 @@
                   <tr *ngFor="let course of studentCourses; trackBy: trackByCourseId"
                       [class.editing]="editingStudentCourse[course.id]">
                     <td>
-                      <div class="fw-semibold">{{ course.program?.title || course.program?.name || 'Curso sin título' }}</div>
+                      <div class="fw-semibold">{{ course.program?.title || course.program?.name || 'Programa sin título' }}</div>
                       <small class="text-muted">{{ course.program?.duration || 'N/A' }} • {{ course.program?.credits || 0 }} créditos</small>
                     </td>
                     <td>
@@ -455,7 +455,7 @@
                       </small>
                     </td>
                     <td>
-                      <!-- Estado del Curso - Botones de cambio de estado -->
+                      <!-- Estado del Programa - Botones de cambio de estado -->
                       <div *ngIf="!editingStudentCourse[course.id]" class="d-flex flex-column gap-1">
                         <button
                           *ngIf="course.status !== 'completed'"
@@ -520,13 +520,13 @@
           <!-- Empty State -->
           <div class="text-center py-4" *ngIf="!isLoadingStudentCourses && studentCourses.length === 0">
             <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
-            <h5>Sin cursos matriculados</h5>
-            <p class="text-muted">Este estudiante aún no se ha matriculado en ningún curso</p>
+            <h5>Sin programas matriculados</h5>
+            <p class="text-muted">Este estudiante aún no se ha matriculado en ningún programa</p>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-success" (click)="showEnrollmentSearch()" *ngIf="selectedStudent">
-            <i class="fas fa-plus me-1"></i>Matricular en Curso
+            <i class="fas fa-plus me-1"></i>Matricular en Programa
           </button>
           <button type="button" class="btn btn-secondary" (click)="closeModal('studentCoursesModal')">
             Cerrar
@@ -663,19 +663,19 @@
                     <div class="col-md-3">
                       <div class="border-end">
                         <div class="fw-bold text-primary h4">{{ getStudentEnrollmentCount(selectedStudent) }}</div>
-                        <div class="text-muted">Cursos Matriculados</div>
+                        <div class="text-muted">Programas Matriculados</div>
                       </div>
                     </div>
                     <div class="col-md-3">
                       <div class="border-end">
                         <div class="fw-bold text-success h4">{{ getStudentCompletedCount(selectedStudent) }}</div>
-                        <div class="text-muted">Cursos Completados</div>
+                        <div class="text-muted">Programas Completados</div>
                       </div>
                     </div>
                     <div class="col-md-3">
                       <div class="border-end">
                         <div class="fw-bold text-info h4">{{ getStudentActiveCount(selectedStudent) }}</div>
-                        <div class="text-muted">Cursos Activos</div>
+                        <div class="text-muted">Programas Activos</div>
                       </div>
                     </div>
                     <div class="col-md-3">
@@ -693,7 +693,7 @@
             <i class="fas fa-edit me-1"></i>Editar Estudiante
           </button>
           <button type="button" class="btn btn-outline-warning" (click)="viewStudentCoursesFromDetails()" *ngIf="selectedStudent">
-            <i class="fas fa-book me-1"></i>Ver Cursos
+                                <i class="fas fa-book me-1"></i>Ver Programas
           </button>
           <button type="button" class="btn btn-secondary" (click)="closeModal('studentDetailsModal')">
             Cerrar
@@ -709,7 +709,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="courseEnrollmentModalLabel">
-            <i class="fas fa-search me-2"></i>Matricular Estudiante en Curso
+            <i class="fas fa-search me-2"></i>Matricular Estudiante en Programa
           </h5>
           <button type="button" class="btn-close" (click)="closeModal('courseEnrollmentModal')" aria-label="Close"></button>
         </div>
@@ -724,7 +724,7 @@
                 <input
                   type="text"
                   class="form-control"
-                  placeholder="Buscar cursos disponibles..."
+                  placeholder="Buscar programas disponibles..."
                   [(ngModel)]="courseSearchQuery"
                   (input)="searchAvailableCourses()"
                   (keyup.enter)="searchAvailableCourses()">
@@ -740,14 +740,14 @@
           <!-- Loading State -->
           <div class="text-center py-4" *ngIf="isLoadingAvailableCourses">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando cursos...</span>
-            </div>
-            <p class="mt-2">Buscando cursos disponibles...</p>
+                              <span class="visually-hidden">Cargando programas...</span>
+              </div>
+              <p class="mt-2">Buscando programas disponibles...</p>
           </div>
 
           <!-- Available Courses List -->
           <div *ngIf="!isLoadingAvailableCourses && availableCourses.length > 0">
-            <h6 class="mb-3">Cursos Disponibles ({{ availableCourses.length }})</h6>
+            <h6 class="mb-3">Programas Disponibles ({{ availableCourses.length }})</h6>
             <div class="list-group">
               <div 
                 *ngFor="let course of availableCourses; trackBy: trackByCourseId" 
@@ -780,15 +780,15 @@
           <!-- Empty State -->
           <div class="text-center py-4" *ngIf="!isLoadingAvailableCourses && availableCourses.length === 0 && courseSearchQuery">
             <i class="fas fa-search fa-3x text-muted mb-3"></i>
-            <h5>No se encontraron cursos</h5>
-            <p class="text-muted">No hay cursos disponibles que coincidan con "{{ courseSearchQuery }}"</p>
+            <h5>No se encontraron programas</h5>
+            <p class="text-muted">No hay programas disponibles que coincidan con "{{ courseSearchQuery }}"</p>
           </div>
 
           <!-- Initial State -->
           <div class="text-center py-4" *ngIf="!isLoadingAvailableCourses && availableCourses.length === 0 && !courseSearchQuery">
             <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
-            <h5>Buscar Cursos</h5>
-            <p class="text-muted">Utiliza la búsqueda para encontrar cursos disponibles para matricular</p>
+            <h5>Buscar Programas</h5>
+            <p class="text-muted">Utiliza la búsqueda para encontrar programas disponibles para matricular</p>
           </div>
         </div>
         <div class="modal-footer">

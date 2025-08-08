@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 
-import com.asecapt.app.users.application.dto.PremiumBy;
+
 
 @Entity
 @Table(name = "user")
@@ -44,12 +44,7 @@ public class User {
     @JoinColumn(name =  "person_id")
     private Person person;
     
-    @Column(name = "is_premium", nullable = false)
-    private boolean isPremium = false;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "premium_by", nullable = false)
-    private PremiumBy premiumBy = PremiumBy.NONE;
 
     @Column(name = "active", nullable = false)
     private boolean active = true;
@@ -133,18 +128,7 @@ public class User {
         this.emailTokenExpiresAt = emailTokenExpiresAt;
     }
 
-    public boolean isPremium() {
-        return isPremium;
-    }
-    public void setPremium(boolean premium) {
-        isPremium = premium;
-    }
-    public PremiumBy getPremiumBy() {
-        return premiumBy;
-    }
-    public void setPremiumBy(PremiumBy premiumBy) {
-        this.premiumBy = premiumBy;
-    }
+
 
     public boolean isActive() {
         return active;

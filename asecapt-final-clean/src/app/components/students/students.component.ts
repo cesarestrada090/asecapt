@@ -519,7 +519,7 @@ export class StudentsComponent implements OnInit {
         }),
         catchError(error => {
           console.error('Error loading student courses:', error);
-          this.showModalMessage('error', 'Error cargando cursos del estudiante');
+                      this.showModalMessage('error', 'Error cargando programas del estudiante');
           this.isLoadingStudentCourses = false;
           return of([]);
         })
@@ -590,7 +590,7 @@ export class StudentsComponent implements OnInit {
       .pipe(
         catchError(error => {
           console.error('Error updating enrollment status:', error);
-          this.showModalMessage('error', 'Error marcando curso como completado');
+                      this.showModalMessage('error', 'Error marcando programa como completado');
           return of(null);
         })
       )
@@ -601,7 +601,7 @@ export class StudentsComponent implements OnInit {
           if (courseIndex !== -1) {
             this.studentCourses[courseIndex] = updatedEnrollment;
           }
-          this.showModalMessage('success', `✅ Curso "${course.program?.title || updatedEnrollment.programId}" marcado como completado`);
+          this.showModalMessage('success', `✅ Programa "${course.program?.title || updatedEnrollment.programId}" marcado como completado`);
         }
       });
   }
@@ -614,7 +614,7 @@ export class StudentsComponent implements OnInit {
       .pipe(
         catchError(error => {
           console.error('Error updating enrollment status:', error);
-          this.showModalMessage('error', 'Error marcando curso como en progreso');
+                      this.showModalMessage('error', 'Error marcando programa como en progreso');
           return of(null);
         })
       )
@@ -625,13 +625,13 @@ export class StudentsComponent implements OnInit {
           if (courseIndex !== -1) {
             this.studentCourses[courseIndex] = updatedEnrollment;
           }
-          this.showModalMessage('success', `🔄 Curso "${course.program?.title || updatedEnrollment.programId}" marcado como en progreso`);
+          this.showModalMessage('success', `🔄 Programa "${course.program?.title || updatedEnrollment.programId}" marcado como en progreso`);
         }
       });
   }
 
   deleteEnrollment(course: any) {
-    if (confirm(`¿Estás seguro de que deseas eliminar la matrícula del estudiante en el curso "${course.program?.title || 'Sin título'}"?`)) {
+    if (confirm(`¿Estás seguro de que deseas eliminar la matrícula del estudiante en el programa "${course.program?.title || 'Sin título'}"?`)) {
       console.log('Deleting enrollment from course:', course);
       
       // Call API to delete enrollment
@@ -650,7 +650,7 @@ export class StudentsComponent implements OnInit {
           // Reload all enrollments to update counts
           this.loadEnrollments();
           
-          this.showModalMessage('success', `🗑️ Matrícula eliminada del curso "${course.program?.title || 'Sin título'}"`);
+          this.showModalMessage('success', `🗑️ Matrícula eliminada del programa "${course.program?.title || 'Sin título'}"`);
         });
     }
   }
@@ -901,7 +901,7 @@ export class StudentsComponent implements OnInit {
       .pipe(
         catchError(error => {
           console.error('Error searching courses:', error);
-          this.showModalMessage('error', 'Error buscando cursos disponibles');
+                      this.showModalMessage('error', 'Error buscando programas disponibles');
           this.isLoadingAvailableCourses = false;
           return of([]);
         })
@@ -1062,7 +1062,7 @@ export class StudentsComponent implements OnInit {
       .pipe(
         catchError(error => {
           console.error('Error updating student course:', error);
-          this.showModalMessage('error', 'Error actualizando el curso');
+                      this.showModalMessage('error', 'Error actualizando el programa');
           this.isUpdatingStudentCourse[courseId] = false;
           return of(null);
         })
@@ -1084,7 +1084,7 @@ export class StudentsComponent implements OnInit {
           this.cancelEditingStudentCourse(courseId);
           
           // Show success message
-          this.showModalMessage('success', 'Curso actualizado exitosamente');
+          this.showModalMessage('success', 'Programa actualizado exitosamente');
           
           // Update statistics
           this.loadStatistics();

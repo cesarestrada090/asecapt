@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService, LoginRequest } from '../../services/auth.service';
 
 @Component({
   selector: 'app-virtual-classroom',
@@ -20,26 +21,55 @@ export class VirtualClassroomComponent {
   loginError: string = '';
   showPassword: boolean = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   onLogin() {
     if (this.isValidForm()) {
       this.isLoading = true;
       this.loginError = '';
 
-      // Simular proceso de login
-      setTimeout(() => {
-        // Simular validación de credenciales de administrador
-        if (this.loginForm.username === 'admin' && this.loginForm.password === 'admin') {
-          // Login exitoso - redirigir al dashboard administrativo
-          console.log('Login exitoso - redirigiendo al dashboard administrativo');
+      const credentials: LoginRequest = {
+        username: this.loginForm.username.trim(),
+        password: this.loginForm.password
+      };
+
+      this.authService.login(credentials).subscribe({
+        next: (response) => {
           this.isLoading = false;
-          this.router.navigate(['/dashboard']);
-        } else {
-          this.loginError = 'Usuario o contraseña incorrectos. Credenciales de administrador: admin@asecapt.com / admin2024';
+          
+          if (response.success) {
+            // Login exitoso - redirigir al dashboard administrativo
+            console.log('Login exitoso - redirigiendo al dashboard administrativo');
+            this.router.navigate(['/dashboard']);
+          } else {
+            // Mostrar error específico
+            this.loginError = this.getErrorMessage(response.errorCode, response.message);
+          }
+        },
+        error: (error) => {
           this.isLoading = false;
+          console.error('Login error:', error);
+          this.loginError = 'Error de conexión. Por favor, intente nuevamente.';
         }
-      }, 2000);
+      });
+    }
+  }
+
+  private getErrorMessage(errorCode?: string, message?: string): string {
+    switch (errorCode) {
+      case 'INVALID_CREDENTIALS':
+        return 'Usuario o contraseña incorrectos';
+      case 'USER_INACTIVE':
+        return 'La cuenta de usuario está inactiva. Contacte al administrador';
+      case 'INSUFFICIENT_PRIVILEGES':
+        return 'Acceso denegado. Se requieren privilegios de administrador';
+      case 'INVALID_INPUT':
+        return 'Por favor ingrese usuario y contraseña';
+      default:
+        return message || 'Error durante el inicio de sesión. Intente nuevamente';
     }
   }
 

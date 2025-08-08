@@ -7,6 +7,7 @@ import { CertificateVerificationComponent } from './components/certificate-verif
 import { ComplaintsBookComponent } from './components/complaints-book/complaints-book.component';
 import { VirtualClassroomComponent } from './components/virtual-classroom/virtual-classroom.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', component: LandingPageComponent },
@@ -17,6 +18,6 @@ export const routes: Routes = [
   { path: 'public/certificate/:certificateCode', component: CertificateVerificationComponent }, // Public certificate verification
   { path: 'complaints-book', component: ComplaintsBookComponent },
   { path: 'virtual-classroom', component: VirtualClassroomComponent },
-  { path: 'dashboard', component: DashboardComponent }, // Modular dashboard with internal navigation
+  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] }, // Protected dashboard with auth guard
   { path: '**', redirectTo: '' }
 ];

@@ -32,10 +32,8 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.asecapt.app.users.application.exception.EmailNotVerifiedException;
-import com.asecapt.app.users.application.dto.PremiumBy;
-import com.asecapt.app.users.domain.services.MembershipService;
-import com.asecapt.app.users.domain.entities.UserMembership;
-import com.asecapt.app.users.domain.entities.MembershipPlan;
+
+
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -45,7 +43,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoderUtil passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailService emailService;
-    private final MembershipService membershipService;
+
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Autowired
@@ -53,14 +51,12 @@ public class UserServiceImpl implements UserService {
                            PersonService personService,
                            PasswordEncoderUtil passwordEncoder,
                            JwtTokenProvider jwtTokenProvider,
-                           EmailService emailService,
-                           MembershipService membershipService) {
+                           EmailService emailService) {
         this.userRepository = userRepository;
         this.personService = personService;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.emailService = emailService;
-        this.membershipService = membershipService;
     }
 
     @Override
@@ -179,6 +175,11 @@ public class UserServiceImpl implements UserService {
         Optional<User> existingUser = userRepository.findByUsername(username);
         return existingUser.orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
     }
+
+    @Override
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
     
     @Override
     public ResultPage<UserResponseDto> getAll(Pageable paging){
@@ -243,103 +244,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.existsByPersonEmail(email);
     }
 
-    @Override
-    @Transactional
-    public UserResponseDto upgradeToPremium(Integer userId, String planType) {
-        User user = getUserEntityById(userId);
-        
-        try {
-            UserMembership membership;
-            
-            // Verificar si el usuario ya tiene una membresía activa
-            if (user.isPremium() && membershipService.hasActiveMembership(userId)) {
-                throw new RuntimeException("El usuario ya tiene una membresía Premium activa");
-            }
-            
-            // Verificar si tiene una membresía expirada que se puede reactivar
-            Optional<UserMembership> latestMembership = membershipService.getLatestMembership(userId);
-            
-            if (latestMembership.isPresent() && 
-                latestMembership.get().getMembershipType() == UserMembership.MembershipType.PAYMENT &&
-                (latestMembership.get().getStatus() == UserMembership.MembershipStatus.EXPIRED ||
-                 latestMembership.get().getStatus() == UserMembership.MembershipStatus.CANCELLED)) {
-                
-                // Reactivar membresía existente
-                log.info("Reactivating expired membership for user: {}", userId);
-                membership = membershipService.reactivateExpiredMembership(userId, "STRIPE");
-                
-            } else {
-                // Crear nueva membresía
-                log.info("Creating new membership for user: {}", userId);
-                
-                // Buscar el plan por nombre (planType viene del frontend)
-                Long planId = getPlanIdByType(planType);
-                
-                // Obtener detalles del plan
-                MembershipPlan plan = membershipService.getPlanById(planId)
-                    .orElseThrow(() -> new RuntimeException("Plan no encontrado: " + planType));
-                
-                // Crear la membresía de pago
-                membership = membershipService.createPaymentMembership(
-                    userId, 
-                    planId, 
-                    plan.getPrice(), 
-                    "STRIPE" // Método de pago por defecto
-                );
-            }
-            
-            // Actualizar el estado premium del usuario
-            user.setPremium(true);
-            user.setPremiumBy(PremiumBy.PAYMENT);
-            user.setUpdatedAt(LocalDateTime.now());
-            
-            User updatedUser = userRepository.save(user);
-            
-            log.info("User {} upgraded/reactivated premium with plan: {} (membership ID: {})", 
-                    userId, planType, membership.getId());
-            
-            return MapperUtil.map(updatedUser, UserResponseDto.class);
-            
-        } catch (Exception e) {
-            log.error("Error upgrading user {} to premium: {}", userId, e.getMessage());
-            throw new RuntimeException("Error al procesar la actualización a Premium: " + e.getMessage());
-        }
-    }
-    
-    private Long getPlanIdByType(String planType) {
-        // Buscar el plan por tipo de facturación en lugar de usar IDs hardcodeados
-        try {
-            switch (planType.toLowerCase()) {
-                case "monthly":
-                case "mensual":
-                    return membershipService.getMonthlyPlans().stream()
-                            .findFirst()
-                            .map(plan -> plan.getId())
-                            .orElseThrow(() -> new RuntimeException("Plan mensual no encontrado"));
-                case "annual":
-                case "anual":
-                    return membershipService.getAnnualPlans().stream()
-                            .findFirst()
-                            .map(plan -> plan.getId())
-                            .orElseThrow(() -> new RuntimeException("Plan anual no encontrado"));
-                default:
-                    throw new RuntimeException("Tipo de plan no válido: " + planType);
-            }
-        } catch (Exception e) {
-            log.error("Error finding plan by type {}: {}", planType, e.getMessage());
-            // Fallback a IDs por defecto si falla la búsqueda dinámica
-            switch (planType.toLowerCase()) {
-                case "monthly":
-                case "mensual":
-                    return 1L;
-                case "annual":
-                case "anual":
-                    return 2L;
-                default:
-                    throw new RuntimeException("Tipo de plan no válido: " + planType);
-            }
-        }
-    }
+
 
     @Override
     @Transactional
