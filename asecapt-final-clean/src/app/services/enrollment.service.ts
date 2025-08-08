@@ -44,6 +44,12 @@ export interface Enrollment {
   // program?: Program;
 }
 
+export interface EnrollmentSummary {
+  userId: number;
+  totalEnrollments: number;
+  completedEnrollments: number;
+}
+
 export interface CreateEnrollmentRequest {
   userId: number;
   programId: number;
@@ -89,6 +95,11 @@ export class EnrollmentService {
     return this.http.get<Enrollment[]>(`${this.apiUrl}/completed/search`, { params });
   }
 
+  // Get enrollment summary for all students (optimized endpoint)
+  getEnrollmentSummary(): Observable<{ [userId: number]: EnrollmentSummary }> {
+    return this.http.get<{ [userId: number]: EnrollmentSummary }>(`${this.apiUrl}/summary`);
+  }
+
   // Get enrollment by ID
   getEnrollmentById(id: number): Observable<Enrollment> {
     return this.http.get<Enrollment>(`${this.apiUrl}/${id}`);
@@ -118,4 +129,4 @@ export class EnrollmentService {
   deleteEnrollment(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
-} 
+}

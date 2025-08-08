@@ -48,6 +48,17 @@ public class EnrollmentController {
         return enrollmentService.searchCompletedEnrollments(query);
     }
 
+    // Get enrollment summary for all active students (optimized endpoint)
+    @GetMapping("/summary")
+    public ResponseEntity<java.util.Map<Integer, EnrollmentService.EnrollmentSummary>> getEnrollmentSummary() {
+        try {
+            java.util.Map<Integer, EnrollmentService.EnrollmentSummary> summary = enrollmentService.getEnrollmentSummaryForActiveStudents();
+            return ResponseEntity.ok(summary);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     // Get enrollment by ID
     @GetMapping("/{id}")
     public ResponseEntity<Enrollment> getEnrollmentById(@PathVariable Integer id) {

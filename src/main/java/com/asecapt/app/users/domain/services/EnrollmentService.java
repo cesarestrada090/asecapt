@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class EnrollmentService {
@@ -198,5 +200,68 @@ public class EnrollmentService {
         enrollment.setDeletedAt(java.time.LocalDateTime.now());
         
         enrollmentRepository.save(enrollment);
+    }
+
+    /**
+     * Get enrollment summary for all active students
+     * Returns a map of student ID -> enrollment statistics
+     */
+    public Map<Integer, EnrollmentSummary> getEnrollmentSummaryForActiveStudents() {
+        // Get all enrollments that are not soft-deleted
+        List<Enrollment> allEnrollments = enrollmentRepository.findByDeletedFalse();
+        
+        // Group enrollments by user ID and calculate statistics
+        Map<Integer, EnrollmentSummary> summaryMap = new HashMap<>();
+        
+        for (Enrollment enrollment : allEnrollments) {
+            if (enrollment.getUserId() != null) {
+                Integer userId = enrollment.getUserId();
+                
+                // Get or create summary for this user
+                EnrollmentSummary summary = summaryMap.getOrDefault(userId, new EnrollmentSummary(userId));
+                
+                // Update counters based on enrollment status
+                summary.incrementTotalEnrollments();
+                
+                if ("completed".equals(enrollment.getStatus())) {
+                    summary.incrementCompletedEnrollments();
+                }
+                
+                summaryMap.put(userId, summary);
+            }
+        }
+        
+        return summaryMap;
+    }
+
+    /**
+     * Inner class to hold enrollment summary data
+     */
+    public static class EnrollmentSummary {
+        private Integer userId;
+        private int totalEnrollments;
+        private int completedEnrollments;
+        
+        public EnrollmentSummary(Integer userId) {
+            this.userId = userId;
+            this.totalEnrollments = 0;
+            this.completedEnrollments = 0;
+        }
+        
+        public void incrementTotalEnrollments() {
+            this.totalEnrollments++;
+        }
+        
+        public void incrementCompletedEnrollments() {
+            this.completedEnrollments++;
+        }
+        
+        // Getters and setters
+        public Integer getUserId() { return userId; }
+        public void setUserId(Integer userId) { this.userId = userId; }
+        public int getTotalEnrollments() { return totalEnrollments; }
+        public void setTotalEnrollments(int totalEnrollments) { this.totalEnrollments = totalEnrollments; }
+        public int getCompletedEnrollments() { return completedEnrollments; }
+        public void setCompletedEnrollments(int completedEnrollments) { this.completedEnrollments = completedEnrollments; }
     }
 }

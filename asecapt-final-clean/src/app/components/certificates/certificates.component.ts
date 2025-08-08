@@ -89,52 +89,91 @@ export class CertificatesComponent implements OnInit {
   }
 
   /**
-   * Load certificates for all students
+   * Load certificates for all students in a single request
    */
   loadCertificatesForStudents() {
-    this.activeStudents.forEach(student => {
-      if (student && student.id) {
-        this.certificateService.getCertificatesByStudent(student.id)
-          .pipe(
-            catchError(error => {
-              console.log(`No certificates found for student ${student.id}:`, error);
-              return of([]);
-            })
-          )
-          .subscribe(certificates => {
-            if (certificates && Array.isArray(certificates)) {
-              this.certificates[student.id] = certificates;
-            } else {
-              this.certificates[student.id] = [];
+    // Make a single request to get all certificates
+    this.certificateService.getAllCertificates()
+      .pipe(
+        catchError(error => {
+          console.log('No certificates found or error loading certificates:', error);
+          return of([]);
+        })
+      )
+      .subscribe(allCertificates => {
+        // Initialize certificates object for all active students
+        this.activeStudents.forEach(student => {
+          if (student && student.id) {
+            this.certificates[student.id] = [];
+          }
+        });
+
+        // Group certificates by student ID
+        if (allCertificates && Array.isArray(allCertificates)) {
+          allCertificates.forEach(certificate => {
+            if (certificate && certificate.enrollment && certificate.enrollment.userId) {
+              const studentId = certificate.enrollment.userId;
+
+              // Only include certificates for active students
+              if (this.certificates[studentId] !== undefined) {
+                this.certificates[studentId].push(certificate);
+              }
             }
           });
-      }
-    });
+        }
+
+        console.log('✅ Loaded all certificates in single request. Total certificates:', allCertificates?.length || 0);
+        console.log('📊 Certificates by student:', this.certificates);
+      });
   }
 
   /**
-   * Load completed courses count for all students
+   * Load completed courses count for all students using optimized endpoint
    */
   loadCompletedCoursesCount() {
-    this.activeStudents.forEach(student => {
-      if (student && student.id) {
-        this.enrollmentService.getEnrollmentsByUser(student.id)
-          .pipe(
-            catchError(error => {
-              console.log(`No enrollments found for student ${student.id}:`, error);
-              return of([]);
-            })
-          )
-          .subscribe(enrollments => {
-            if (enrollments && Array.isArray(enrollments)) {
-              const completedCount = enrollments.filter(e => e && e.status === 'completed').length;
-              this.completedCoursesCount[student.id] = completedCount;
-            } else {
+    if (!this.activeStudents || this.activeStudents.length === 0) {
+      return;
+    }
+
+    console.log(`🚀 Loading enrollment summary for all students in single request...`);
+
+    // Use the new optimized endpoint that gets all enrollment statistics in one request
+    this.enrollmentService.getEnrollmentSummary()
+      .pipe(
+        catchError(error => {
+          console.error('Error loading enrollment summary:', error);
+          // Initialize empty counts for all students if request fails
+          this.activeStudents.forEach(student => {
+            if (student && student.id) {
               this.completedCoursesCount[student.id] = 0;
             }
           });
-      }
-    });
+          // Return empty object with proper typing
+          return of({} as { [userId: number]: import('../../services/enrollment.service').EnrollmentSummary });
+        })
+      )
+      .subscribe(enrollmentSummary => {
+        // Initialize counts to 0 for all active students first
+        this.activeStudents.forEach(student => {
+          if (student && student.id) {
+            this.completedCoursesCount[student.id] = 0;
+          }
+        });
+
+        // Update counts from the summary for students that have enrollments
+        Object.keys(enrollmentSummary).forEach(userIdStr => {
+          const userId = parseInt(userIdStr);
+          const summary = enrollmentSummary[userId];
+
+          // Only update if this user is in our active students list and summary exists
+          if (this.completedCoursesCount.hasOwnProperty(userId) && summary) {
+            this.completedCoursesCount[userId] = summary.completedEnrollments || 0;
+          }
+        });
+
+        console.log('✅ Loaded enrollment summary in single request');
+        console.log('📈 Completed courses count:', this.completedCoursesCount);
+      });
   }
 
   // === SEARCH AND FILTERING ===
