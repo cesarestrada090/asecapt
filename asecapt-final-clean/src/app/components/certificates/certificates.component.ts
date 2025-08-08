@@ -23,24 +23,29 @@ export class CertificatesComponent implements OnInit {
   filteredStudents: Student[] = [];
   certificates: { [key: number]: Certificate[] } = {}; // student ID -> certificates array
   completedCoursesCount: { [key: number]: number } = {}; // student ID -> completed courses count
-  
+
   // Search and filters
   searchQuery: string = '';
-  
+
   // UI states
   isLoading: boolean = false;
   selectedStudent: Student | null = null;
-  
+
   // Certificate upload modal
   showCertificateUploadModal: boolean = false;
   selectedEnrollmentForCertificate: any = null;
   certificateFile: File | null = null;
   isUploadingCertificate: boolean = false;
   modalMessage: {type: 'success' | 'error', text: string} | null = null;
-  
+
   // Student courses (for certificate management)
   studentCourses: any[] = [];
   isLoadingStudentCourses: boolean = false;
+
+  // Date editing functionality
+  editingCourse: { [key: number]: boolean } = {};
+  courseEditForm: { [key: number]: { enrollmentDate: string, issueDate: string } } = {};
+  isUpdatingCourse: { [key: number]: boolean } = {};
 
   constructor(
     private studentService: StudentService,
@@ -60,7 +65,7 @@ export class CertificatesComponent implements OnInit {
    */
   loadActiveStudents() {
     this.isLoading = true;
-    
+
     this.studentService.getAllStudents()
       .pipe(
         catchError(error => {
@@ -74,11 +79,11 @@ export class CertificatesComponent implements OnInit {
         // Filter only active students
         this.activeStudents = (students || []).filter(student => student && student.active);
         this.filteredStudents = [...this.activeStudents];
-        
+
         // Load certificates and completed courses for each student
         this.loadCertificatesForStudents();
         this.loadCompletedCoursesCount();
-        
+
         this.isLoading = false;
       });
   }
@@ -146,13 +151,13 @@ export class CertificatesComponent implements OnInit {
     const query = this.searchQuery.toLowerCase().trim();
     this.filteredStudents = this.activeStudents.filter(student => {
       if (!student || !student.person) return false;
-      
+
       const fullName = `${student.person.firstName || ''} ${student.person.lastName || ''}`.toLowerCase();
       const email = (student.person.email || '').toLowerCase();
       const document = (student.person.documentNumber || '').toLowerCase();
-      
-      return fullName.includes(query) || 
-             email.includes(query) || 
+
+      return fullName.includes(query) ||
+             email.includes(query) ||
              document.includes(query);
     });
   }
@@ -167,19 +172,19 @@ export class CertificatesComponent implements OnInit {
       this.emitMessage('error', 'Estudiante no válido');
       return;
     }
-    
+
     this.selectedStudent = student;
     this.isLoadingStudentCourses = true;
     this.studentCourses = [];
     this.modalMessage = null;
-    
+
     console.log('Loading completed courses for student:', student.id);
-    
+
     // Ensure DOM is ready, then show modal
     setTimeout(() => {
       this.showModal('studentCoursesModal');
     }, 150);
-    
+
     // Load only completed enrollments
     this.enrollmentService.getEnrollmentsByUser(student.id)
       .pipe(
@@ -189,25 +194,25 @@ export class CertificatesComponent implements OnInit {
             console.error('Invalid enrollments data:', enrollments);
             return of([]);
           }
-          
+
           // Filter only completed enrollments
           const completedEnrollments = (enrollments || []).filter(e => e && e.status === 'completed');
-          
+
           if (!completedEnrollments || completedEnrollments.length === 0) {
             return of([]);
           }
-          
+
           // Get unique program IDs
           const programIds = [...new Set(completedEnrollments.map(e => e && e.programId).filter(id => id))];
           console.log('Loading program details for completed courses:', programIds);
-          
+
           if (!programIds || programIds.length === 0) {
             console.log('No program IDs found');
             return of([]);
           }
-          
+
           // Create requests for each program
-          const programRequests = programIds.map(id => 
+          const programRequests = programIds.map(id =>
             this.programService.getProgramById(id).pipe(
               catchError(error => {
                 console.error(`Error loading program ${id}:`, error);
@@ -215,7 +220,7 @@ export class CertificatesComponent implements OnInit {
               })
             )
           );
-          
+
           // Execute all program requests in parallel
           return forkJoin(programRequests || []).pipe(
             switchMap(programs => {
@@ -230,9 +235,9 @@ export class CertificatesComponent implements OnInit {
                   programMap.set(program.id, program);
                 }
               });
-              
+
               console.log('Loaded programs:', programMap);
-              
+
               // Enrich enrollments with program data
               const enrichedEnrollments = completedEnrollments.map(enrollment => {
                 if (!enrollment) return null;
@@ -247,7 +252,7 @@ export class CertificatesComponent implements OnInit {
                   }
                 };
               }).filter(enrollment => enrollment !== null);
-              
+
               return of(enrichedEnrollments || []);
             })
           );
@@ -276,11 +281,11 @@ export class CertificatesComponent implements OnInit {
       this.showModalMessage('error', 'Curso no válido');
       return;
     }
-    
+
     this.selectedEnrollmentForCertificate = course;
     this.showCertificateUploadModal = true;
     this.certificateFile = null;
-    
+
     // Show the modal after a brief delay to ensure DOM is updated
     setTimeout(() => {
       this.showModal('certificateUploadModal');
@@ -337,7 +342,7 @@ export class CertificatesComponent implements OnInit {
     .subscribe(certificate => {
       if (certificate) {
         console.log('Certificate uploaded successfully:', certificate);
-        
+
         // Add certificate to the student's certificates
         const studentId = this.selectedStudent?.id;
         if (studentId) {
@@ -346,13 +351,13 @@ export class CertificatesComponent implements OnInit {
           }
           this.certificates[studentId].push(certificate);
         }
-        
+
         // Show success message
         this.showModalMessage('success', 'Certificado subido exitosamente. QR generado automáticamente.');
-        
+
         // Reset form
         this.cancelCertificateUpload();
-        
+
         // Reload student certificates
         if (studentId) {
           this.loadCertificatesForStudent(studentId);
@@ -372,7 +377,7 @@ export class CertificatesComponent implements OnInit {
     this.showCertificateUploadModal = false;
     this.selectedEnrollmentForCertificate = null;
     this.certificateFile = null;
-    
+
     // Clear file input
     const fileInput = document.getElementById('certificateFileInput') as HTMLInputElement;
     if (fileInput) {
@@ -388,7 +393,7 @@ export class CertificatesComponent implements OnInit {
       console.error('Invalid student ID:', studentId);
       return;
     }
-    
+
     this.certificateService.getCertificatesByStudent(studentId)
       .pipe(
         catchError(error => {
@@ -411,7 +416,7 @@ export class CertificatesComponent implements OnInit {
   hasCertificate(course: any): boolean {
     const studentId = this.selectedStudent?.id;
     if (!studentId || !course || !course.id) return false;
-    
+
     const studentCertificates = this.certificates[studentId] || [];
     return studentCertificates.some(cert => cert.enrollment && cert.enrollment.id === course.id);
   }
@@ -422,7 +427,7 @@ export class CertificatesComponent implements OnInit {
   getCertificate(course: any): Certificate | null {
     const studentId = this.selectedStudent?.id;
     if (!studentId || !course || !course.id) return null;
-    
+
     const studentCertificates = this.certificates[studentId] || [];
     return studentCertificates.find(cert => cert.enrollment && cert.enrollment.id === course.id) || null;
   }
@@ -500,12 +505,12 @@ export class CertificatesComponent implements OnInit {
       return;
     }
     this.selectedStudent = student;
-    
+
     // Load certificates if not already loaded
     if (!this.certificates[student.id]) {
       this.loadCertificatesForStudent(student.id);
     }
-    
+
     // Ensure DOM is ready, then show modal
     setTimeout(() => {
       this.showModal('viewCertificatesModal');
@@ -578,12 +583,55 @@ export class CertificatesComponent implements OnInit {
   /**
    * Format date for display
    */
-  formatDate(dateString: string | null | undefined): string {
+  formatDate(dateString: string | Date | null | undefined): string {
     if (!dateString) return 'N/A';
     try {
-      return new Date(dateString).toLocaleDateString('es-ES');
-    } catch (error) {
+      // Si es una fecha en formato YYYY-MM-DD (solo fecha), crear Date de manera local
+      if (typeof dateString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        const [year, month, day] = dateString.split('-').map(Number);
+        const date = new Date(year, month - 1, day); // month - 1 porque Date usa 0-indexado para meses
+        return date.toLocaleDateString('es-ES');
+      }
+
+      // Para otros formatos de fecha, usar el comportamiento normal
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-ES');
+    } catch {
       return 'Fecha inválida';
+    }
+  }
+
+  /**
+   * Format date for input field (YYYY-MM-DD format)
+   */
+  private formatDateForInput(dateString: string | null | undefined): string {
+    if (!dateString) return '';
+
+    try {
+      // Si ya está en formato YYYY-MM-DD, devolverlo tal como está
+      if (typeof dateString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString;
+      }
+
+      // Si tiene tiempo (YYYY-MM-DDTHH:mm:ss), extraer solo la fecha
+      if (typeof dateString === 'string' && dateString.includes('T')) {
+        return dateString.split('T')[0];
+      }
+
+      // Para otros formatos, convertir a Date y extraer componentes
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return '';
+      }
+
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+
+      return `${year}-${month}-${day}`;
+    } catch (error) {
+      console.error('Error formatting date for input:', error);
+      return '';
     }
   }
 
@@ -621,15 +669,15 @@ export class CertificatesComponent implements OnInit {
       console.error('Modal ID is required');
       return;
     }
-    
+
     const modalElement = document.getElementById(modalId);
     if (!modalElement) {
       console.error('Modal element not found:', modalId);
       return;
     }
-    
+
     console.log('Showing modal:', modalId);
-    
+
     try {
       // Try using Bootstrap Modal API first
       if ((window as any).bootstrap?.Modal) {
@@ -648,13 +696,13 @@ export class CertificatesComponent implements OnInit {
         modalElement.style.zIndex = '1050'; // Ensure modal is above backdrop
         modalElement.setAttribute('aria-modal', 'true');
         modalElement.setAttribute('aria-hidden', 'false');
-        
+
         // Remove any existing backdrop first
         const existingBackdrop = document.querySelector('.modal-backdrop');
         if (existingBackdrop) {
           existingBackdrop.remove();
         }
-        
+
         // Create new backdrop with forced visibility
         const backdrop = document.createElement('div');
         backdrop.className = 'modal-backdrop fade show';
@@ -684,10 +732,10 @@ export class CertificatesComponent implements OnInit {
       console.error('Modal ID is required');
       return;
     }
-    
+
     const modalElement = document.getElementById(modalId);
     if (!modalElement) return;
-    
+
     try {
       // Try using Bootstrap Modal API first
       if ((window as any).bootstrap?.Modal) {
@@ -701,11 +749,11 @@ export class CertificatesComponent implements OnInit {
         modalElement.style.display = 'none';
         modalElement.setAttribute('aria-modal', 'false');
         modalElement.setAttribute('aria-hidden', 'true');
-        
+
         // Remove all backdrops
         const backdrops = document.querySelectorAll('.modal-backdrop');
         backdrops.forEach(backdrop => backdrop.remove());
-        
+
         document.body.classList.remove('modal-open');
         document.body.style.overflow = '';
         document.body.style.paddingRight = ''; // Remove any padding added by Bootstrap
@@ -720,7 +768,7 @@ export class CertificatesComponent implements OnInit {
    */
   showModalMessage(type: 'success' | 'error', text: string) {
     if (!text) return;
-    
+
     this.modalMessage = { type, text };
     setTimeout(() => {
       this.modalMessage = null;
@@ -812,7 +860,7 @@ export class CertificatesComponent implements OnInit {
     }
 
     // Check for both missing
-    if ((course.finalGrade === null || course.finalGrade === undefined || course.finalGrade <= 0) && 
+    if ((course.finalGrade === null || course.finalGrade === undefined || course.finalGrade <= 0) &&
         (course.attendancePercentage === null || course.attendancePercentage === undefined || course.attendancePercentage <= 0)) {
       return 'Falta nota y asistencia';
     }
@@ -828,5 +876,125 @@ export class CertificatesComponent implements OnInit {
     }
 
     return 'Requisitos no cumplidos';
+  }
+
+  // === DATE EDITING METHODS ===
+
+  /**
+   * Start editing dates for a course
+   */
+  startEditingDates(course: any) {
+    console.log('Starting to edit dates for course:', course);
+
+    const certificate = this.getCertificate(course);
+
+    // Initialize edit form with current values
+    this.courseEditForm[course.id] = {
+      enrollmentDate: course.enrollmentDate || '',
+      issueDate: this.formatDateForInput(certificate?.issuedDate) || ''
+    };
+
+    // Mark as editing
+    this.editingCourse[course.id] = true;
+
+    console.log('Course edit form initialized:', this.courseEditForm[course.id]);
+    console.log('Certificate found:', certificate);
+    console.log('Raw issuedDate:', certificate?.issuedDate);
+    console.log('Formatted issueDate:', this.formatDateForInput(certificate?.issuedDate));
+  }
+
+  /**
+   * Cancel editing dates for a course
+   */
+  cancelEditingDates(courseId: number) {
+    console.log('Canceling edit for course:', courseId);
+
+    // Remove from editing state
+    delete this.editingCourse[courseId];
+    delete this.courseEditForm[courseId];
+    delete this.isUpdatingCourse[courseId];
+  }
+
+  /**
+   * Save date changes for a course
+   */
+  saveDateChanges(course: any) {
+    const courseId = course.id;
+    const formData = this.courseEditForm[courseId];
+
+    if (!formData) {
+      console.error('No form data found for course:', courseId);
+      return;
+    }
+
+    console.log('Saving date changes:', { courseId, formData });
+
+    // Validate data
+    if (!formData.enrollmentDate) {
+      this.showModalMessage('error', 'La fecha de matrícula es obligatoria');
+      return;
+    }
+
+    // Mark as updating
+    this.isUpdatingCourse[courseId] = true;
+
+    // Prepare update request for enrollment
+    const enrollmentUpdateRequest: any = {
+      enrollmentDate: formData.enrollmentDate,
+      issueDate: formData.issueDate
+    };
+
+    console.log('Sending enrollment update request:', enrollmentUpdateRequest);
+
+    // Call the API to update enrollment
+    this.enrollmentService.updateEnrollment(courseId, enrollmentUpdateRequest)
+      .pipe(
+        catchError(error => {
+          console.error('Error updating enrollment:', error);
+          this.showModalMessage('error', 'Error actualizando fecha de matrícula');
+          this.isUpdatingCourse[courseId] = false;
+          return of(null);
+        })
+      )
+      .subscribe(updatedEnrollment => {
+        if (updatedEnrollment) {
+          console.log('Enrollment updated successfully:', updatedEnrollment);
+
+          // Update the local data
+          const courseIndex = this.studentCourses.findIndex(c => c.id === courseId);
+          if (courseIndex !== -1) {
+            this.studentCourses[courseIndex].enrollmentDate = formData.enrollmentDate;
+          }
+
+          // Update certificate issue date in local data if a certificate exists
+          if (formData.issueDate) {
+            const studentId = this.selectedStudent?.id;
+            if (studentId && this.certificates[studentId]) {
+              const certificate = this.certificates[studentId].find(cert =>
+                cert.enrollment && cert.enrollment.id === courseId
+              );
+              if (certificate) {
+                certificate.issuedDate = formData.issueDate;
+                console.log('Updated local certificate issue date:', certificate.issuedDate);
+              }
+            }
+          }
+
+          // Show success message
+          this.showModalMessage('success', 'Fecha de matrícula actualizada');
+
+          // Reset editing state after successful save
+          this.cancelEditingDates(courseId);
+
+          // Refresh certificates for the student
+          const studentId = this.selectedStudent?.id;
+          if (studentId) {
+            this.loadCertificatesForStudent(studentId);
+          }
+        } else {
+          this.showModalMessage('error', 'Error al actualizar la matrícula');
+        }
+        this.isUpdatingCourse[courseId] = false;
+      });
   }
 }

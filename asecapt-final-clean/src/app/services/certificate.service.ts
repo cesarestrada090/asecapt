@@ -31,7 +31,7 @@ export class CertificateService {
     const formData = new FormData();
     formData.append('enrollmentId', enrollmentId.toString());
     formData.append('file', file);
-    
+
     if (issuedDate) {
       formData.append('issuedDate', issuedDate.toISOString());
     }
@@ -79,6 +79,13 @@ export class CertificateService {
    */
   deleteCertificate(certificateId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${certificateId}`);
+  }
+
+  /**
+   * Update certificate (for issue date, etc.)
+   */
+  updateCertificate(certificateId: number, updateData: { issuedDate?: string }): Observable<Certificate> {
+    return this.http.put<Certificate>(`${this.apiUrl}/${certificateId}`, updateData);
   }
 
   /**

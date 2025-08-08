@@ -1,9 +1,12 @@
 package com.asecapt.app.users.domain.services;
 
 import com.asecapt.app.users.domain.entities.Enrollment;
+import com.asecapt.app.users.domain.entities.Certificate;
 import com.asecapt.app.users.domain.repository.EnrollmentRepository;
+import com.asecapt.app.users.infrastructure.repository.CertificateRepository;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -11,9 +14,11 @@ import java.util.Optional;
 @Service
 public class EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
+    private final CertificateRepository certificateRepository;
 
-    public EnrollmentService(EnrollmentRepository enrollmentRepository) {
+    public EnrollmentService(EnrollmentRepository enrollmentRepository, CertificateRepository certificateRepository) {
         this.enrollmentRepository = enrollmentRepository;
+        this.certificateRepository = certificateRepository;
     }
 
     public List<Enrollment> getAllEnrollments() {
@@ -138,7 +143,35 @@ public class EnrollmentService {
             enrollment.setCompletionDate(LocalDate.now());
         }
 
-        return enrollmentRepository.save(enrollment);
+        // Save enrollment first
+        Enrollment updatedEnrollment = enrollmentRepository.save(enrollment);
+
+        // Update certificate issue date if provided
+        if (request.getIssueDate() != null && !request.getIssueDate().trim().isEmpty()) {
+            try {
+                // Find certificate associated with this enrollment
+                Optional<Certificate> certificateOpt = certificateRepository.findByEnrollmentId(enrollmentId);
+                if (certificateOpt.isPresent()) {
+                    Certificate certificate = certificateOpt.get();
+                    
+                    // Parse and update the issued date
+                    LocalDateTime issuedDate = LocalDateTime.parse(request.getIssueDate() + "T00:00:00");
+                    certificate.setIssuedDate(issuedDate);
+                    
+                    // Save the updated certificate
+                    certificateRepository.save(certificate);
+                    
+                    System.out.println("Updated certificate issue date for enrollment " + enrollmentId + " to " + request.getIssueDate());
+                } else {
+                    System.out.println("No certificate found for enrollment " + enrollmentId + ", cannot update issue date");
+                }
+            } catch (Exception e) {
+                System.err.println("Error updating certificate issue date: " + e.getMessage());
+                // Don't throw exception here, as enrollment update was successful
+            }
+        }
+
+        return updatedEnrollment;
     }
 
     public Enrollment completeEnrollment(Integer enrollmentId, BigDecimal finalGrade, BigDecimal attendancePercentage) {

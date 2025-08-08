@@ -1,7 +1,7 @@
 # Project Context: ASECAPT
 
 ## Overview
-ASECAPT is a full-stack application for educational program management, built with Java (Spring Boot, JPA/Hibernate) for the backend and Angular for the frontend. The system manages users, persons, educational programs, modules (contents), and their relationships. It supports authentication, user management, and course catalog features.
+ASECAPT is a full-stack application for educational program management, built with Java (Spring Boot, JPA/Hibernate) for the backend and Angular for the frontend. The system manages users, persons, educational programs, modules (contents), and their relationships. It supports authentication, user management, course catalog features, and a comprehensive certificate management system with QR verification.
 
 ## Backend
 - **Language:** Java
@@ -16,19 +16,19 @@ ASECAPT is a full-stack application for educational program management, built wi
   - `Content`: Modules/topics for programs with title, description, type, duration, topic, topicNumber, and content details.
   - `ProgramContent`: Many-to-many relationship between `Program` and `Content` with orderIndex and isRequired flags.
   - `Category`: Optional, for program categorization.
-  - `Enrollment`: Student enrollments in programs with status tracking.
-  - `Certificate`: Digital certificates with QR verification for completed programs.
+  - `Enrollment`: Student enrollments in programs with status tracking and date management.
+  - `Certificate`: Digital certificates with QR verification for completed programs, including editable issue dates.
   - `CertificateValidation`: Audit log of certificate scans and validations.
 - **Repositories:** Spring Data JPA repositories for CRUD and custom queries.
-- **Services:** Business logic for listing programs, favorites, and modules.
-- **Controllers:** REST endpoints for program and module listing, creation, updating, status management, and content assignment.
+- **Services:** Business logic for listing programs, favorites, modules, enrollment management, and certificate operations.
+- **Controllers:** REST endpoints for program and module listing, creation, updating, status management, content assignment, enrollment tracking, and certificate management with date editing capabilities.
 - **Scripts:** SQL scripts for initial data loading (e.g., `initial.sql`).
 
 ## Frontend
 - **Language:** TypeScript
 - **Framework:** Angular
 - **Assets:** HTML, CSS, JS, images, fonts, etc.
-- **Features:** Course listing, details, search, instructor profiles, events, blog, contact, etc.
+- **Features:** Course listing, details, search, instructor profiles, events, blog, contact, certificate management, etc.
 - **Course Management System:**
   - **Program/Course Management:** Full CRUD operations for educational programs with inline editing
   - **Content Management:** Create, edit, and assign content/modules to programs with topics and ordering
@@ -39,6 +39,13 @@ ASECAPT is a full-stack application for educational program management, built wi
   - **Form Validation:** Client-side validation for required fields (title, type, duration, topic)
   - **Loading States:** Visual feedback with spinners and disabled states during operations
   - **Success/Error Messages:** User feedback system for all CRUD operations
+- **Certificate Management System:**
+  - **Date Editing:** Inline editing of enrollment dates and certificate issue dates
+  - **Dual Entity Updates:** Sequential updates to both enrollment and certificate entities
+  - **Timezone Handling:** Proper date formatting to avoid timezone conversion issues
+  - **Validation:** Required field validation for enrollment dates
+  - **Real-time Updates:** Immediate UI feedback during date modifications
+  - **Modal Interface:** Comprehensive certificate management modal with tabular data display
 
 ## Database Schema
 
@@ -132,12 +139,12 @@ Many-to-many relationship between programs and content.
 ```
 
 #### `enrollment` table
-Student enrollments in programs with status tracking.
+Student enrollments in programs with status tracking and editable enrollment dates.
 ```sql
 - id (PRIMARY KEY, AUTO_INCREMENT)
 - user_id (INT, FOREIGN KEY to user.id)
 - program_id (INT, FOREIGN KEY to program.id)
-- enrollment_date (DATETIME)
+- enrollment_date (DATETIME) -- Editable enrollment date
 - start_date (DATETIME)
 - completion_date (DATETIME)
 - status (ENUM) -- 'enrolled', 'in_progress', 'completed', 'suspended'
@@ -149,13 +156,13 @@ Student enrollments in programs with status tracking.
 ```
 
 #### `certificate` table
-Digital certificates for completed programs with QR verification.
+Digital certificates for completed programs with QR verification and editable issue dates.
 ```sql
 - id (PRIMARY KEY, AUTO_INCREMENT)
 - enrollment_id (INT, FOREIGN KEY to enrollment.id)
 - certificate_number (VARCHAR, UNIQUE)
 - verification_token (VARCHAR, UNIQUE)
-- issue_date (DATETIME)
+- issue_date (DATETIME) -- Editable certificate issue date
 - expiry_date (DATETIME)
 - status (ENUM) -- 'active', 'revoked', 'expired'
 - pdf_path (VARCHAR) -- Path to generated PDF
@@ -192,11 +199,13 @@ Audit log of certificate scans and validations.
 - Full audit trail of certificate validations and scans.
 - User types: 1=Admin, 2=Instructor, 3=Student for role-based access control.
 - Premium features supported through is_premium and premium_by fields.
+- **Date Management:** Editable enrollment and certificate issue dates with timezone-aware handling.
 
 ## Usage
 - Backend endpoints for listing programs, favorites, and modules by program.
 - Full CRUD API for programs and content with status management and assignment operations.
 - Certificate management endpoints for enrollment tracking and QR generation.
+- **Date Editing API:** PUT endpoints for updating enrollment dates and certificate issue dates.
 - Public certificate verification API at `/api/verify/{token}`.
 - Frontend pages for course catalog, details, and user interaction.
 - Admin panel for certificate generation and student management.
@@ -206,6 +215,11 @@ Audit log of certificate scans and validations.
   - Content creation and assignment to programs with drag-and-drop ordering
   - Status toggle buttons for activating/deactivating programs
   - Real-time validation and error handling
+- **Certificate Date Management Interface:**
+  - Inline editing of enrollment and certificate issue dates
+  - Sequential API calls to update both enrollment and certificate entities
+  - Real-time validation and error feedback
+  - Timezone-aware date formatting to prevent date shifting issues
 - Docker and Maven support for deployment and builds.
 
 ## File Structure
@@ -213,28 +227,35 @@ Audit log of certificate scans and validations.
 - `src/main/java/com/asecapt/app/users/domain/repository/`: Spring Data JPA repositories.
 - `src/main/java/com/asecapt/app/users/domain/service/`: Service classes.
 - `src/main/java/com/asecapt/app/users/domain/controller/`: REST controllers.
-- Certificate controllers for enrollment, certificate generation, and verification.
+- Certificate controllers for enrollment, certificate generation, verification, and date editing.
 - `src/main/resources/scripts/initial.sql`: Initial SQL data.
 - `cursos3.sql`: Scalable SQL schema and data for programs and modules.
 - `certificates_schema.sql`: Schema for QR certificate management system.
 - `asecapt-final-clean/`: Angular frontend assets.
 
 ## Certificate System (QR Verification)
-- **Enrollment Management:** Track student enrollments in programs with status progression.
-- **Certificate Generation:** Digital certificates issued upon program completion.
+- **Enrollment Management:** Track student enrollments in programs with status progression and editable enrollment dates.
+- **Certificate Generation:** Digital certificates issued upon program completion with editable issue dates.
 - **QR Code Integration:** Each certificate includes a unique QR code for verification.
 - **Public Verification:** QR codes link to public verification URLs (e.g., `/verify/{token}`).
+- **Date Management:**
+  - **Dual Entity Updates:** System handles updating both enrollment dates and certificate issue dates
+  - **Sequential Operations:** First updates enrollment, then certificate if exists
+  - **Timezone Handling:** Uses formatDateForBackend() to prevent date shifting due to timezone conversion
+  - **Validation:** Enrollment date is mandatory, certificate issue date is optional
+  - **Real-time Updates:** UI reflects changes immediately with loading states and success/error feedback
 - **Certificate Information Display:**
   - Student name and credentials
   - Program name and type (curso/diplomado/especialización)
   - Number of credits and hours
-  - Start and completion dates
+  - Start and completion dates with editable enrollment and issue dates
   - Certificate number and validation status
 - **Admin Panel Features:**
   - Search students by name/DNI
   - Filter by completed programs
   - Generate certificates with PDF upload
   - Download QR codes
+  - **Date Editing:** Inline editing of enrollment and certificate issue dates with save/cancel actions
   - Certificate status management (active/revoked/expired)
 - **Security & Auditing:**
   - Unique verification tokens
@@ -242,9 +263,43 @@ Audit log of certificate scans and validations.
   - IP and user agent logging
   - Certificate validation history
 
+## API Endpoints
+
+### Certificate Date Management
+- **PUT `/api/enrollments/{id}`**: Update enrollment data including enrollment date
+  - Request body: `{enrollmentDate: "YYYY-MM-DD"}`
+  - Updates enrollment entity with new enrollment date
+- **PUT `/api/certificates/{id}`**: Update certificate data including issue date
+  - Request body: `{issuedDate: "YYYY-MM-DD"}`
+  - Updates certificate entity with new issue date
+
+### Frontend Implementation Details
+- **Service Methods:**
+  - `EnrollmentService.updateEnrollment()`: Updates enrollment dates
+  - `CertificateService.updateCertificate()`: Updates certificate issue dates
+- **Component Logic:**
+  - Sequential API calls: enrollment update followed by certificate update if needed
+  - Timezone-aware date formatting using `formatDateForBackend()`
+  - Form validation requiring enrollment date before allowing save
+  - Loading states and error handling for both API calls
+- **UI Features:**
+  - Inline date editing with HTML5 date inputs
+  - Save/Cancel buttons with loading spinners
+  - Real-time validation and error messages
+  - Automatic UI updates after successful saves
+
+## Recent Improvements (Latest)
+- **Date Editing System:** Implemented comprehensive date editing for certificates
+  - **Backend:** Added `updateCertificate()` method in CertificateService and PUT endpoint in CertificateController
+  - **Frontend:** Added `updateCertificate()` method in CertificateService and dual-entity update logic in CertificatesComponent
+  - **Timezone Fix:** Implemented `formatDateForBackend()` to prevent date shifting due to timezone conversion
+  - **UI Enhancement:** Added inline editing interface with proper validation and real-time feedback
+- **Validation Improvements:** Enhanced date validation requiring enrollment date as mandatory
+- **Error Handling:** Improved error handling for both enrollment and certificate updates with specific error messages
+
 ## Notes
 - All SQL and Java code follows best practices for scalability and maintainability.
 - The project is ready for future extension (e.g., more user roles, advanced search, analytics).
 - Certificate system includes comprehensive audit trails and security features.
+- **Date Management:** Timezone-aware date handling prevents common date shifting issues in web applications.
 - See individual README files for more details on setup and usage.
-

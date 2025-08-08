@@ -202,4 +202,51 @@ public class CertificateController {
             return ResponseEntity.internalServerError().build();
         }
     }
+    
+    /**
+     * Update certificate (for updating issue date, etc.)
+     */
+    @PutMapping("/{certificateId}")
+    public ResponseEntity<?> updateCertificate(
+            @PathVariable Integer certificateId,
+            @RequestBody UpdateCertificateRequest request) {
+        
+        try {
+            System.out.println("Updating certificate: " + certificateId + " with data: " + request);
+            
+            Certificate updatedCertificate = certificateService.updateCertificate(certificateId, request);
+            
+            return ResponseEntity.ok(updatedCertificate);
+            
+        } catch (RuntimeException e) {
+            System.err.println("Error updating certificate: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error updating certificate: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("An unexpected error occurred");
+        }
+    }
+
+    /**
+     * DTO for updating certificate
+     */
+    public static class UpdateCertificateRequest {
+        private String issuedDate;
+
+        public String getIssuedDate() {
+            return issuedDate;
+        }
+
+        public void setIssuedDate(String issuedDate) {
+            this.issuedDate = issuedDate;
+        }
+
+        @Override
+        public String toString() {
+            return "UpdateCertificateRequest{" +
+                    "issuedDate='" + issuedDate + '\'' +
+                    '}';
+        }
+    }
 }

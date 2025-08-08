@@ -215,4 +215,24 @@ public class CertificateService {
     private String buildCertificateUrl(String certificateCode) {
         return baseUrl + "/public/certificate/" + certificateCode;
     }
+    
+    /**
+     * Update certificate (for updating issue date, etc.)
+     */
+    public Certificate updateCertificate(Integer certificateId, com.asecapt.app.users.application.controllers.CertificateController.UpdateCertificateRequest request) {
+        Certificate certificate = certificateRepository.findById(certificateId)
+            .orElseThrow(() -> new RuntimeException("Certificate not found"));
+        
+        // Update issued date if provided
+        if (request.getIssuedDate() != null && !request.getIssuedDate().trim().isEmpty()) {
+            try {
+                LocalDateTime issuedDate = LocalDateTime.parse(request.getIssuedDate() + "T00:00:00");
+                certificate.setIssuedDate(issuedDate);
+            } catch (Exception e) {
+                throw new RuntimeException("Invalid date format. Expected YYYY-MM-DD");
+            }
+        }
+        
+        return certificateRepository.save(certificate);
+    }
 }

@@ -26,9 +26,9 @@
             <span class="input-group-text">
               <i class="fas fa-search"></i>
             </span>
-            <input 
-              type="text" 
-              class="form-control" 
+            <input
+              type="text"
+              class="form-control"
               placeholder="Buscar por nombre, email o documento..."
               [(ngModel)]="searchQuery"
               (input)="searchStudents()">
@@ -133,7 +133,7 @@
       </div>
       <div class="modal-body">
         <!-- Modal Messages -->
-        <div *ngIf="modalMessage" 
+        <div *ngIf="modalMessage"
              class="alert alert-dismissible fade show mb-3"
              [class.alert-success]="modalMessage.type === 'success'"
              [class.alert-danger]="modalMessage.type === 'error'"
@@ -167,8 +167,11 @@
                   <th>Estado</th>
                   <th>Nota</th>
                   <th>Asistencia</th>
+                  <th>Fecha Matrícula</th>
+                  <th>Fecha Emisión</th>
                   <th>Completado</th>
                   <th>Certificado</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -200,6 +203,45 @@
                       <small>N/A</small>
                     </span>
                   </td>
+                  <!-- Fecha de Matrícula -->
+                  <td>
+                    <div *ngIf="!editingCourse[course.id]">
+                      <small class="text-muted" *ngIf="course.enrollmentDate">
+                        {{ formatDate(course.enrollmentDate) }}
+                      </small>
+                      <small class="text-muted" *ngIf="!course.enrollmentDate">
+                        No disponible
+                      </small>
+                    </div>
+                    <div *ngIf="editingCourse[course.id]">
+                      <input
+                        type="date"
+                        class="form-control form-control-sm"
+                        [(ngModel)]="courseEditForm[course.id].enrollmentDate"
+                        [disabled]="isUpdatingCourse[course.id]">
+                    </div>
+                  </td>
+                  <!-- Fecha de Emisión -->
+                  <td>
+                    <div *ngIf="!editingCourse[course.id]">
+                      <small class="text-muted" *ngIf="hasCertificate(course) && getCertificate(course)?.issuedDate">
+                        {{ formatDate(getCertificate(course)?.issuedDate) }}
+                      </small>
+                      <small class="text-muted" *ngIf="!hasCertificate(course) || !getCertificate(course)?.issuedDate">
+                        {{ hasCertificate(course) ? 'Sin fecha' : 'Sin certificado' }}
+                      </small>
+                    </div>
+                    <div *ngIf="editingCourse[course.id] && hasCertificate(course)">
+                      <input
+                        type="date"
+                        class="form-control form-control-sm"
+                        [(ngModel)]="courseEditForm[course.id].issueDate"
+                        [disabled]="isUpdatingCourse[course.id]">
+                    </div>
+                    <div *ngIf="editingCourse[course.id] && !hasCertificate(course)">
+                      <small class="text-muted">Sin certificado</small>
+                    </div>
+                  </td>
                   <td>
                     <small class="text-muted" *ngIf="course.completionDate">
                       {{ formatDate(course.completionDate) }}
@@ -215,9 +257,9 @@
                         <i class="fas fa-check me-1"></i>Emitido
                       </span>
                       <div class="dropdown">
-                        <button class="btn btn-outline-success btn-sm dropdown-toggle" 
-                                type="button" 
-                                data-bs-toggle="dropdown" 
+                        <button class="btn btn-outline-success btn-sm dropdown-toggle"
+                                type="button"
+                                data-bs-toggle="dropdown"
                                 aria-expanded="false"
                                 title="Opciones">
                           <i class="fas fa-certificate"></i>
@@ -249,13 +291,49 @@
                         <i class="fas fa-upload"></i>
                       </button>
                     </div>
-                    
+
                     <!-- Cannot generate certificate -->
-                    <div *ngIf="!hasCertificate(course) && !canGenerateCertificate(course)">
-                      <div class="validation-message-compact-inline mb-1">
-                        <i class="fas fa-exclamation-triangle text-warning me-1"></i>
-                        <span class="validation-text-small">{{ getCertificateValidationMessage(course) }}</span>
-                      </div>
+                    <div *ngIf="!hasCertificate(course) && !canGenerateCertificate(course)" class="d-flex align-items-center">
+                      <span class="badge bg-secondary me-2"
+                            [title]="getCertificateValidationMessage(course)">
+                        <i class="fas fa-exclamation-triangle me-1"></i>No disponible
+                      </span>
+                    </div>
+                  </td>
+                  <!-- Acciones -->
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <!-- Edit Dates Button -->
+                      <button *ngIf="!editingCourse[course.id]"
+                              class="btn btn-outline-primary btn-sm"
+                              (click)="startEditingDates(course)"
+                              title="Editar fechas">
+                        <i class="fas fa-edit"></i>
+                      </button>
+
+                      <!-- Save Changes Button -->
+                      <button *ngIf="editingCourse[course.id] && !isUpdatingCourse[course.id]"
+                              class="btn btn-success btn-sm"
+                              (click)="saveDateChanges(course)"
+                              title="Guardar cambios">
+                        <i class="fas fa-save"></i>
+                      </button>
+
+                      <!-- Cancel Edit Button -->
+                      <button *ngIf="editingCourse[course.id] && !isUpdatingCourse[course.id]"
+                              class="btn btn-secondary btn-sm"
+                              (click)="cancelEditingDates(course.id)"
+                              title="Cancelar">
+                        <i class="fas fa-times"></i>
+                      </button>
+
+                      <!-- Loading State -->
+                      <button *ngIf="isUpdatingCourse[course.id]"
+                              class="btn btn-primary btn-sm"
+                              disabled
+                              title="Guardando...">
+                        <i class="fas fa-spinner fa-spin"></i>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -340,7 +418,7 @@
             <strong>Estudiante:</strong> {{ selectedStudent?.person?.firstName }} {{ selectedStudent?.person?.lastName }}
           </p>
           <p class="mb-0">
-            <strong>Estado:</strong> 
+            <strong>Estado:</strong>
             <span class="badge bg-success">{{ getCourseStatusText(selectedEnrollmentForCertificate.status) }}</span>
           </p>
         </div>
@@ -350,9 +428,9 @@
           <label for="certificateFileInput" class="form-label">
             <i class="fas fa-file-upload me-2"></i>Archivo del Certificado
           </label>
-          <input 
-            type="file" 
-            class="form-control" 
+          <input
+            type="file"
+            class="form-control"
             id="certificateFileInput"
             (change)="onCertificateFileSelected($event)"
             accept=".jpg,.jpeg,.png,.pdf"
@@ -388,8 +466,8 @@
         <button type="button" class="btn btn-secondary" (click)="cancelCertificateUpload()" [disabled]="isUploadingCertificate">
           <i class="fas fa-times me-2"></i>Cancelar
         </button>
-        <button type="button" 
-                class="btn btn-primary" 
+        <button type="button"
+                class="btn btn-primary"
                 (click)="uploadCertificate()"
                 [disabled]="!certificateFile || isUploadingCertificate">
           <span *ngIf="isUploadingCertificate" class="spinner-border spinner-border-sm me-2"></span>
