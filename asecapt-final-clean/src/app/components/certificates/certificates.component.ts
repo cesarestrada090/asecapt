@@ -44,7 +44,7 @@ export class CertificatesComponent implements OnInit {
 
   // Date editing functionality
   editingCourse: { [key: number]: boolean } = {};
-  courseEditForm: { [key: number]: { enrollmentDate: string, issueDate: string } } = {};
+  courseEditForm: { [key: number]: { enrollmentDate: string, issueDate: string, completionDate: string } } = {};
   isUpdatingCourse: { [key: number]: boolean } = {};
 
   constructor(
@@ -930,7 +930,8 @@ export class CertificatesComponent implements OnInit {
     // Initialize edit form with current values
     this.courseEditForm[course.id] = {
       enrollmentDate: course.enrollmentDate || '',
-      issueDate: this.formatDateForInput(certificate?.issuedDate) || ''
+      issueDate: this.formatDateForInput(certificate?.issuedDate) || '',
+      completionDate: this.formatDateForInput(course.completionDate) || ''
     };
 
     // Mark as editing
@@ -939,7 +940,9 @@ export class CertificatesComponent implements OnInit {
     console.log('Course edit form initialized:', this.courseEditForm[course.id]);
     console.log('Certificate found:', certificate);
     console.log('Raw issuedDate:', certificate?.issuedDate);
+    console.log('Raw completionDate:', course.completionDate);
     console.log('Formatted issueDate:', this.formatDateForInput(certificate?.issuedDate));
+    console.log('Formatted completionDate:', this.formatDateForInput(course.completionDate));
   }
 
   /**
@@ -980,7 +983,8 @@ export class CertificatesComponent implements OnInit {
     // Prepare update request for enrollment
     const enrollmentUpdateRequest: any = {
       enrollmentDate: formData.enrollmentDate,
-      issueDate: formData.issueDate
+      issueDate: formData.issueDate,
+      completionDate: formData.completionDate
     };
 
     console.log('Sending enrollment update request:', enrollmentUpdateRequest);
@@ -1003,6 +1007,10 @@ export class CertificatesComponent implements OnInit {
           const courseIndex = this.studentCourses.findIndex(c => c.id === courseId);
           if (courseIndex !== -1) {
             this.studentCourses[courseIndex].enrollmentDate = formData.enrollmentDate;
+            // Update completion date in local data
+            if (formData.completionDate) {
+              this.studentCourses[courseIndex].completionDate = formData.completionDate;
+            }
           }
 
           // Update certificate issue date in local data if a certificate exists

@@ -68,9 +68,9 @@ export class CertificateVerificationComponent implements OnInit {
   verifyCertificate() {
     this.isLoading = true;
     this.error = '';
-    
+
     const apiUrl = buildApiUrl(`public/certificate/${this.certificateCode}`);
-    
+
     this.http.get<CertificateVerificationResponse>(apiUrl)
       .pipe(
         catchError(error => {
@@ -83,7 +83,7 @@ export class CertificateVerificationComponent implements OnInit {
       .subscribe(response => {
         this.certificateData = response;
         this.isLoading = false;
-        
+
         if (response && !response.valid) {
           this.error = response.errorMessage || 'Certificado no válido';
         }
@@ -96,6 +96,18 @@ export class CertificateVerificationComponent implements OnInit {
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
     try {
+      // Si es una fecha en formato YYYY-MM-DD (solo fecha), crear Date de manera local
+      if (typeof dateString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        const [year, month, day] = dateString.split('-').map(Number);
+        const date = new Date(year, month - 1, day); // month - 1 porque Date usa 0-indexado para meses
+        return date.toLocaleDateString('es-ES', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+      }
+
+      // Para otros formatos de fecha, usar el comportamiento normal
       return new Date(dateString).toLocaleDateString('es-ES', {
         year: 'numeric',
         month: 'long',
@@ -180,11 +192,11 @@ export class CertificateVerificationComponent implements OnInit {
     }
 
     this.isDownloading = true;
-    
+
     const certificateId = this.certificateData.certificate.id;
     const downloadUrl = buildApiUrl(`public/certificate/download/${certificateId}`);
-    
-    this.http.get(downloadUrl, { 
+
+    this.http.get(downloadUrl, {
       responseType: 'blob',
       observe: 'response'
     }).pipe(
@@ -195,7 +207,7 @@ export class CertificateVerificationComponent implements OnInit {
       })
     ).subscribe(response => {
       this.isDownloading = false;
-      
+
       if (response && response.body) {
         // Get filename from Content-Disposition header or use default
         let filename = 'certificado.pdf';
@@ -206,7 +218,7 @@ export class CertificateVerificationComponent implements OnInit {
             filename = matches[1].replace(/['"]/g, '');
           }
         }
-        
+
         // Create download link
         const blob = new Blob([response.body], { type: 'application/pdf' });
         const url = window.URL.createObjectURL(blob);
@@ -222,7 +234,7 @@ export class CertificateVerificationComponent implements OnInit {
   }
 
   // Safe getter methods to avoid null reference errors
-  
+
   /**
    * Safe access to certificate data
    */

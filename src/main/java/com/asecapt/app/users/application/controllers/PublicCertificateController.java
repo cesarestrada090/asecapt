@@ -138,7 +138,7 @@ public class PublicCertificateController {
             var enrollment = certificate.getEnrollment();
             
             enrollmentInfo.put("status", enrollment.getStatus());
-            enrollmentInfo.put("enrollmentDate", enrollment.getCreatedAt());
+            enrollmentInfo.put("enrollmentDate", enrollment.getEnrollmentDate()); // ← Cambiar de getCreatedAt() a getEnrollmentDate()
             enrollmentInfo.put("completionDate", enrollment.getCompletionDate());
             enrollmentInfo.put("finalGrade", enrollment.getFinalGrade());
             enrollmentInfo.put("attendancePercentage", enrollment.getAttendancePercentage());

@@ -243,12 +243,21 @@
                     </div>
                   </td>
                   <td>
-                    <small class="text-muted" *ngIf="course.completionDate">
-                      {{ formatDate(course.completionDate) }}
-                    </small>
-                    <small class="text-muted" *ngIf="!course.completionDate">
-                      No disponible
-                    </small>
+                    <div *ngIf="!editingCourse[course.id]">
+                      <small class="text-muted" *ngIf="course.completionDate">
+                        {{ formatDate(course.completionDate) }}
+                      </small>
+                      <small class="text-muted" *ngIf="!course.completionDate">
+                        No disponible
+                      </small>
+                    </div>
+                    <div *ngIf="editingCourse[course.id]">
+                      <input
+                        type="date"
+                        class="form-control form-control-sm"
+                        [(ngModel)]="courseEditForm[course.id].completionDate"
+                        [disabled]="isUpdatingCourse[course.id]">
+                    </div>
                   </td>
                   <td>
                     <!-- Certificate with actions -->
