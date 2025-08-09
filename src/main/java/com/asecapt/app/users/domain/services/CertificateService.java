@@ -11,10 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -34,10 +30,13 @@ public class CertificateService {
     @Autowired
     private QRCodeService qrCodeService;
     
-    @Value("${app.certificates.upload-dir:certificates}")
-    private String certificatesUploadDir;
+    @Autowired
+    private S3CertificateService s3CertificateService;
     
-    @Value("${app.base-url:http://localhost:8080}")
+    @Autowired
+    private CourseInitialsService courseInitialsService;
+    
+    @Value("${app.base-url:${APP_BASE_URL:http://localhost:8080}}")
     private String baseUrl;
     
     /**
@@ -80,32 +79,59 @@ public class CertificateService {
         // Generate unique certificate code
         String certificateCode = generateCertificateCode(enrollment);
         
-        // Save file
-        String fileName = saveFile(file, certificateCode);
-        String filePath = Paths.get(certificatesUploadDir, fileName).toString();
+        // Get student DNI and course initials for S3 organization
+        String dni = enrollment.getUser().getPerson().getDocumentNumber();
+        String courseTitle = enrollment.getProgram().getTitle();
+        String courseInitials = courseInitialsService.generateCourseInitials(courseTitle);
         
-        // Create certificate entity
+        // Get file extension
+        String originalFilename = file.getOriginalFilename();
+        String fileExtension = "pdf"; // default
+        if (originalFilename != null && originalFilename.contains(".")) {
+            fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+        }
+        
+        // Upload certificate to S3
+        String certificateS3Key = s3CertificateService.uploadCertificate(
+            dni, 
+            courseInitials, 
+            certificateCode, 
+            file.getBytes(), 
+            fileExtension
+        );
+        
+        // Generate QR code and upload to S3
+        byte[] qrCodeBytes = qrCodeService.generateQRCodeBytes(
+            buildCertificateUrl(certificateCode), 
+            certificateCode
+        );
+        
+        String qrS3Key = s3CertificateService.uploadQRCode(
+            dni, 
+            courseInitials, 
+            certificateCode, 
+            qrCodeBytes
+        );
+        
+        // Create certificate entity with S3 paths
         Certificate certificate = new Certificate(
             certificateCode, 
             enrollment, 
-            filePath, 
-            fileName, 
+            certificateS3Key,  // S3 key instead of local path
+            generateFileName(courseInitials, certificateCode, fileExtension), 
             issuedDate != null ? issuedDate : LocalDateTime.now()
         );
+        
+        certificate.setQrCodePath(qrS3Key); // S3 key for QR code
         
         // Save certificate
         certificate = certificateRepository.save(certificate);
         
-        // Generate QR code
-        String qrCodePath = qrCodeService.generateQRCode(
-            buildCertificateUrl(certificateCode), 
-            certificateCode
-        );
-        certificate.setQrCodePath(qrCodePath);
+        System.out.println("✅ Certificate created successfully with S3 storage: " + certificate.getCertificateCode());
+        System.out.println("📁 Certificate S3 Key: " + certificateS3Key);
+        System.out.println("📱 QR Code S3 Key: " + qrS3Key);
         
-        System.out.println("Certificate created successfully: " + certificate.getCertificateCode());
-        
-        return certificateRepository.save(certificate);
+        return certificate;
     }
     
     /**
@@ -184,32 +210,6 @@ public class CertificateService {
     }
     
     /**
-     * Save uploaded file
-     */
-    private String saveFile(MultipartFile file, String certificateCode) throws IOException {
-        // Create upload directory if it doesn't exist
-        Path uploadPath = Paths.get(certificatesUploadDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-        
-        // Generate unique filename
-        String originalFilename = file.getOriginalFilename();
-        String fileExtension = "";
-        if (originalFilename != null && originalFilename.contains(".")) {
-            fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        }
-        
-        String fileName = certificateCode + fileExtension;
-        Path filePath = uploadPath.resolve(fileName);
-        
-        // Save file
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-        
-        return fileName;
-    }
-    
-    /**
      * Build certificate URL for QR code
      */
     private String buildCertificateUrl(String certificateCode) {
@@ -234,5 +234,13 @@ public class CertificateService {
         }
         
         return certificateRepository.save(certificate);
+    }
+    
+    /**
+
+     * Generate file name for certificate
+     */
+    private String generateFileName(String courseInitials, String certificateCode, String fileExtension) {
+        return String.format("%s-%s.%s", courseInitials, certificateCode, fileExtension);
     }
 }

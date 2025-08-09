@@ -2,6 +2,7 @@ package com.asecapt.app.users.application.controllers;
 
 import com.asecapt.app.users.domain.entities.Certificate;
 import com.asecapt.app.users.domain.services.CertificateService;
+import com.asecapt.app.users.domain.services.S3CertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -27,6 +28,9 @@ public class CertificateController {
     
     @Autowired
     private CertificateService certificateService;
+    
+    @Autowired
+    private S3CertificateService s3CertificateService;
     
     /**
      * Upload and create certificate for an enrollment
@@ -139,7 +143,7 @@ public class CertificateController {
     }
     
     /**
-     * Download certificate file 
+     * Download certificate file from S3
      */
     @GetMapping("/download/{certificateId}")
     public ResponseEntity<Resource> downloadCertificate(@PathVariable Integer certificateId) {
@@ -151,25 +155,23 @@ public class CertificateController {
             }
             
             Certificate certificate = certificateOpt.get();
-            Path filePath = Paths.get(certificate.getFilePath());
-            Resource resource = new UrlResource(filePath.toUri());
             
-            if (resource.exists() && resource.isReadable()) {
-                return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + certificate.getFileName() + "\"")
-                    .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            // Download from S3 using the stored S3 key
+            byte[] fileBytes = s3CertificateService.downloadFile(certificate.getFilePath());
             
-        } catch (MalformedURLException e) {
+            return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + certificate.getFileName() + "\"")
+                .body(new org.springframework.core.io.ByteArrayResource(fileBytes));
+            
+        } catch (Exception e) {
+            System.err.println("Error downloading certificate: " + e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }
     
     /**
-     * Download QR code
+     * Download QR code from S3
      */
     @GetMapping("/qr/{certificateId}")
     public ResponseEntity<Resource> downloadQRCode(@PathVariable Integer certificateId) {
@@ -186,19 +188,16 @@ public class CertificateController {
                 return ResponseEntity.notFound().build();
             }
             
-            Path qrPath = Paths.get(certificate.getQrCodePath());
-            Resource resource = new UrlResource(qrPath.toUri());
+            // Download QR code from S3 using the stored S3 key
+            byte[] qrBytes = s3CertificateService.downloadFile(certificate.getQrCodePath());
             
-            if (resource.exists() && resource.isReadable()) {
-                return ResponseEntity.ok()
-                    .contentType(MediaType.IMAGE_PNG)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + certificate.getCertificateCode() + "_qr.png\"")
-                    .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + certificate.getCertificateCode() + "_qr.png\"")
+                .body(new org.springframework.core.io.ByteArrayResource(qrBytes));
             
-        } catch (MalformedURLException e) {
+        } catch (Exception e) {
+            System.err.println("Error downloading QR code: " + e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }

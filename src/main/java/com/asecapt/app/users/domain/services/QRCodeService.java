@@ -85,4 +85,15 @@ public class QRCodeService {
             throw new RuntimeException("Failed to generate QR code", e);
         }
     }
+    
+    /**
+     * Generate QR code as byte array with certificate code parameter
+     * @param text The text to encode in QR code
+     * @param certificateCode The certificate code (used for logging)
+     * @return The QR code as byte array
+     */
+    public byte[] generateQRCodeBytes(String text, String certificateCode) {
+        System.out.println("Generating QR code bytes for certificate: " + certificateCode);
+        return generateQRCodeBytes(text);
+    }
 }

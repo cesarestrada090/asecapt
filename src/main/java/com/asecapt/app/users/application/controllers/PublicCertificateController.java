@@ -2,6 +2,7 @@ package com.asecapt.app.users.application.controllers;
 
 import com.asecapt.app.users.domain.entities.Certificate;
 import com.asecapt.app.users.domain.services.CertificateService;
+import com.asecapt.app.users.domain.services.S3CertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -24,6 +25,9 @@ public class PublicCertificateController {
 
     @Autowired
     private CertificateService certificateService;
+    
+    @Autowired
+    private S3CertificateService s3CertificateService;
 
     /**
      * Search certificates by student document number
@@ -172,7 +176,7 @@ public class PublicCertificateController {
     }
     
     /**
-     * Public endpoint to download certificate file
+     * Public endpoint to download certificate file from S3
      */
     @GetMapping("/download/{certificateId}")
     public ResponseEntity<Resource> downloadCertificate(@PathVariable Integer certificateId) {
@@ -190,19 +194,16 @@ public class PublicCertificateController {
                 return ResponseEntity.notFound().build();
             }
             
-            Path filePath = Paths.get(certificate.getFilePath());
-            Resource resource = new UrlResource(filePath.toUri());
+            // Download from S3 using the stored S3 key
+            byte[] fileBytes = s3CertificateService.downloadFile(certificate.getFilePath());
             
-            if (resource.exists() && resource.isReadable()) {
-                return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + certificate.getFileName() + "\"")
-                    .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + certificate.getFileName() + "\"")
+                .body(new org.springframework.core.io.ByteArrayResource(fileBytes));
             
-        } catch (MalformedURLException e) {
+        } catch (Exception e) {
+            System.err.println("Error downloading certificate: " + e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }
