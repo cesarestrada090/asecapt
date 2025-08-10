@@ -56,10 +56,28 @@
             <li class="nav-item">
               <button
                 class="nav-link"
+                [class.active]="activeSection === 'courses'"
+                (click)="setActiveSection('courses')">
+                <i class="fas fa-graduation-cap me-2"></i>
+                Mis Cursos
+              </button>
+            </li>
+            <li class="nav-item">
+              <button
+                class="nav-link"
                 [class.active]="activeSection === 'password'"
                 (click)="setActiveSection('password')">
                 <i class="fas fa-lock me-2"></i>
                 Cambiar Contraseña
+              </button>
+            </li>
+            <!-- Logout Section -->
+            <li class="nav-item mt-auto border-top pt-3">
+              <button
+                class="nav-link logout-link"
+                (click)="logout()">
+                <i class="fas fa-sign-out-alt me-2"></i>
+                Cerrar Sesión
               </button>
             </li>
           </ul>
@@ -268,6 +286,11 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Courses Section -->
+        <div *ngIf="activeSection === 'courses'" class="section">
+          <app-student-courses></app-student-courses>
         </div>
       </div>
     </main>

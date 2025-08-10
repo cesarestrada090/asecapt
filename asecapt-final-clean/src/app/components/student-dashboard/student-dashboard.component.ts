@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService, User } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
+import { StudentCoursesComponent } from '../student-courses/student-courses.component';
 
 export interface ChangePasswordRequest {
   currentPassword: string;
@@ -27,7 +28,7 @@ export interface PersonInfo {
 @Component({
   selector: 'app-student-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, StudentCoursesComponent],
   templateUrl: './student-dashboard.component.html',
   styleUrl: './student-dashboard.component.css'
 })
@@ -98,8 +99,27 @@ export class StudentDashboardComponent implements OnInit {
 
     this.loadingProfile = true;
     this.userService.getProfile(this.currentUser.id).subscribe({
-      next: (response) => {
-        this.personInfo = response;
+      next: (response: any) => {
+        console.log('🔍 Profile response:', response);
+
+        // El backend retorna un UserResponseDto que contiene un objeto person
+        if (response.person) {
+          this.personInfo = {
+            id: response.person.id,
+            firstName: response.person.firstName,
+            lastName: response.person.lastName,
+            documentNumber: response.person.documentNumber,
+            documentType: response.person.documentType || 'DNI',
+            phoneNumber: response.person.phoneNumber,
+            email: response.person.email,
+            gender: response.person.gender,
+            birthDate: response.person.birthDate,
+            bio: response.person.bio
+          };
+        } else {
+          console.warn('No person data in response:', response);
+        }
+
         this.loadingProfile = false;
       },
       error: (error) => {

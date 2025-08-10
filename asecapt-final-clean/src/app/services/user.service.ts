@@ -60,4 +60,20 @@ export class UserService {
     const url = buildApiUrl(`users/${userId}/profile`);
     return this.http.put<PersonInfo>(url, profileData);
   }
+
+  /**
+   * Get user enrollments
+   */
+  getEnrollments(userId: number): Observable<any[]> {
+    const url = buildApiUrl(`enrollments/user/${userId}`);
+    return this.http.get<any[]>(url);
+  }
+
+  /**
+   * Download certificate
+   */
+  downloadCertificate(enrollmentId: number): Observable<Blob> {
+    const url = buildApiUrl(`certificates/download/${enrollmentId}`);
+    return this.http.get(url, { responseType: 'blob' });
+  }
 }

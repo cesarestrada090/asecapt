@@ -1,0 +1,341 @@
+.student-courses {
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Summary Cards */
+.summary-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.summary-card .card-body {
+  padding: 1.5rem;
+}
+
+.summary-card .icon-wrapper {
+  background: rgba(255,255,255,0.1);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.summary-card .card-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+/* Courses Table Card */
+.courses-table-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  border: none;
+}
+
+.courses-table-card .card-header {
+  border-bottom: 1px solid #e9ecef;
+  padding: 1.25rem 1.5rem;
+}
+
+/* Table Styles */
+.courses-table {
+  font-size: 0.9rem;
+}
+
+.courses-table th {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 1rem 1.5rem;
+}
+
+.courses-table td {
+  padding: 1.25rem 1.5rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.course-row {
+  transition: background-color 0.2s ease;
+}
+
+.course-row:hover {
+  background-color: #f8f9fa;
+}
+
+/* Course Info */
+.course-icon .icon-circle {
+  width: 45px;
+  height: 45px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.course-details .course-title {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.25rem;
+  font-size: 0.95rem;
+}
+
+.course-type, .course-duration {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+/* Status Badges */
+.status-badge {
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+/* Date Info */
+.date-info {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #495057;
+}
+
+/* Grade Display */
+.grade-display {
+  min-width: 120px;
+}
+
+.grade-badge {
+  font-weight: 600;
+  padding: 0.4rem 0.7rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  display: inline-block;
+  min-width: 65px;
+  text-align: center;
+}
+
+.grade-badge.excellent {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.grade-badge.good {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.grade-badge.satisfactory {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.grade-badge.needs-improvement {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.grade-bar, .attendance-bar {
+  width: 100%;
+  max-width: 100px;
+}
+
+.progress-sm {
+  height: 6px;
+  border-radius: 3px;
+}
+
+.progress-bar.bg-excellent {
+  background-color: #28a745;
+}
+
+.progress-bar.bg-good {
+  background-color: #17a2b8;
+}
+
+.progress-bar.bg-satisfactory {
+  background-color: #ffc107;
+}
+
+.progress-bar.bg-needs-improvement {
+  background-color: #dc3545;
+}
+
+/* Attendance Display */
+.attendance-display {
+  min-width: 120px;
+}
+
+.attendance-badge {
+  font-weight: 600;
+  padding: 0.4rem 0.7rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  display: inline-block;
+  min-width: 50px;
+  text-align: center;
+}
+
+.attendance-badge.excellent-attendance {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.attendance-badge.good-attendance {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.attendance-badge.poor-attendance {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Certificate Actions */
+.certificate-actions {
+  min-width: 140px;
+}
+
+.certificate-btn {
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.certificate-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.certificate-pending {
+  text-align: center;
+}
+
+.certificate-pending small {
+  font-size: 0.7rem;
+  line-height: 1.2;
+}
+
+/* Empty State */
+.empty-state {
+  padding: 3rem 2rem;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+}
+
+.empty-state i {
+  opacity: 0.6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .student-courses {
+    padding: 1rem;
+  }
+
+  .courses-table-card .card-header {
+    padding: 1rem;
+  }
+
+  .courses-table th,
+  .courses-table td {
+    padding: 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .course-icon .icon-circle {
+    width: 35px;
+    height: 35px;
+  }
+
+  .course-details .course-title {
+    font-size: 0.85rem;
+  }
+
+  .summary-card .card-title {
+    font-size: 1.5rem;
+  }
+
+  .grade-display,
+  .attendance-display {
+    min-width: auto;
+  }
+
+  .certificate-actions {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .courses-table {
+    font-size: 0.75rem;
+  }
+
+  .grade-bar,
+  .attendance-bar {
+    max-width: 80px;
+  }
+
+  .certificate-btn {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Loading Animation */
+.fa-spin {
+  animation: fa-spin 1s infinite linear;
+}
+
+@keyframes fa-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(359deg);
+  }
+}
+
+/* Alert Improvements */
+.alert {
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.alert-success {
+  background-color: #d1e7dd;
+  color: #0a3622;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #58151c;
+}
+
+/* Utilities */
+.text-muted {
+  color: #6c757d !important;
+}
+
+.border-0 {
+  border: 0 !important;
+}
