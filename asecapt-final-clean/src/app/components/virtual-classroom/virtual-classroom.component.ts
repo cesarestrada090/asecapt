@@ -38,14 +38,47 @@ export class VirtualClassroomComponent {
 
       this.authService.login(credentials).subscribe({
         next: (response) => {
+          console.log('🔍 Login response received:', response);
           this.isLoading = false;
-          
+
           if (response.success) {
-            // Login exitoso - redirigir al dashboard administrativo
-            console.log('Login exitoso - redirigiendo al dashboard administrativo');
-            this.router.navigate(['/dashboard']);
+            // Login exitoso - redirigir según el tipo de usuario
+            console.log('✅ Login exitoso - redirigiendo según tipo de usuario');
+            const user = this.authService.getCurrentUser();
+            console.log('👤 Current user after login:', user);
+
+            if (user?.type === 1) {
+              // Admin - Dashboard administrativo
+              console.log('🔄 Redirecting admin to /dashboard');
+              this.router.navigate(['/dashboard']);
+            } else if (user?.type === 3) {
+              // Estudiante - Dashboard de estudiante
+              console.log('🔄 Redirecting student to /student-dashboard');
+              this.router.navigate(['/student-dashboard']).then(
+                (success: boolean) => {
+                  console.log('✅ Navigation success:', success);
+                  if (!success) {
+                    console.log('❌ Navigation failed, trying alternative route');
+                    window.location.href = '/student-dashboard';
+                  }
+                }
+              ).catch(error => {
+                console.error('❌ Navigation error:', error);
+                console.log('🔄 Trying direct navigation');
+                window.location.href = '/student-dashboard';
+              });
+            } else if (user?.type === 2) {
+              // Instructor - Por ahora al dashboard de estudiante (pueden usar el mismo)
+              console.log('🔄 Redirecting instructor to /student-dashboard');
+              this.router.navigate(['/student-dashboard']);
+            } else {
+              // Tipo no reconocido - redirigir a inicio
+              console.log('⚠️ Unknown user type, redirecting to home');
+              this.router.navigate(['/']);
+            }
           } else {
             // Mostrar error específico
+            console.log('❌ Login failed:', response);
             this.loginError = this.getErrorMessage(response.errorCode, response.message);
           }
         },

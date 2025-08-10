@@ -12,7 +12,8 @@ export class AuthGuard {
   ) {}
 
   canActivate(): boolean {
-    if (this.authService.isAuthenticated() && this.authService.isAdmin()) {
+    if (this.authService.isAuthenticated()) {
+      // Allow access for authenticated users (admin, instructor, or student)
       return true;
     } else {
       this.router.navigate(['/virtual-classroom']);

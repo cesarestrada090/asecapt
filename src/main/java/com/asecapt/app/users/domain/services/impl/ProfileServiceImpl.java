@@ -16,6 +16,7 @@ import com.asecapt.app.users.infrastructure.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,6 +36,9 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Autowired
     private FileUploadService fileUploadService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public UserResponseDto getProfile(Integer userId) {
@@ -244,5 +248,34 @@ public class ProfileServiceImpl implements ProfileService {
             }
         }
     }
-    
-} 
+
+    @Override
+    @Transactional
+    public void changePassword(Integer userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+        // Verificar que la contraseña actual sea correcta
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+
+        // Validar que la nueva contraseña no esté vacía
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            throw new IllegalArgumentException("New password cannot be empty");
+        }
+
+        // Validar que la nueva contraseña tenga al menos 6 caracteres
+        if (newPassword.length() < 6) {
+            throw new IllegalArgumentException("New password must be at least 6 characters long");
+        }
+
+        // Encriptar y guardar la nueva contraseña
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        log.info("Password changed successfully for user ID: {}", userId);
+    }
+}
+

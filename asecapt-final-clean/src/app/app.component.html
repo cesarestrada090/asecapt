@@ -6,9 +6,9 @@
     ================================================== -->
     <div class="main-wrapper">
 
-        <!-- HEADER - ALWAYS VISIBLE FOR NOW
+        <!-- HEADER - ONLY VISIBLE FOR NON-DASHBOARD ROUTES
         ================================================== -->
-        <header class="header-style1 menu_area-light">
+        <header class="header-style1 menu_area-light" *ngIf="!isDashboardRoute">
 
             <div class="navbar-default border-bottom border-color-light-white">
 
@@ -82,17 +82,18 @@
             </div>
         </header>
 
-    <!-- Mobile menu overlay - ALWAYS VISIBLE FOR NOW -->
-    <div class="mobile-menu-overlay" 
-         [class.show]="isMobileMenuOpen" 
+    <!-- Mobile menu overlay - ONLY VISIBLE FOR NON-DASHBOARD ROUTES -->
+    <div class="mobile-menu-overlay"
+         *ngIf="!isDashboardRoute"
+         [class.show]="isMobileMenuOpen"
          (click)="closeMobileMenu()"></div>
 
     <!-- DYNAMIC CONTENT - Each component will render here -->
     <router-outlet></router-outlet>
 
-        <!-- FOOTER - ALWAYS VISIBLE FOR NOW
+        <!-- FOOTER - ONLY VISIBLE FOR NON-DASHBOARD ROUTES
         ================================================== -->
-        <footer class="bg-dark" id="contacto">
+        <footer class="bg-dark" id="contacto" *ngIf="!isDashboardRoute">
             <div class="container">
                 <div class="row">
                     <div class="col-md-6 col-lg-3 mb-2-5 mb-lg-0">
@@ -185,5 +186,5 @@
 
     </div>
 
-    <!-- Scroll to top - ALWAYS VISIBLE FOR NOW -->
-    <a href="#!" class="scroll-to-top"><i class="fas fa-angle-up" aria-hidden="true"></i></a>
+    <!-- Scroll to top - ONLY VISIBLE FOR NON-DASHBOARD ROUTES -->
+    <a href="#!" class="scroll-to-top" *ngIf="!isDashboardRoute"><i class="fas fa-angle-up" aria-hidden="true"></i></a>

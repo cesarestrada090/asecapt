@@ -7,6 +7,7 @@ import { CertificateVerificationComponent } from './components/certificate-verif
 import { ComplaintsBookComponent } from './components/complaints-book/complaints-book.component';
 import { VirtualClassroomComponent } from './components/virtual-classroom/virtual-classroom.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { StudentDashboardComponent } from './components/student-dashboard/student-dashboard.component';
 import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -19,5 +20,6 @@ export const routes: Routes = [
   { path: 'complaints-book', component: ComplaintsBookComponent },
   { path: 'virtual-classroom', component: VirtualClassroomComponent },
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] }, // Protected dashboard with auth guard
+  { path: 'student-dashboard', component: StudentDashboardComponent, canActivate: [AuthGuard] }, // Protected student dashboard
   { path: '**', redirectTo: '' }
 ];

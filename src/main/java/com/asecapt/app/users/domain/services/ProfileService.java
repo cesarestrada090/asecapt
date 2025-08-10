@@ -18,4 +18,5 @@ public interface ProfileService {
     void deletePhoto(Integer userId, Integer photoId);
     void setProfilePhoto(Integer userId, Integer photoId);
     void deletePresentationVideo(Integer userId);
-} 
+    void changePassword(Integer userId, String currentPassword, String newPassword);
+}

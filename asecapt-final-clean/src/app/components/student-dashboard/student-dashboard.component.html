@@ -1,0 +1,278 @@
+<div class="student-dashboard">
+  <!-- Top Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <!-- Mobile menu button -->
+      <button class="btn btn-outline-light d-lg-none" type="button" (click)="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+      </button>
+
+      <!-- Brand -->
+      <a class="navbar-brand ms-2" href="#">
+        <i class="fas fa-graduation-cap me-2"></i>
+        ASECAPT - Panel de Estudiante
+      </a>
+
+      <!-- User info and logout -->
+      <div class="navbar-nav ms-auto">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-2"></i>
+            {{ currentUser?.person?.firstName }} {{ currentUser?.person?.lastName }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><button class="dropdown-item" (click)="logout()">
+              <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+            </button></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" [class.sidebar-open]="sidebarOpen">
+      <div class="sidebar-content">
+        <div class="user-info p-3 text-center border-bottom">
+          <div class="user-avatar mb-2">
+            <i class="fas fa-user-circle fa-3x text-primary"></i>
+          </div>
+          <h6 class="mb-1">{{ currentUser?.person?.firstName }} {{ currentUser?.person?.lastName }}</h6>
+          <small class="text-muted">Estudiante</small>
+        </div>
+
+        <nav class="sidebar-nav">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <button
+                class="nav-link"
+                [class.active]="activeSection === 'profile'"
+                (click)="setActiveSection('profile')">
+                <i class="fas fa-user me-2"></i>
+                Mi Perfil
+              </button>
+            </li>
+            <li class="nav-item">
+              <button
+                class="nav-link"
+                [class.active]="activeSection === 'password'"
+                (click)="setActiveSection('password')">
+                <i class="fas fa-lock me-2"></i>
+                Cambiar Contraseña
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="content-wrapper">
+        <!-- Messages -->
+        <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+          <i class="fas fa-check-circle me-2"></i>
+          {{ successMessage }}
+          <button type="button" class="btn-close" (click)="clearMessages()"></button>
+        </div>
+
+        <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="fas fa-exclamation-circle me-2"></i>
+          {{ errorMessage }}
+          <button type="button" class="btn-close" (click)="clearMessages()"></button>
+        </div>
+
+        <!-- Profile Section -->
+        <div *ngIf="activeSection === 'profile'" class="section">
+          <div class="section-header">
+            <h2><i class="fas fa-user me-2"></i>Mi Información Personal</h2>
+            <p class="text-muted">Aquí puedes ver tu información personal registrada en el sistema.</p>
+          </div>
+
+          <div *ngIf="loadingProfile" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2">Cargando información...</p>
+          </div>
+
+          <div *ngIf="!loadingProfile && personInfo" class="row">
+            <div class="col-md-8">
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="card-title mb-0">
+                    <i class="fas fa-id-card me-2"></i>Datos Personales
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label fw-bold">Nombres:</label>
+                      <p class="form-control-plaintext">{{ personInfo.firstName }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label fw-bold">Apellidos:</label>
+                      <p class="form-control-plaintext">{{ personInfo.lastName }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label fw-bold">Tipo de Documento:</label>
+                      <p class="form-control-plaintext">{{ personInfo.documentType || 'DNI' }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label fw-bold">Número de Documento:</label>
+                      <p class="form-control-plaintext">{{ personInfo.documentNumber }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label fw-bold">Email:</label>
+                      <p class="form-control-plaintext">{{ personInfo.email }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label fw-bold">Teléfono:</label>
+                      <p class="form-control-plaintext">{{ personInfo.phoneNumber }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label fw-bold">Género:</label>
+                      <p class="form-control-plaintext">{{ getGenderText(personInfo.gender) }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label fw-bold">Fecha de Nacimiento:</label>
+                      <p class="form-control-plaintext">{{ formatDate(personInfo.birthDate || '') }}</p>
+                    </div>
+                    <div class="col-12 mb-3" *ngIf="personInfo.bio">
+                      <label class="form-label fw-bold">Biografía:</label>
+                      <p class="form-control-plaintext">{{ personInfo.bio }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Información de Cuenta
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Usuario:</label>
+                    <p class="form-control-plaintext">{{ currentUser?.username }}</p>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Tipo de Usuario:</label>
+                    <p class="form-control-plaintext">
+                      <span class="badge bg-success">Estudiante</span>
+                    </p>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Estado:</label>
+                    <p class="form-control-plaintext">
+                      <span class="badge bg-success" *ngIf="currentUser?.active">Activo</span>
+                      <span class="badge bg-danger" *ngIf="!currentUser?.active">Inactivo</span>
+                    </p>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Email Verificado:</label>
+                    <p class="form-control-plaintext">
+                      <span class="badge bg-success" *ngIf="currentUser?.isEmailVerified">
+                        <i class="fas fa-check me-1"></i>Verificado
+                      </span>
+                      <span class="badge bg-warning" *ngIf="!currentUser?.isEmailVerified">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Pendiente
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Password Change Section -->
+        <div *ngIf="activeSection === 'password'" class="section">
+          <div class="section-header">
+            <h2><i class="fas fa-lock me-2"></i>Cambiar Contraseña</h2>
+            <p class="text-muted">Por seguridad, asegúrate de usar una contraseña fuerte y única.</p>
+          </div>
+
+          <div class="row justify-content-center">
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="card-title mb-0">
+                    <i class="fas fa-key me-2"></i>Nueva Contraseña
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <form (ngSubmit)="changePassword()" #passwordForm="ngForm">
+                    <div class="mb-3">
+                      <label for="currentPassword" class="form-label">Contraseña Actual *</label>
+                      <input
+                        type="password"
+                        class="form-control"
+                        id="currentPassword"
+                        [(ngModel)]="passwordData.currentPassword"
+                        name="currentPassword"
+                        required
+                        [disabled]="loading">
+                    </div>
+
+                    <div class="mb-3">
+                      <label for="newPassword" class="form-label">Nueva Contraseña *</label>
+                      <input
+                        type="password"
+                        class="form-control"
+                        id="newPassword"
+                        [(ngModel)]="passwordData.newPassword"
+                        name="newPassword"
+                        required
+                        minlength="6"
+                        [disabled]="loading">
+                      <div class="form-text">Mínimo 6 caracteres</div>
+                    </div>
+
+                    <div class="mb-3">
+                      <label for="confirmPassword" class="form-label">Confirmar Nueva Contraseña *</label>
+                      <input
+                        type="password"
+                        class="form-control"
+                        id="confirmPassword"
+                        [(ngModel)]="passwordData.confirmPassword"
+                        name="confirmPassword"
+                        required
+                        [disabled]="loading">
+                    </div>
+
+                    <div class="d-grid gap-2">
+                      <button
+                        type="submit"
+                        class="btn btn-primary"
+                        [disabled]="loading || !passwordForm.form.valid">
+                        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                        <i *ngIf="!loading" class="fas fa-save me-2"></i>
+                        {{ loading ? 'Cambiando...' : 'Cambiar Contraseña' }}
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        (click)="resetPasswordForm()"
+                        [disabled]="loading">
+                        <i class="fas fa-times me-2"></i>
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Mobile overlay -->
+  <div class="sidebar-overlay" [class.show]="sidebarOpen" (click)="toggleSidebar()"></div>
+</div>

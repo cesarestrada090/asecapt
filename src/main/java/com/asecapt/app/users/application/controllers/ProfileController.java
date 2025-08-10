@@ -14,11 +14,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/v1/app/profile")
+@RequestMapping("/api/v1/app/profile")
 @Tag(name = "User Profile", description = "User profile management, photos, and personal information")
 @SecurityRequirement(name = "bearerAuth")
 public class ProfileController {
@@ -99,4 +101,56 @@ public class ProfileController {
         profileService.deletePresentationVideo(userId);
         return ResponseEntity.noContent().build();
     }
-} 
+
+    @PutMapping("/{userId}/change-password")
+    public ResponseEntity<Map<String, Object>> changePassword(
+            @PathVariable("userId") Integer userId,
+            @RequestBody ChangePasswordRequest request
+    ) {
+        try {
+            profileService.changePassword(userId, request.getCurrentPassword(), request.getNewPassword());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Password changed successfully");
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    // DTO for change password request
+    public static class ChangePasswordRequest {
+        private String currentPassword;
+        private String newPassword;
+        private String confirmPassword;
+
+        public String getCurrentPassword() {
+            return currentPassword;
+        }
+
+        public void setCurrentPassword(String currentPassword) {
+            this.currentPassword = currentPassword;
+        }
+
+        public String getNewPassword() {
+            return newPassword;
+        }
+
+        public void setNewPassword(String newPassword) {
+            this.newPassword = newPassword;
+        }
+
+        public String getConfirmPassword() {
+            return confirmPassword;
+        }
+
+        public void setConfirmPassword(String confirmPassword) {
+            this.confirmPassword = confirmPassword;
+        }
+    }
+}

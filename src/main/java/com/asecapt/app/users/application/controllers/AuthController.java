@@ -50,9 +50,9 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(createErrorResponse("INVALID_CREDENTIALS", "Invalid username or password"));
             }
 
-            // Check if user is admin (type = 1)
-            if (user.getType() != 1) {
-                return ResponseEntity.badRequest().body(createErrorResponse("INSUFFICIENT_PRIVILEGES", "Access denied. Admin privileges required"));
+            // Check if user has valid type (1=Admin, 2=Instructor, 3=Student)
+            if (user.getType() < 1 || user.getType() > 3) {
+                return ResponseEntity.badRequest().body(createErrorResponse("INVALID_USER_TYPE", "Invalid user type"));
             }
 
             // Login successful - return user info (without password)

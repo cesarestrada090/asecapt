@@ -62,12 +62,15 @@ export class AuthService {
    */
   login(credentials: LoginRequest): Observable<LoginResponse> {
     const url = buildApiUrl('auth/login');
-    
+
     return this.http.post<LoginResponse>(url, credentials)
       .pipe(
         tap(response => {
+          console.log('🔍 AuthService - Login response:', response);
           if (response.success && response.user) {
+            console.log('💾 AuthService - Setting current user:', response.user);
             this.setCurrentUser(response.user);
+            console.log('✅ AuthService - User set successfully');
           }
         }),
         catchError(error => {
@@ -88,7 +91,7 @@ export class AuthService {
    */
   logout(): Observable<any> {
     const url = buildApiUrl('auth/logout');
-    
+
     return this.http.post(url, {})
       .pipe(
         tap(() => {
@@ -108,7 +111,7 @@ export class AuthService {
    */
   validateSession(): Observable<any> {
     const url = buildApiUrl('auth/validate');
-    
+
     return this.http.get(url)
       .pipe(
         catchError(error => {
@@ -132,6 +135,22 @@ export class AuthService {
   isAdmin(): boolean {
     const user = this.currentUserSubject.value;
     return user ? user.type === 1 : false;
+  }
+
+  /**
+   * Check if user is student
+   */
+  isStudent(): boolean {
+    const user = this.currentUserSubject.value;
+    return user ? user.type === 3 : false;
+  }
+
+  /**
+   * Check if user is instructor
+   */
+  isInstructor(): boolean {
+    const user = this.currentUserSubject.value;
+    return user ? user.type === 2 : false;
   }
 
   /**
@@ -193,7 +212,7 @@ export class AuthService {
   getUserTypeText(): string {
     const user = this.getCurrentUser();
     if (!user) return 'Invitado';
-    
+
     switch (user.type) {
       case 1: return 'Administrador';
       case 2: return 'Instructor';
