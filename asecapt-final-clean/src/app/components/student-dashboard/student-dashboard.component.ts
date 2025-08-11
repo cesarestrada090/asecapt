@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService, User } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
 import { StudentCoursesComponent } from '../student-courses/student-courses.component';
+import { ContactComponent } from '../contact/contact.component';
 
 export interface ChangePasswordRequest {
   currentPassword: string;
@@ -28,7 +29,7 @@ export interface PersonInfo {
 @Component({
   selector: 'app-student-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, StudentCoursesComponent],
+  imports: [CommonModule, FormsModule, StudentCoursesComponent, ContactComponent],
   templateUrl: './student-dashboard.component.html',
   styleUrl: './student-dashboard.component.css'
 })
@@ -46,6 +47,13 @@ export class StudentDashboardComponent implements OnInit {
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
+  };
+
+  // Contact form data
+  contactData = {
+    name: '',
+    email: '',
+    message: ''
   };
 
   // Loading states
@@ -183,6 +191,66 @@ export class StudentDashboardComponent implements OnInit {
       currentPassword: '',
       newPassword: '',
       confirmPassword: ''
+    };
+  }
+
+  // === CONTACT FORM ===
+
+  submitContactForm() {
+    if (!this.validateContactForm()) {
+      return;
+    }
+
+    this.loading = true;
+    this.clearMessages();
+
+    // Simulate API call - replace with actual service call
+    setTimeout(() => {
+      this.successMessage = 'Tu mensaje ha sido enviado exitosamente. Nos pondremos en contacto contigo pronto.';
+      this.resetContactForm();
+      this.loading = false;
+    }, 2000);
+  }
+
+  validateContactForm(): boolean {
+    if (!this.contactData.name.trim()) {
+      this.errorMessage = 'El nombre es requerido';
+      return false;
+    }
+
+    if (!this.contactData.email.trim()) {
+      this.errorMessage = 'El email es requerido';
+      return false;
+    }
+
+    if (!this.isValidEmail(this.contactData.email)) {
+      this.errorMessage = 'Ingresa un email válido';
+      return false;
+    }
+
+    if (!this.contactData.message.trim()) {
+      this.errorMessage = 'El mensaje es requerido';
+      return false;
+    }
+
+    if (this.contactData.message.trim().length < 10) {
+      this.errorMessage = 'El mensaje debe tener al menos 10 caracteres';
+      return false;
+    }
+
+    return true;
+  }
+
+  isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  resetContactForm() {
+    this.contactData = {
+      name: '',
+      email: '',
+      message: ''
     };
   }
 

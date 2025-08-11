@@ -109,131 +109,107 @@
 
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-hover courses-table mb-0">
+            <table class="table table-hover courses-table mb-0 table-sm">
               <thead class="table-light">
                 <tr>
                   <th class="border-0">Curso</th>
-                  <th class="border-0">Estado</th>
-                  <th class="border-0">Matrícula</th>
-                  <th class="border-0">Finalización</th>
-                  <th class="border-0">Nota Final</th>
-                  <th class="border-0">Asistencia</th>
-                  <th class="border-0">Certificado</th>
+                  <th class="border-0 text-center">Estado</th>
+                  <th class="border-0 text-center">Matrícula</th>
+                  <th class="border-0 text-center">Finalización</th>
+                  <th class="border-0 text-center">Nota</th>
+                  <th class="border-0 text-center">Asistencia</th>
+                  <th class="border-0 text-center">Certificado</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let enrollment of enrollments; trackBy: trackByEnrollmentId" class="course-row">
                   <!-- Course Info -->
-                  <td>
+                  <td class="course-info-cell">
                     <div class="d-flex align-items-center">
-                      <div class="course-icon me-3">
-                        <div class="icon-circle">
-                          <i class="fas fa-book text-white"></i>
-                        </div>
+                      <div class="course-icon-small me-2">
+                        <i class="fas fa-book text-primary"></i>
                       </div>
-                      <div class="course-details">
-                        <h6 class="course-title mb-1">{{ enrollment.program?.title || 'Curso sin título' }}</h6>
-                        <small class="course-type text-muted">
-                          <i class="fas fa-tag me-1"></i>{{ enrollment.program?.type || 'Curso' }}
-                        </small>
-                        <div *ngIf="enrollment.program?.duration" class="course-duration">
-                          <small class="text-muted">
+                      <div class="course-details-compact">
+                        <div class="course-title-compact">{{ enrollment.program?.title || 'Curso sin título' }}</div>
+                        <small class="course-meta text-muted">
+                          {{ enrollment.program?.type || 'Curso' }}
+                          <span *ngIf="enrollment.program?.duration" class="ms-2">
                             <i class="fas fa-clock me-1"></i>{{ enrollment.program.duration }}
-                          </small>
-                        </div>
+                          </span>
+                        </small>
                       </div>
                     </div>
                   </td>
 
                   <!-- Status -->
-                  <td>
-                    <span [class]="getStatusBadgeClass(enrollment.status)" class="status-badge">
+                  <td class="text-center">
+                    <span [class]="getStatusBadgeClass(enrollment.status)" class="status-badge-sm">
                       {{ getStatusText(enrollment.status) }}
                     </span>
                   </td>
 
                   <!-- Enrollment Date -->
-                  <td>
-                    <div class="date-info">
-                      <i class="fas fa-calendar-plus text-muted me-2"></i>
-                      <span>{{ formatDate(enrollment.enrollmentDate) }}</span>
+                  <td class="text-center">
+                    <div class="date-compact">
+                      <small>{{ formatDate(enrollment.enrollmentDate) }}</small>
                     </div>
                   </td>
 
                   <!-- Completion Date -->
-                  <td>
-                    <div class="date-info" *ngIf="enrollment.completionDate">
-                      <i class="fas fa-calendar-check text-success me-2"></i>
-                      <span>{{ formatDate(enrollment.completionDate) }}</span>
+                  <td class="text-center">
+                    <div class="date-compact" *ngIf="enrollment.completionDate">
+                      <small>{{ formatDate(enrollment.completionDate) }}</small>
                     </div>
-                    <span *ngIf="!enrollment.completionDate" class="text-muted">
-                      <i class="fas fa-minus me-2"></i>Pendiente
-                    </span>
+                    <small *ngIf="!enrollment.completionDate" class="text-muted">-</small>
                   </td>
 
                   <!-- Final Grade -->
-                  <td>
-                    <div *ngIf="enrollment.finalGrade !== null && enrollment.finalGrade !== undefined" class="grade-display">
-                      <span class="grade-badge" [class]="getGradeBadgeClass(enrollment.finalGrade)">
-                        {{ enrollment.finalGrade }}/100
-                      </span>
-                      <div class="grade-bar mt-1">
-                        <div class="progress progress-sm">
-                          <div class="progress-bar" [class]="getGradeProgressClass(enrollment.finalGrade)"
-                               [style.width.%]="enrollment.finalGrade">
-                          </div>
+                  <td class="text-center">
+                    <div *ngIf="enrollment.finalGrade !== null && enrollment.finalGrade !== undefined" class="grade-compact">
+                      <div class="grade-badge-sm" [class]="getGradeBadgeClass(enrollment.finalGrade)">
+                        {{ enrollment.finalGrade }}
+                      </div>
+                      <div class="progress progress-xs mt-1">
+                        <div class="progress-bar" [class]="getGradeProgressClass(enrollment.finalGrade)"
+                             [style.width.%]="enrollment.finalGrade">
                         </div>
                       </div>
                     </div>
-                    <span *ngIf="enrollment.finalGrade === null || enrollment.finalGrade === undefined" class="text-muted">
-                      <i class="fas fa-minus me-2"></i>Sin calificar
-                    </span>
+                    <small *ngIf="enrollment.finalGrade === null || enrollment.finalGrade === undefined" class="text-muted">-</small>
                   </td>
 
                   <!-- Attendance -->
-                  <td>
-                    <div *ngIf="enrollment.attendancePercentage !== null && enrollment.attendancePercentage !== undefined" class="attendance-display">
-                      <span class="attendance-badge" [class]="getAttendanceBadgeClass(enrollment.attendancePercentage)">
+                  <td class="text-center">
+                    <div *ngIf="enrollment.attendancePercentage !== null && enrollment.attendancePercentage !== undefined" class="attendance-compact">
+                      <div class="attendance-badge-sm" [class]="getAttendanceBadgeClass(enrollment.attendancePercentage)">
                         {{ enrollment.attendancePercentage }}%
-                      </span>
-                      <div class="attendance-bar mt-1">
-                        <div class="progress progress-sm">
-                          <div class="progress-bar bg-info" [style.width.%]="enrollment.attendancePercentage"></div>
-                        </div>
+                      </div>
+                      <div class="progress progress-xs mt-1">
+                        <div class="progress-bar bg-info" [style.width.%]="enrollment.attendancePercentage"></div>
                       </div>
                     </div>
-                    <span *ngIf="enrollment.attendancePercentage === null || enrollment.attendancePercentage === undefined" class="text-muted">
-                      <i class="fas fa-minus me-2"></i>Sin registrar
-                    </span>
+                    <small *ngIf="enrollment.attendancePercentage === null || enrollment.attendancePercentage === undefined" class="text-muted">-</small>
                   </td>
 
                   <!-- Certificate Actions -->
-                  <td>
-                    <div class="certificate-actions">
-                      <button
-                        *ngIf="canDownloadCertificate(enrollment)"
-                        type="button"
-                        class="btn btn-success btn-sm certificate-btn"
-                        (click)="downloadCertificate(enrollment)"
-                        title="Descargar Certificado">
-                        <i class="fas fa-download me-2"></i>
-                        Descargar
-                      </button>
+                  <td class="text-center">
+                    <button
+                      *ngIf="canDownloadCertificate(enrollment)"
+                      type="button"
+                      class="btn btn-success btn-xs"
+                      (click)="downloadCertificate(enrollment)"
+                      title="Descargar Certificado">
+                      <i class="fas fa-download"></i>
+                    </button>
 
-                      <div *ngIf="!canDownloadCertificate(enrollment)" class="certificate-pending">
-                        <button
-                          type="button"
-                          class="btn btn-outline-secondary btn-sm"
-                          disabled
-                          title="Certificado no disponible">
-                          <i class="fas fa-clock me-2"></i>
-                          Pendiente
-                        </button>
-                        <small class="text-muted d-block mt-1">
-                          Completa el curso para obtener tu certificado
-                        </small>
-                      </div>
-                    </div>
+                    <button
+                      *ngIf="!canDownloadCertificate(enrollment)"
+                      type="button"
+                      class="btn btn-outline-secondary btn-xs"
+                      disabled
+                      title="Certificado no disponible">
+                      <i class="fas fa-clock"></i>
+                    </button>
                   </td>
                 </tr>
               </tbody>
