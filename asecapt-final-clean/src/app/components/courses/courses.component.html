@@ -297,6 +297,21 @@
                         name="objectives"></textarea>
             </div>
 
+            <!-- Image URL -->
+            <div class="mb-3">
+              <label class="form-label fw-bold">URL de Imagen</label>
+              <input type="url" class="form-control"
+                     [(ngModel)]="editingProgramForm.imageUrl"
+                     name="imageUrl"
+                     placeholder="https://ejemplo.com/imagen.jpg">
+              <div *ngIf="editingProgramForm.imageUrl" class="mt-2">
+                <img [src]="editingProgramForm.imageUrl"
+                     [alt]="editingProgramForm.title || 'Vista previa'"
+                     class="img-thumbnail"
+                     style="max-width: 200px; max-height: 120px; object-fit: cover;">
+              </div>
+            </div>
+
             <!-- Action Buttons -->
             <div class="d-flex justify-content-end">
               <button type="button" class="btn btn-outline-secondary me-2"
@@ -707,7 +722,7 @@
                 </div>
                 <div class="col-md-12">
                   <label class="form-label">Contenido</label>
-                  <textarea class="form-control" [(ngModel)]="contentFormModel.content" name="content" rows="4"
+                  <textarea class="form-control" [(ngModel)]="contentFormModel.content" name="content" rows="3"
                             placeholder="Describe el contenido, objetivos, materiales, etc."></textarea>
                 </div>
               </div>
@@ -880,6 +895,17 @@
             <div class="col-md-12">
               <label class="form-label">Objetivos</label>
               <textarea class="form-control" [(ngModel)]="programFormModel.objectives" name="objectives" rows="2"></textarea>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">URL de Imagen</label>
+              <input type="url" class="form-control" [(ngModel)]="programFormModel.imageUrl" name="imageUrl"
+                     placeholder="https://ejemplo.com/imagen.jpg">
+              <div *ngIf="programFormModel.imageUrl" class="mt-2">
+                <img [src]="programFormModel.imageUrl"
+                     [alt]="programFormModel.title || 'Vista previa'"
+                     class="img-thumbnail"
+                     style="max-width: 200px; max-height: 120px; object-fit: cover;">
+              </div>
             </div>
           </div>
         </div>

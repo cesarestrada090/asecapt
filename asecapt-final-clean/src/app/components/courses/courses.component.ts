@@ -57,7 +57,8 @@ export class CoursesComponent implements OnInit {
     instructor: '',
     maxStudents: 0,
     prerequisites: '',
-    objectives: ''
+    objectives: '',
+    imageUrl: ''
   };
   editingProgram: Program | null = null;
 
@@ -827,7 +828,8 @@ export class CoursesComponent implements OnInit {
       instructor: '',
       maxStudents: 0,
       prerequisites: '',
-      objectives: ''
+      objectives: '',
+      imageUrl: ''
     };
 
     console.log('Form model reset:', this.programFormModel);
@@ -848,7 +850,10 @@ export class CoursesComponent implements OnInit {
 
     this.isEditingProgram = true;
     // Create a copy for editing
-    this.editingProgramForm = { ...program };
+    this.editingProgramForm = {
+      ...program,
+      imageUrl: program.imageUrl || ''
+    };
   }
 
   saveProgramEdit() {
