@@ -1,0 +1,80 @@
+-- Inserts para la tabla program basados en el JSON de cursos
+-- Estructura de la tabla: id, name, description, duration, hours, credits, category_id, status, 
+-- created_at, updated_at, is_favorite, title, type, category, price, start_date, end_date, 
+-- instructor, max_students, prerequisites, objectives, image_url
+
+INSERT INTO program (
+    id, name, title, description, duration, hours, credits, category, type, price, 
+    instructor, max_students, status, image_url, prerequisites, objectives
+) VALUES 
+(1, 'Especialidad en Hemoterapia y Banco de Sangre', 'Especialidad en Hemoterapia y Banco de Sangre', 
+ 'Programa especializado en técnicas avanzadas de hemoterapia y gestión de bancos de sangre, orientado a profesionales de la salud.', 
+ '6 meses', 240, 20, 'Salud', 'especialización', 'Consultar', 
+ 'Dr. Elena Vargas', 45, 'active', 
+ 'https://images.unsplash.com/photo-1615461066841-6116e61058f4?auto=format&fit=crop&w=400&h=220&q=80',
+ 'Título profesional en ciencias de la salud, experiencia mínima de 2 años en área clínica.',
+ 'Desarrollar competencias especializadas en hemoterapia y manejo integral de bancos de sangre.'),
+
+(2, 'Especialización en SSOMA', 'Especialización en SSOMA', 
+ 'Especialización en Seguridad, Salud Ocupacional y Medio Ambiente dirigida a profesionales que buscan liderar programas de prevención.', 
+ '5 meses', 216, 18, 'Seguridad', 'especialización', 'Consultar', 
+ 'Ing. Carlos Mendoza', 68, 'active', 
+ 'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?auto=format&fit=crop&w=400&h=220&q=80',
+ 'Título profesional en ingeniería o ciencias afines, conocimientos básicos en seguridad industrial.',
+ 'Formar especialistas en gestión integral de sistemas SSOMA en organizaciones.'),
+
+(3, 'Diplomado en Gerencia Hospitalaria y Salud Pública', 'Diplomado en Gerencia Hospitalaria y Salud Pública', 
+ 'Programa orientado a desarrollar competencias gerenciales en el sector salud y administración de servicios de salud pública.', 
+ '8 meses', 288, 24, 'Administración', 'diplomado', 'Consultar', 
+ 'Dr. Ana Jiménez', 89, 'active', 
+ 'https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=400&h=220&q=80',
+ 'Título profesional en ciencias de la salud o administración, experiencia en gestión hospitalaria.',
+ 'Capacitar profesionales en gerencia estratégica de instituciones de salud y políticas públicas.'),
+
+(4, 'Especialización en Urgencias Obstétricas y Ginecológicas', 'Especialización en Urgencias Obstétricas y Ginecológicas', 
+ 'Programa especializado en el manejo de emergencias obstétricas y ginecológicas para profesionales médicos.', 
+ '4 meses', 192, 16, 'Medicina', 'especialización', 'Consultar', 
+ 'Dra. Patricia Herrera', 156, 'active', 
+ 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=400&h=220&q=80',
+ 'Título de médico cirujano, especialidad en ginecología y obstetricia.',
+ 'Desarrollar expertise en el manejo de urgencias obstétricas y ginecológicas complejas.'),
+
+(5, 'Especialización en Crecimiento e Inmunizaciones en el Niño', 'Especialización en Crecimiento e Inmunizaciones en el Niño', 
+ 'Programa enfocado en el seguimiento del crecimiento infantil y esquemas de inmunización pediátrica.', 
+ '3.5 meses', 168, 14, 'Pediatría', 'especialización', 'Consultar', 
+ 'Dr. Ricardo Morales', 203, 'active', 
+ 'https://images.unsplash.com/photo-1559757175-0eb30cd8c063?auto=format&fit=crop&w=400&h=220&q=80',
+ 'Título profesional en ciencias de la salud, experiencia en atención pediátrica.',
+ 'Formar especialistas en monitoreo del crecimiento y desarrollo infantil y programas de inmunización.'),
+
+(6, 'Especialización en Nutrición Clínica', 'Especialización en Nutrición Clínica', 
+ 'Programa avanzado en nutrición terapéutica y manejo nutricional de pacientes con patologías específicas.', 
+ '3.75 meses', 180, 15, 'Nutrición', 'especialización', 'Consultar', 
+ 'Lic. María Santos', 134, 'active', 
+ 'https://images.unsplash.com/photo-1505576399279-565b52d4ac71?auto=format&fit=crop&w=400&h=220&q=80',
+ 'Licenciatura en nutrición o carreras afines, experiencia en práctica clínica.',
+ 'Capacitar profesionales en evaluación nutricional y terapia nutricional especializada.'),
+
+(7, 'Especialización en Salud Ocupacional', 'Especialización en Salud Ocupacional', 
+ 'Programa integral en prevención de riesgos laborales y promoción de la salud en el ambiente de trabajo.', 
+ '4.5 meses', 216, 18, 'Salud Laboral', 'especialización', 'Consultar', 
+ 'Dr. Luis Castro', 187, 'active', 
+ 'https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=400&h=220&q=80',
+ 'Título profesional en ciencias de la salud o ingeniería, conocimientos en medicina del trabajo.',
+ 'Desarrollar competencias en gestión de programas de salud ocupacional y prevención de enfermedades laborales.'),
+
+(8, 'Especialización en Estrategias Didácticas en Lenguas Extranjeras', 'Especialización en Estrategias Didácticas en Lenguas Extranjeras', 
+ 'Programa orientado a docentes que buscan innovar en metodologías de enseñanza de idiomas extranjeros.', 
+ '4 meses', 192, 16, 'Educación', 'especialización', 'Consultar', 
+ 'Mg. Carmen López', 156, 'active', 
+ 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=400&h=220&q=80',
+ 'Título en educación o lingüística, experiencia docente en enseñanza de idiomas.',
+ 'Capacitar docentes en metodologías innovadoras para la enseñanza efectiva de lenguas extranjeras.'),
+
+(9, 'Especialización en Liderazgo Educativo', 'Especialización en Liderazgo Educativo', 
+ 'Programa diseñado para formar líderes educativos capaces de gestionar y transformar instituciones educativas.', 
+ '5 meses', 240, 20, 'Liderazgo', 'especialización', 'Consultar', 
+ 'Dr. Roberto Silva', 98, 'active', 
+ 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=400&h=220&q=80',
+ 'Título profesional en educación o áreas afines, experiencia en gestión educativa.',
+ 'Desarrollar competencias de liderazgo transformacional en el ámbito educativo.');
