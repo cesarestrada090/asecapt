@@ -21,6 +21,7 @@ export interface Program {
   maxStudents: number;
   prerequisites: string;
   objectives: string;
+  imageUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -67,6 +68,7 @@ export interface CreateProgramRequest {
   maxStudents?: number;
   prerequisites?: string;
   objectives?: string;
+  imageUrl?: string;
 }
 
 export interface UpdateProgramRequest extends CreateProgramRequest {
@@ -174,7 +176,7 @@ export class ProgramService {
     if (type) params = params.set('type', type);
     if (status) params = params.set('status', status);
     if (category) params = params.set('category', category);
-    
+
     return this.http.get<Program[]>(`${this.apiUrl}/search`, { params }).pipe(
       catchError(this.handleError)
     );
@@ -215,7 +217,7 @@ export class ProgramService {
   }
 
   // === INDIVIDUAL CONTENT OPERATIONS ===
-  
+
   // Toggle isRequired status for a specific content in a program
   toggleContentRequiredStatus(programId: number, contentId: number): Observable<ProgramContent> {
     return this.http.put<ProgramContent>(
@@ -252,4 +254,4 @@ export class ProgramService {
   }> {
     return this.http.get<any>(`${this.apiUrl}/${id}/validate`);
   }
-} 
+}

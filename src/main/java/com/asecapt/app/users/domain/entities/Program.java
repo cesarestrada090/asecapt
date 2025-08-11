@@ -60,6 +60,9 @@ public class Program {
     @Column(columnDefinition = "TEXT")
     private String objectives;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
@@ -81,4 +84,3 @@ public class Program {
     @Column(name = "is_favorite")
     private Boolean isFavorite = false;
 }
-
