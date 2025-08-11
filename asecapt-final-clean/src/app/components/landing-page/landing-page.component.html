@@ -178,33 +178,61 @@
             <h2 class="h1 mb-0">Nuestras Especialidades</h2>
         </div>
         <div class="row g-xxl-5 mt-n2-6">
-            <div *ngFor="let course of courses" class="col-md-6 col-xl-4 mt-2-6">
-                <div class="card card-style1 p-0 h-100">
-                    <div class="card-img rounded-0" [ngClass]="course.categoryClass ? 'border-color-' + course.categoryClass : ''">
-                        <div class="image-hover" style="height: 220px; overflow: hidden;">
-                            <img class="rounded-top" [src]="course.image" [alt]="course.title" style="width: 100%; height: 220px; object-fit: cover;">
-                        </div>
-                        <a href="courses-list.html" [class]="'course-tag ' + course.categoryClass">{{course.category}}</a>
-                        <a href="#!"><i class="far fa-heart"></i></a>
-                    </div>
-                    <div class="card-body position-relative pt-0 px-1-9 pb-1-9">
-                        <!-- Removed instructor avatar and name section -->
-                        <div class="pt-6">
-                            <h3 class="h4 mb-4"><a href="course-details.html">{{course.title}}</a></h3>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="display-30"><i class="ti-agenda me-2"></i>{{course.modules}} Módulos</div>
-                                <div class="display-30"><i class="ti-user me-2"></i>{{course.students}}</div>
-                                <div class="display-30"><i class="fas fa-star me-1 display-32 text-warning"></i>{{course.rating}}({{course.reviews}})</div>
+            <!-- Loading state -->
+            <div *ngIf="loading" class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando especialidades...</span>
+                </div>
+                <p class="mt-3 text-muted">Cargando especialidades...</p>
+            </div>
+
+            <!-- Error state -->
+            <div *ngIf="error && !loading" class="col-12 text-center py-5">
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    {{ error }}
+                </div>
+            </div>
+
+            <!-- Courses grid -->
+            <ng-container *ngIf="!loading && !error">
+                <div *ngFor="let course of courses" class="col-md-6 col-xl-4 mt-2-6">
+                    <div class="card card-style1 p-0 h-100">
+                        <div class="card-img rounded-0">
+                            <div class="image-hover" style="height: 220px; overflow: hidden;">
+                                <img class="rounded-top"
+                                     [src]="course.imageUrl || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=400&h=220&q=80'"
+                                     [alt]="course.title"
+                                     style="width: 100%; height: 220px; object-fit: cover;"
+                                     (error)="onImageError($event)">
                             </div>
-                            <div class="dotted-seprator pt-4 mt-4 d-flex justify-content-between align-items-center">
-                                <span [class]="'badge-soft ' + course.categoryClass">{{course.type}}</span>
-                                <h5 [class]="course.categoryClass ? 'text-' + course.categoryClass + ' mb-0' : 'text-primary mb-0'">{{course.price}}</h5>
+                            <a routerLink="/courses-grid" class="course-tag">{{course.category || 'Curso'}}</a>
+                            <a href="#!"><i class="far fa-heart"></i></a>
+                        </div>
+                        <div class="card-body position-relative pt-0 px-1-9 pb-1-9">
+                            <div class="pt-6">
+                                <h3 class="h4 mb-4"><a routerLink="/courses-grid">{{course.title}}</a></h3>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="display-30"><i class="ti-agenda me-2"></i>{{course.duration || 'N/A'}}</div>
+                                    <div class="display-30"><i class="ti-user me-2"></i>{{course.maxStudents || 'Ilimitado'}}</div>
+                                    <div class="display-30"><i class="fas fa-star me-1 display-32 text-warning"></i>5.0(0)</div>
+                                </div>
+                                <div class="dotted-seprator pt-4 mt-4 d-flex justify-content-between align-items-center">
+                                    <span class="badge-soft">{{course.type || 'curso'}}</span>
+                                    <h5 class="text-primary mb-0">{{course.price || 'Consultar'}}</h5>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </ng-container>
 
+            <!-- Empty state -->
+            <div *ngIf="!loading && !error && courses.length === 0" class="col-12 text-center py-5">
+                <i class="fas fa-graduation-cap display-1 text-muted mb-3"></i>
+                <h4 class="text-muted">Próximamente</h4>
+                <p class="text-muted">Estamos preparando nuestras especialidades para ti.</p>
+            </div>
         </div>
     </div>
 </section>
@@ -280,7 +308,7 @@
                     <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=350&h=350&q=80" class="border-radius-5" alt="Dr. Carlos Mendoza" style="width: 100%; height: 350px; object-fit: cover;">
                     <div class="team-info">
                         <h3 class="text-primary mb-1 h4">Dr. Carlos Mendoza</h3>
-                        <span class="font-weight-600 text-secondary">Especialista en Gestión Empresarial</span>
+                        <span class="font-weight-600 text-secondary">Especialista en Gesti��n Empresarial</span>
                     </div>
                 </div>
             </div>

@@ -1,7 +1,7 @@
 import { Component, AfterViewInit, OnDestroy, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { CoursesService, Course } from '../../services/courses.service';
+import { ProgramService, Program } from '../../services/program.service';
 
 declare var $: any;
 
@@ -13,19 +13,37 @@ declare var $: any;
   styleUrl: './landing-page.component.css'
 })
 export class LandingPageComponent implements AfterViewInit, OnDestroy, OnInit {
-  courses: Course[] = [];
+  courses: Program[] = [];
+  loading: boolean = false;
+  error: string | null = null;
 
-  constructor(private coursesService: CoursesService) {}
+  constructor(private programService: ProgramService) {}
 
   ngOnInit() {
     this.loadCourses();
   }
 
   loadCourses() {
-    this.coursesService.getCourses().subscribe(data => {
-      // Mostrar todos los 9 cursos en el landing page
-      this.courses = data.courses;
+    this.loading = true;
+    this.error = null;
+
+    this.programService.getActivePrograms().subscribe({
+      next: (programs) => {
+        // Limitar a los primeros 6 cursos para el landing page
+        this.courses = programs.slice(0, 6);
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading courses:', error);
+        this.error = 'Error cargando cursos.';
+        this.loading = false;
+      }
     });
+  }
+
+  onImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.src = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=400&h=220&q=80';
   }
 
   ngAfterViewInit() {
@@ -36,7 +54,7 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy, OnInit {
         $('.slider-fade1').trigger('destroy.owl.carousel');
         $('.slider-fade1').removeClass('owl-carousel owl-theme');
         $('.slider-fade1').addClass('owl-carousel owl-theme');
-        
+
         // Initialize the carousel
         $('.slider-fade1').owlCarousel({
           items: 1,
