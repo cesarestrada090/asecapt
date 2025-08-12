@@ -1261,6 +1261,7 @@ export class CoursesComponent implements OnInit {
     switch (type) {
       case 'course': return 'badge bg-primary';
       case 'specialization': return 'badge bg-info';
+      case 'diploma': return 'badge bg-info';
       case 'certification': return 'badge bg-warning';
       default: return 'badge bg-secondary';
     }
@@ -1313,6 +1314,7 @@ export class CoursesComponent implements OnInit {
     return [
       { value: '', label: 'Todos los tipos' },
       { value: 'course', label: 'Programas' },
+      { value: 'diploma', label: 'Diplomado' },
       { value: 'specialization', label: 'Especializaciones' },
       { value: 'certification', label: 'Certificaciones' }
     ];

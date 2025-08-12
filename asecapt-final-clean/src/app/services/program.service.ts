@@ -9,7 +9,7 @@ export interface Program {
   id: number;
   title: string;
   description: string;
-  type: 'course' | 'specialization' | 'certification';
+  type: 'course' | 'specialization' | 'certification' | 'diploma';
   category: string;
   status: 'active' | 'inactive'; // Updated from 'archived' to 'inactive'
   duration: string;
