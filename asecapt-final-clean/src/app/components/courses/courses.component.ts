@@ -1313,10 +1313,10 @@ export class CoursesComponent implements OnInit {
   get availableTypes() {
     return [
       { value: '', label: 'Todos los tipos' },
-      { value: 'course', label: 'Programas' },
-      { value: 'diploma', label: 'Diplomado' },
-      { value: 'specialization', label: 'Especializaciones' },
-      { value: 'certification', label: 'Certificaciones' }
+      { value: 'course', label: 'Curso' },
+      { value: 'diplomado', label: 'Diplomado' },
+      { value: 'especialización', label: 'Especialización' },
+      { value: 'certification', label: 'Certificación' }
     ];
   }
 

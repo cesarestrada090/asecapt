@@ -33,7 +33,7 @@ public class Enrollment {
     @Column(name = "status", length = 20, nullable = false)
     private String status = "enrolled";
     
-    @Column(name = "final_grade", precision = 4, scale = 2)
+    @Column(name = "final_grade", precision = 5, scale = 2)
     private BigDecimal finalGrade;
     
     @Column(name = "attendance_percentage", precision = 5, scale = 2)
@@ -76,4 +76,4 @@ public class Enrollment {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-} 
+}
