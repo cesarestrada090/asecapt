@@ -89,6 +89,13 @@ export class CertificateService {
   }
 
   /**
+   * Download certificate file
+   */
+  downloadCertificate(certificateId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/download/${certificateId}`, { responseType: 'blob' });
+  }
+
+  /**
    * Get certificate download URL
    */
   getCertificateDownloadUrl(certificateId: number): string {
@@ -100,15 +107,6 @@ export class CertificateService {
    */
   getQRCodeDownloadUrl(certificateId: number): string {
     return `${this.apiUrl}/qr/${certificateId}`;
-  }
-
-  /**
-   * Download certificate file
-   */
-  downloadCertificate(certificateId: number): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/download/${certificateId}`, {
-      responseType: 'blob'
-    });
   }
 
   /**
