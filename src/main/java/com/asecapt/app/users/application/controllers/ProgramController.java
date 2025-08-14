@@ -296,6 +296,8 @@ public class ProgramController {
         private Integer maxStudents;
         private String prerequisites;
         private String objectives;
+        private String imageUrl;
+        private Boolean showInLanding;
 
         // Getters and Setters
         public String getTitle() { return title; }
@@ -326,6 +328,10 @@ public class ProgramController {
         public void setPrerequisites(String prerequisites) { this.prerequisites = prerequisites; }
         public String getObjectives() { return objectives; }
         public void setObjectives(String objectives) { this.objectives = objectives; }
+        public String getImageUrl() { return imageUrl; }
+        public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+        public Boolean getShowInLanding() { return showInLanding; }
+        public void setShowInLanding(Boolean showInLanding) { this.showInLanding = showInLanding; }
     }
 
     public static class UpdateProgramRequest extends CreateProgramRequest {

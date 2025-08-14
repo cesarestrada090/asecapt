@@ -66,6 +66,9 @@ public class ProgramService {
         program.setMaxStudents(request.getMaxStudents());
         program.setPrerequisites(request.getPrerequisites());
         program.setObjectives(request.getObjectives());
+        // Add missing fields for imageUrl and showInLanding
+        program.setImageUrl(request.getImageUrl());
+        program.setShowInLanding(request.getShowInLanding());
         
         return programRepository.save(program);
     }
@@ -90,6 +93,9 @@ public class ProgramService {
             program.setMaxStudents(request.getMaxStudents());
             program.setPrerequisites(request.getPrerequisites());
             program.setObjectives(request.getObjectives());
+            // Add missing fields for imageUrl and showInLanding
+            program.setImageUrl(request.getImageUrl());
+            program.setShowInLanding(request.getShowInLanding());
             
             return programRepository.save(program);
         }
