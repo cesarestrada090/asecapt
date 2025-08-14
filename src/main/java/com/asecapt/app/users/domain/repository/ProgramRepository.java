@@ -34,5 +34,10 @@ public interface ProgramRepository extends JpaRepository<Program, Integer> {
     Long countByStatus(String status);
     Long countByType(String type);
     Long countByCategory(String category);
+    
+    // Landing page specific methods
+    List<Program> findByShowInLandingTrue();
+    List<Program> findByShowInLandingTrueAndStatus(String status);
+    List<Program> findByShowInLandingTrueOrderByCreatedAtDesc();
+    List<Program> findByShowInLandingTrueAndStatusOrderByCreatedAtDesc(String status);
 }
-

@@ -25,7 +25,9 @@ export class CoursesGridComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.programService.getActivePrograms().subscribe({
+    // Changed from getActivePrograms() to getProgramsForLanding()
+    // This ensures only programs marked for landing page display are shown
+    this.programService.getProgramsForLanding().subscribe({
       next: (programs) => {
         this.courses = programs;
         this.loading = false;

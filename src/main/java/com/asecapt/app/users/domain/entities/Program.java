@@ -83,4 +83,7 @@ public class Program {
     // Legacy field for compatibility
     @Column(name = "is_favorite")
     private Boolean isFavorite = false;
+
+    @Column(name = "show_in_landing")
+    private Boolean showInLanding = false;
 }

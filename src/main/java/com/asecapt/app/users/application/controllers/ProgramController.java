@@ -257,6 +257,28 @@ public class ProgramController {
         }
     }
 
+    // === LANDING PAGE SPECIFIC ENDPOINTS ===
+    
+    @GetMapping("/landing")
+    public ResponseEntity<List<Program>> getProgramsForLanding() {
+        try {
+            List<Program> programs = programService.getProgramsForLanding();
+            return ResponseEntity.ok(programs);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @GetMapping("/landing/all")
+    public ResponseEntity<List<Program>> getAllProgramsForLanding() {
+        try {
+            List<Program> programs = programService.getAllProgramsForLanding();
+            return ResponseEntity.ok(programs);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     // === DTOs ===
 
     public static class CreateProgramRequest {

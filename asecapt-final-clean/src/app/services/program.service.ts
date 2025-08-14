@@ -22,6 +22,7 @@ export interface Program {
   prerequisites: string;
   objectives: string;
   imageUrl?: string;
+  showInLanding?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -69,6 +70,7 @@ export interface CreateProgramRequest {
   prerequisites?: string;
   objectives?: string;
   imageUrl?: string;
+  showInLanding?: boolean;
 }
 
 export interface UpdateProgramRequest extends CreateProgramRequest {
@@ -136,6 +138,20 @@ export class ProgramService {
 
   getActivePrograms(): Observable<Program[]> {
     return this.http.get<Program[]>(`${this.apiUrl}/search?status=active`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  // === LANDING PAGE SPECIFIC METHODS ===
+
+  getProgramsForLanding(): Observable<Program[]> {
+    return this.http.get<Program[]>(`${this.apiUrl}/landing`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  getAllProgramsForLanding(): Observable<Program[]> {
+    return this.http.get<Program[]>(`${this.apiUrl}/landing/all`).pipe(
       catchError(this.handleError)
     );
   }

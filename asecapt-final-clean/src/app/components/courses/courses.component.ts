@@ -58,7 +58,8 @@ export class CoursesComponent implements OnInit {
     maxStudents: 0,
     prerequisites: '',
     objectives: '',
-    imageUrl: ''
+    imageUrl: '',
+    showInLanding: false
   };
   editingProgram: Program | null = null;
 

@@ -104,7 +104,6 @@
 .card-body {
   padding: 1.5rem;
 }
-
 /* Buttons */
 .btn {
   border-radius: 8px;
@@ -291,3 +290,4 @@ a:hover {
 .border-0 {
   border: 0 !important;
 }
+

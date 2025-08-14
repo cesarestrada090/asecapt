@@ -27,7 +27,9 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy, OnInit {
     this.loading = true;
     this.error = null;
 
-    this.programService.getActivePrograms().subscribe({
+    // Changed from getActivePrograms() to getProgramsForLanding()
+    // This ensures only programs marked for landing page display are shown
+    this.programService.getProgramsForLanding().subscribe({
       next: (programs) => {
         // Limitar a los primeros 6 cursos para el landing page
         this.courses = programs.slice(0, 6);

@@ -34,6 +34,16 @@ public class ProgramService {
         return programRepository.findAll();
     }
 
+    // === LANDING PAGE SPECIFIC METHODS ===
+    
+    public List<Program> getProgramsForLanding() {
+        return programRepository.findByShowInLandingTrueAndStatusOrderByCreatedAtDesc("active");
+    }
+    
+    public List<Program> getAllProgramsForLanding() {
+        return programRepository.findByShowInLandingTrueOrderByCreatedAtDesc();
+    }
+
     public Program getProgramById(Integer id) {
         return programRepository.findById(id).orElse(null);
     }
@@ -374,4 +384,3 @@ public class ProgramService {
         return 40; // Default fallback value
     }
 }
-
