@@ -126,4 +126,32 @@ export class CourseDetailsComponent implements OnInit {
   getTotalLessons(): number {
     return this.courseContents?.contents?.length || 0;
   }
+
+  // WhatsApp enrollment method
+  enrollViaWhatsApp(): void {
+    if (!this.course) return;
+
+    const phoneNumber = '+51967634608'; // Número de WhatsApp sin espacios
+    const message = `¡Hola! 👋
+
+Estoy interesado/a en matricularme en el siguiente curso:
+
+📚 *${this.course.title}*
+📂 Categoría: ${this.course.category}
+⏱️ Duración: ${this.course.duration}
+💰 Precio: ${this.course.price}
+
+Por favor, me podrían brindar más información sobre el proceso de matrícula y los requisitos.
+
+¡Gracias!`;
+
+    // Codificar el mensaje para URL
+    const encodedMessage = encodeURIComponent(message);
+
+    // Construir la URL de WhatsApp
+    const whatsappUrl = `https://wa.me/${phoneNumber.replace(/[^\d]/g, '')}?text=${encodedMessage}`;
+
+    // Abrir WhatsApp en una nueva ventana
+    window.open(whatsappUrl, '_blank');
+  }
 }
