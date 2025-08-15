@@ -9,11 +9,13 @@ import { VirtualClassroomComponent } from './components/virtual-classroom/virtua
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { StudentDashboardComponent } from './components/student-dashboard/student-dashboard.component';
 import { AuthGuard } from './guards/auth.guard';
+import { CourseDetailsComponent } from './components/course-details/course-details.component';
 
 export const routes: Routes = [
   { path: '', component: LandingPageComponent },
   { path: 'about', component: AboutComponent },
   { path: 'courses-grid', component: CoursesGridComponent },
+  { path: 'course-details/:id', component: CourseDetailsComponent },
   { path: 'verify', component: CertificateValidationComponent }, // Manual verification
   { path: 'verify/:token', component: CertificateValidationComponent }, // QR verification with token
   { path: 'public/certificate/:certificateCode', component: CertificateVerificationComponent }, // Public certificate verification
