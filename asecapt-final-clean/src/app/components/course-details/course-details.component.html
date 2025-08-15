@@ -78,7 +78,7 @@
                             <ul class="resp-tabs-list hor_1">
                                 <li><span class="display-block xs-display-inline-block">Descripción</span></li>
                                 <!-- <li><span class="display-block xs-display-inline-block">Instructor</span></li> -->
-                                <!-- <li><span class="display-block xs-display-inline-block">Contenido</span></li> -->
+                                <li><span class="display-block xs-display-inline-block">Contenido</span></li>
                                 <!-- <li><span class="display-block xs-display-inline-block">Reseñas</span></li> -->
                             </ul>
                             <div class="resp-tabs-container hor_1">
@@ -139,42 +139,47 @@
                                 </div>
                                 -->
 
-                                <!-- Contenido Tab Esperar para mejora mas adelante
+                                <!-- Contenido Tab -->
                                 <div>
                                     <div class="row">
                                         <div class="col-lg-12">
-                                            <div id="accordion" class="accordion-style1">
-                                                <div class="card" *ngFor="let module of course.modules; let i = index">
+                                            <div id="accordion" class="accordion-style1" *ngIf="getOrganizedContents().length > 0">
+                                                <div class="card" *ngFor="let module of getOrganizedContents(); let i = index">
                                                     <div class="card-header" [id]="'heading' + i">
                                                         <h5 class="mb-0">
                                                             <button class="btn btn-link" data-bs-toggle="collapse" [attr.data-bs-target]="'#collapse' + i" [attr.aria-expanded]="i === 0" [attr.aria-controls]="'collapse' + i">
-                                                                Módulo {{i + 1}}: {{module.title}}
+                                                                {{module.title}}
                                                             </button>
                                                         </h5>
                                                     </div>
                                                     <div [id]="'collapse' + i" class="collapse" [class.show]="i === 0" [attr.aria-labelledby]="'heading' + i" data-bs-parent="#accordion">
                                                         <div class="card-body">
                                                             <ul class="curriculum-lists">
-                                                                <li *ngFor="let lesson of module.lessons; let j = index">
+                                                                <li *ngFor="let content of module.contents; let j = index">
                                                                     <div class="titles">
-                                                                        <i [class]="getModuleIcon(lesson.type)"></i>
-                                                                        <h3>Lección {{j + 1}}</h3>
+                                                                        <i [class]="getModuleIcon(content.type)"></i>
+                                                                        <h3>{{content.type | titlecase}} {{j + 1}}</h3>
                                                                         <h5 class="display-29 display-lg-28 display-xl-27 mb-0">
-                                                                            <a href="#!">{{lesson.title}}</a>
+                                                                            <a href="#!">{{content.title}}</a>
                                                                         </h5>
                                                                         <div class="access-type">
-                                                                            <i class="fas fa-eye" *ngIf="lesson.type !== 'exam'; else lockIcon"></i>
+                                                                            <i class="fas fa-eye" *ngIf="content.type !== 'exam'; else lockIcon"></i>
                                                                             <ng-template #lockIcon><i class="ti-lock"></i></ng-template>
                                                                         </div>
                                                                     </div>
                                                                     <div class="intro">
                                                                         <div class="item">
-                                                                            <p class="alt-font">Duración: {{lesson.duration}}</p>
+                                                                            <p class="alt-font">Duración: {{content.duration || 'N/A'}}</p>
                                                                         </div>
                                                                         <div class="item">
-                                                                            <p class="alt-font">Tipo: {{lesson.type}}</p>
-                                                                            <a href="#!">Vista previa</a>
+                                                                            <p class="alt-font">Tipo: {{content.type}}</p>
+                                                                            <span class="badge badge-sm" [class]="content.isRequired ? 'badge-primary' : 'badge-secondary'">
+                                                                                {{content.isRequired ? 'Obligatorio' : 'Opcional'}}
+                                                                            </span>
                                                                         </div>
+                                                                    </div>
+                                                                    <div class="content-description" *ngIf="content.description">
+                                                                        <p class="text-muted small">{{content.description}}</p>
                                                                     </div>
                                                                 </li>
                                                             </ul>
@@ -182,11 +187,15 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            <!-- Mensaje cuando no hay contenidos -->
+                                            <div *ngIf="getOrganizedContents().length === 0" class="text-center py-5">
+                                                <i class="fas fa-book-open display-1 text-muted mb-3"></i>
+                                                <h4 class="text-muted">Contenido en preparación</h4>
+                                                <p class="text-muted">El contenido de este curso se está preparando y estará disponible próximamente.</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                -->
 
                                 <!-- RESEÑAS Y COMENTARIOS TAB - COMENTADO TEMPORALMENTE
                                 <div>
@@ -275,12 +284,12 @@
                                 <h3>Detalles del Curso</h3>
                             </div>
                             <ul class="course-list">
-                                <li><span><i class="ti-time pe-2"></i>Duración</span>{{course.duration}}</li>
-                                <li><span><i class="ti-eye pe-2"></i>Visualizaciones</span>{{course.maxStudents || 'N/A'}}</li>
-                                <li><span><i class="ti-files pe-2"></i>Lecciones</span>{{course.modules?.length || 0}}</li>
-                                <li><span><i class="ti-user pe-2"></i>Estudiantes</span>{{course.maxStudents || 'Ilimitado'}}</li>
+                                <li><span><i class="ti-time pe-2"></i>Duración</span>{{getTotalDuration()}}</li>
+                                <li><span><i class="ti-eye pe-2"></i>Créditos</span>{{course.credits || 0}}</li>
+                                <li><span><i class="ti-files pe-2"></i>Contenidos</span>{{getTotalLessons()}}</li>
+                                <li><span><i class="ti-user pe-2"></i>Max. Estudiantes</span>{{course.maxStudents || 'Ilimitado'}}</li>
                                 <li><span><i class="ti-medall pe-2"></i>Certificado</span>Sí</li>
-                                <li><span><i class="ti-menu-alt pe-2"></i>Nivel</span>Intermedio</li>
+                                <li><span><i class="ti-menu-alt pe-2"></i>Estado</span>{{course.status === 'active' ? 'Activo' : 'Inactivo'}}</li>
                                 <li><span><i class="ti-stats-up pe-2"></i>Tipo</span>{{course.type}}</li>
                                 <li><span><i class="ti-world pe-2"></i>Idioma</span>Español</li>
                                 <li><span><i class="ti-money pe-2"></i>Precio</span>{{course.price}}</li>

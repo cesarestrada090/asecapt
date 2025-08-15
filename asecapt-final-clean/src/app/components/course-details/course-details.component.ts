@@ -1,25 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { ProgramService, Program } from '../../services/program.service';
-
-// Interfaz extendida para el componente con propiedades adicionales
-interface CourseDetails extends Program {
-  reviews?: {
-    author: string;
-    rating: number;
-    comment: string;
-    date: string;
-  }[];
-  modules?: {
-    title: string;
-    lessons: {
-      title: string;
-      duration: string;
-      type: string;
-    }[];
-  }[];
-}
+import { ProgramService, Program, ProgramWithContents } from '../../services/program.service';
 
 @Component({
   selector: 'app-course-details',
@@ -29,7 +11,8 @@ interface CourseDetails extends Program {
   styleUrl: './course-details.component.css'
 })
 export class CourseDetailsComponent implements OnInit {
-  course: CourseDetails | null = null;
+  course: Program | null = null;
+  courseContents: ProgramWithContents | null = null;
   loading: boolean = false;
   error: string | null = null;
   courseId: string | null = null;
@@ -45,81 +28,31 @@ export class CourseDetailsComponent implements OnInit {
   }
 
   loadCourseDetails() {
+    if (!this.courseId) {
+      this.error = 'ID del curso no válido';
+      return;
+    }
+
     this.loading = true;
     this.error = null;
 
-    // For now, use mock data based on courseId
-    setTimeout(() => {
-      this.course = this.getMockCourse(this.courseId);
-      this.loading = false;
-    }, 500);
-  }
+    const courseIdNumber = parseInt(this.courseId);
 
-  private getMockCourse(courseId: string | null): CourseDetails {
-    // Base mock course data - you can expand this with more courses
-    const baseCourse: CourseDetails = {
-      id: parseInt(courseId || '1'),
-      title: "Especialidad en Hemoterapia y Banco de Sangre",
-      description: "Programa especializado en técnicas avanzadas de hemoterapia y gestión de bancos de sangre, dirigido a profesionales de la salud que buscan especializarse en esta área crítica.",
-      category: "Salud",
-      type: "specialization",
-      duration: "320 horas",
-      credits: 20,
-      price: "Consultar",
-      instructor: "Dr. Elena Vargas",
-      maxStudents: 45,
-      status: "active",
-      imageUrl: "https://images.unsplash.com/photo-1615461066841-6116e61058f4?auto=format&fit=crop&w=800&h=400&q=80",
-      prerequisites: "Título profesional en ciencias de la salud, experiencia mínima de 2 años en área clínica",
-      objectives: "Desarrollar competencias en técnicas de hemoterapia, gestionar eficientemente bancos de sangre",
-      startDate: "2024-01-15",
-      endDate: "2024-06-15",
-      createdAt: "2024-01-01T00:00:00Z",
-      updatedAt: "2024-01-01T00:00:00Z",
-      showInLanding: true,
-      modules: [
-        {
-          title: "Fundamentos de Hemoterapia",
-          lessons: [
-            { title: "Introducción a la hemoterapia", duration: "2 horas", type: "video" },
-            { title: "Componentes sanguíneos", duration: "3 horas", type: "document" },
-            { title: "Evaluación Módulo 1", duration: "1 hora", type: "exam" }
-          ]
-        },
-        {
-          title: "Gestión de Bancos de Sangre",
-          lessons: [
-            { title: "Organización y estructura", duration: "2.5 horas", type: "video" },
-            { title: "Protocolos de donación", duration: "3 horas", type: "document" },
-            { title: "Práctica supervisada", duration: "4 horas", type: "assignment" }
-          ]
-        },
-        {
-          title: "Seguridad Transfusional",
-          lessons: [
-            { title: "Protocolos de seguridad", duration: "2 horas", type: "video" },
-            { title: "Manejo de reacciones adversas", duration: "2.5 horas", type: "document" },
-            { title: "Casos clínicos", duration: "3 horas", type: "assignment" }
-          ]
-        }
-      ],
-      reviews: [
-        {
-          author: "Dr. Carlos Mendoza",
-          rating: 5,
-          comment: "Excelente programa, muy completo y actualizado. Los instructores son de primer nivel.",
-          date: "Marzo 2024"
-        },
-        {
-          author: "Lic. María Santos",
-          rating: 5,
-          comment: "La metodología es muy práctica y aplicable al trabajo diario. Totalmente recomendado.",
-          date: "Febrero 2024"
-        }
-      ]
-    };
-
-    return baseCourse;
+    // Obtener datos del programa con sus contenidos
+    this.programService.getProgramWithContents(courseIdNumber).subscribe({
+      next: (data) => {
+        this.courseContents = data;
+        this.course = data.program;
+        this.loading = false;
+        console.log('Curso cargado:', this.course);
+        console.log('Contenidos del curso:', data.contents);
+      },
+      error: (error) => {
+        console.error('Error cargando curso:', error);
+        this.error = 'Error al cargar los detalles del curso';
+        this.loading = false;
+      }
+    });
   }
 
   // Helper methods for template
@@ -129,22 +62,68 @@ export class CourseDetailsComponent implements OnInit {
       case 'document': return 'fas fa-file';
       case 'exam': return 'fas fa-clipboard-check';
       case 'assignment': return 'fas fa-tasks';
+      case 'module': return 'fas fa-book';
+      case 'lesson': return 'fas fa-play-circle';
+      case 'resource': return 'fas fa-download';
       default: return 'fas fa-book';
     }
-  }
-
-  getStarArray(rating: number): number[] {
-    return Array(5).fill(0).map((_, i) => i < rating ? 1 : 0);
   }
 
   // Helper method to split prerequisites and objectives
   getPrerequisitesList(): string[] {
     if (!this.course?.prerequisites) return [];
-    return this.course.prerequisites.split(',').map(req => req.trim());
+    return this.course.prerequisites.split(',').map(req => req.trim()).filter(req => req.length > 0);
   }
 
   getObjectivesList(): string[] {
     if (!this.course?.objectives) return [];
-    return this.course.objectives.split(',').map(obj => obj.trim());
+    return this.course.objectives.split(',').map(obj => obj.trim()).filter(obj => obj.length > 0);
+  }
+
+  // Helper method to get organized contents by topic
+  getOrganizedContents(): any[] {
+    if (!this.courseContents?.contents) return [];
+
+    // Agrupar contenidos por topic o crear grupos genéricos
+    const grouped: { [key: string]: any[] } = {};
+
+    this.courseContents.contents.forEach(content => {
+      if (!content) return;
+
+      const topicKey = content.topic || `Módulo ${content.topicNumber || 1}`;
+
+      if (!grouped[topicKey]) {
+        grouped[topicKey] = [];
+      }
+
+      grouped[topicKey].push(content);
+    });
+
+    // Convertir a array y ordenar
+    return Object.keys(grouped).map(topic => ({
+      title: topic,
+      contents: grouped[topic].sort((a, b) => (a.topicNumber || 0) - (b.topicNumber || 0))
+    }));
+  }
+
+  // Helper method to get total duration
+  getTotalDuration(): string {
+    if (!this.courseContents?.contents) return this.course?.duration || '0 horas';
+
+    // Si tenemos contenidos con duración específica, calcular total
+    const totalHours = this.courseContents.contents.reduce((total, content) => {
+      if (content?.duration) {
+        const hours = parseFloat(content.duration.replace(/[^\d.]/g, '')) || 0;
+        return total + hours;
+      }
+      return total;
+    }, 0);
+
+    return totalHours > 0 ? `${totalHours} horas` : this.course?.duration || '0 horas';
+  }
+
+  // Helper method to get total lessons count
+  getTotalLessons(): number {
+    return this.courseContents?.contents?.length || 0;
   }
 }

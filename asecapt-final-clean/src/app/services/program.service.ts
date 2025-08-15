@@ -163,7 +163,7 @@ export class ProgramService {
   }
 
   getProgramWithContents(id: number): Observable<ProgramWithContents> {
-    return this.http.get<ProgramWithContents>(`${this.apiUrl}/${id}/with-contents`).pipe(
+    return this.http.get<ProgramWithContents>(`${this.apiUrl}/${id}/contents`).pipe(
       catchError(this.handleError)
     );
   }
