@@ -35,6 +35,10 @@ export class CoursesComponent implements OnInit {
   isSearching: boolean = false;
   isSaving: boolean = false;
 
+  // Separate loading states for different operations
+  isCreatingContent: boolean = false;
+  isToggleProgramStatus: boolean = false;
+
   // Search form
   searchForm = {
     query: '',
@@ -400,16 +404,32 @@ export class CoursesComponent implements OnInit {
   // === SIMPLE ADD CONTENT MODAL METHODS ===
 
   showSimpleAddContentModal() {
+    console.log('🔵 showSimpleAddContentModal() called');
+    console.log('🔵 selectedProgram:', this.selectedProgram);
+
     if (!this.selectedProgram) {
-      this.emitMessage('error', 'Debe seleccionar un programa primero');
+      console.log('❌ No program selected');
+      this.emitMessage('error', 'Seleccione un programa primero');
       return;
     }
 
+    console.log('🔵 Resetting form and showing modal');
     // Reset form
-    this.resetSimpleAddForm();
+    this.simpleAddForm = {
+      isRequired: false,
+      newContent: {
+        title: '',
+        description: '',
+        type: 'module',
+        duration: '',
+        content: '',
+        topic: '',
+        topicNumber: null
+      }
+    };
 
-    // Show modal using Angular state
     this.showSimpleAddModal = true;
+    console.log('🔵 showSimpleAddModal set to:', this.showSimpleAddModal);
   }
 
   resetSimpleAddForm() {
@@ -453,7 +473,8 @@ export class CoursesComponent implements OnInit {
     // Prepare content data with defaults
     const contentData = {
       ...this.simpleAddForm.newContent,
-      topic: this.simpleAddForm.newContent.topic?.trim() || this.simpleAddForm.newContent.title || 'Contenido'
+      topic: this.simpleAddForm.newContent.topic?.trim() || this.simpleAddForm.newContent.title || 'Contenido',
+      topicNumber: this.simpleAddForm.newContent.topicNumber || 1 // Asignar valor por defecto
     };
 
     // First create the new content
@@ -484,18 +505,18 @@ export class CoursesComponent implements OnInit {
             .pipe(
               catchError(error => {
                 console.error('Error adding new content to program:', error);
-                this.emitMessage('error', 'Error agregando contenido al programa');
-                this.isSaving = false;
+                this.emitMessage('error', 'Error agregando el nuevo contenido al programa');
+                this.isSaving = false; // Reset isSaving on error
                 return of(null);
               })
             )
             .subscribe(programContent => {
+              this.isSaving = false; // Reset isSaving after completion
               if (programContent) {
                 this.programContents.push(programContent);
                 this.emitMessage('success', 'Contenido creado y agregado exitosamente');
                 this.closeSimpleAddModal();
               }
-              this.isSaving = false;
             });
         } else {
           this.isSaving = false;
@@ -590,7 +611,6 @@ export class CoursesComponent implements OnInit {
     this.selectedProgram = program;
     this.currentView = 'details';
     this.loadProgramContents(program.id);
-
   }
 
   // === VIEW NAVIGATION ===

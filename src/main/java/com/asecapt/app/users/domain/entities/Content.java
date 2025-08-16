@@ -40,6 +40,11 @@ public class Content {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        
+        // Asignar valor por defecto si topicNumber es null
+        if (topicNumber == null) {
+            topicNumber = 1;
+        }
     }
 
     @PreUpdate
@@ -58,4 +63,3 @@ public class Content {
     // @JoinColumn(name = "parent_topic_id")
     // private Content parentTopic;
 }
-

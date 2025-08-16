@@ -55,26 +55,12 @@
 }
 
 .courses-table.table-sm th {
-  font-weight: 600;
-  color: #495057;
   font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
   padding: 0.75rem 0.5rem;
 }
 
 .courses-table.table-sm td {
   padding: 0.5rem;
-  vertical-align: middle;
-  border-bottom: 1px solid #f1f3f4;
-}
-
-.course-row {
-  transition: background-color 0.2s ease;
-}
-
-.course-row:hover {
-  background-color: #f8f9fa;
 }
 
 /* Compact Course Info */
@@ -85,32 +71,18 @@
 .course-icon-small {
   width: 24px;
   height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-size: 0.9rem;
 }
 
 .course-details-compact .course-title-compact {
-  font-weight: 600;
-  color: #2d3748;
   margin-bottom: 0.1rem;
   font-size: 0.85rem;
-  line-height: 1.2;
+  line-height: 1;
 }
 
 .course-meta {
   font-size: 0.7rem;
-  color: #6c757d;
   line-height: 1;
-}
-
-/* Status Badges */
-.status-badge {
-  font-weight: 500;
-  padding: 0.5rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
 }
 
 /* Compact Status Badges */
@@ -121,38 +93,16 @@
   font-size: 0.7rem;
 }
 
-/* Date Info */
-.date-info {
-  display: flex;
-  align-items: center;
-  font-size: 0.85rem;
-  color: #495057;
-}
-
 /* Compact Date Display */
 .date-compact small {
   font-size: 0.75rem;
   color: #495057;
 }
 
-/* Grade Display */
-.grade-display {
-  min-width: 120px;
-}
-
 .grade-compact {
   min-width: 60px;
 }
 
-.grade-badge {
-  font-weight: 600;
-  padding: 0.4rem 0.7rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  display: inline-block;
-  min-width: 65px;
-  text-align: center;
-}
 
 .grade-badge-sm {
   font-weight: 600;
@@ -162,26 +112,6 @@
   display: inline-block;
   min-width: 35px;
   text-align: center;
-}
-
-.grade-badge.excellent {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.grade-badge.good {
-  background-color: #d1ecf1;
-  color: #0c5460;
-}
-
-.grade-badge.satisfactory {
-  background-color: #fff3cd;
-  color: #856404;
-}
-
-.grade-badge.needs-improvement {
-  background-color: #f8d7da;
-  color: #721c24;
 }
 
 .grade-badge-sm.excellent {
@@ -209,16 +139,6 @@
   min-width: 60px;
 }
 
-.attendance-badge {
-  font-weight: 600;
-  padding: 0.4rem 0.7rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  display: inline-block;
-  min-width: 50px;
-  text-align: center;
-}
-
 .attendance-badge-sm {
   font-weight: 600;
   padding: 0.2rem 0.4rem;
@@ -227,21 +147,6 @@
   display: inline-block;
   min-width: 40px;
   text-align: center;
-}
-
-.attendance-badge.excellent-attendance {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.attendance-badge.good-attendance {
-  background-color: #fff3cd;
-  color: #856404;
-}
-
-.attendance-badge.poor-attendance {
-  background-color: #f8d7da;
-  color: #721c24;
 }
 
 .attendance-badge-sm.excellent-attendance {
@@ -265,6 +170,130 @@
   border-radius: 2px;
   width: 50px;
   margin: 0 auto;
+}
+
+/* Extra Small Buttons */
+.btn-xs {
+  padding: 0.2rem 0.4rem;
+  font-size: 0.7rem;
+  border-radius: 4px;
+  min-width: 32px;
+}
+
+.btn-xs i {
+  font-size: 0.8rem;
+}
+
+.course-type, .course-duration {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+/* Status Badges */
+.status-badge {
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+/* Date Info */
+.date-info {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #495057;
+}
+
+/* Grade Display */
+.grade-display {
+  min-width: 120px;
+}
+
+.grade-badge {
+  font-weight: 600;
+  padding: 0.4rem 0.7rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  display: inline-block;
+  min-width: 65px;
+  text-align: center;
+}
+
+.grade-badge.excellent {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.grade-badge.good {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.grade-badge.satisfactory {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.grade-badge.needs-improvement {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.grade-bar, .attendance-bar {
+  width: 100%;
+  max-width: 100px;
+}
+
+.progress-sm {
+  height: 6px;
+  border-radius: 3px;
+}
+
+.progress-bar.bg-excellent {
+  background-color: #28a745;
+}
+
+.progress-bar.bg-good {
+  background-color: #17a2b8;
+}
+
+.progress-bar.bg-satisfactory {
+  background-color: #ffc107;
+}
+
+.progress-bar.bg-needs-improvement {
+  background-color: #dc3545;
+}
+
+/* Attendance Display */
+.attendance-display {
+  min-width: 120px;
+}
+
+.attendance-badge {
+  font-weight: 600;
+  padding: 0.4rem 0.7rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  display: inline-block;
+  min-width: 50px;
+  text-align: center;
+}
+
+.attendance-badge.excellent-attendance {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.attendance-badge.good-attendance {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.attendance-badge.poor-attendance {
+  background-color: #f8d7da;
+  color: #721c24;
 }
 
 /* Certificate Actions */
@@ -303,18 +332,6 @@
 
 .empty-state i {
   opacity: 0.6;
-}
-
-/* Extra Small Buttons */
-.btn-xs {
-  padding: 0.2rem 0.4rem;
-  font-size: 0.7rem;
-  border-radius: 4px;
-  min-width: 32px;
-}
-
-.btn-xs i {
-  font-size: 0.8rem;
 }
 
 /* Responsive Design */

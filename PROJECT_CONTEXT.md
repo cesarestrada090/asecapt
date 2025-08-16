@@ -46,6 +46,12 @@ ASECAPT is a full-stack application for educational program management, built wi
   - **Validation:** Required field validation for enrollment dates
   - **Real-time Updates:** Immediate UI feedback during date modifications
   - **Modal Interface:** Comprehensive certificate management modal with tabular data display
+- **Course Details & Navigation System:**
+  - **Course Details Component:** Comprehensive course detail page with dynamic content from database
+  - **Course Navigation:** Consistent navigation from landing page and courses-grid to course details
+  - **WhatsApp Integration:** Direct enrollment via WhatsApp with pre-formatted messages
+  - **Content Organization:** Dynamic grouping and display of course modules and lessons
+  - **Responsive Design:** Mobile-optimized course detail pages with proper header/footer handling
 
 ## Database Schema
 
@@ -265,6 +271,14 @@ Audit log of certificate scans and validations.
 
 ## API Endpoints
 
+### Course Details System
+- **GET `/api/programs/{id}/contents`**: Get program with associated contents
+  - Returns: `ProgramWithContentsResponse` including program details and content array
+  - Used by: course-details component for dynamic content loading
+- **GET `/api/programs/{id}`**: Get basic program information
+  - Returns: `Program` entity with all metadata
+  - Used for: Program details without content relationships
+
 ### Certificate Date Management
 - **PUT `/api/enrollments/{id}`**: Update enrollment data including enrollment date
   - Request body: `{enrollmentDate: "YYYY-MM-DD"}`
@@ -274,7 +288,18 @@ Audit log of certificate scans and validations.
   - Updates certificate entity with new issue date
 
 ### Frontend Implementation Details
+- **Course Details Component:**
+  - `CourseDetailsComponent`: Main component for displaying course information
+  - Dynamic data loading from `ProgramService.getProgramWithContents()`
+  - Content organization by topic with automatic grouping
+  - WhatsApp integration with `enrollViaWhatsApp()` method
+  - Responsive tabs for Description and Content sections
+- **Navigation System:**
+  - Landing page courses link to `/course-details/{id}`
+  - Courses-grid component links to `/course-details/{id}`
+  - Consistent routing configuration in `app.routes.ts`
 - **Service Methods:**
+  - `ProgramService.getProgramWithContents()`: Fetches course with contents
   - `EnrollmentService.updateEnrollment()`: Updates enrollment dates
   - `CertificateService.updateCertificate()`: Updates certificate issue dates
 - **Component Logic:**
@@ -287,6 +312,30 @@ Audit log of certificate scans and validations.
   - Save/Cancel buttons with loading spinners
   - Real-time validation and error messages
   - Automatic UI updates after successful saves
+  - WhatsApp button with branded icon and messaging
+
+## WhatsApp Integration Details
+- **Phone Number:** +51 967 634 608 (configured in course-details component)
+- **Message Format:**
+  ```
+  ¡Hola! 👋
+  
+  Estoy interesado/a en matricularme en el siguiente curso:
+  
+  📚 *[Course Title]*
+  📂 Categoría: [Category]
+  ⏱️ Duración: [Duration]
+  💰 Precio: [Price]
+  
+  Por favor, me podrían brindar más información sobre el proceso de matrícula y los requisitos.
+  
+  ¡Gracias!
+  ```
+- **Technical Implementation:**
+  - Uses `window.open()` with `wa.me` URL format
+  - URL encoding for special characters in messages
+  - Dynamic course information injection
+  - Cross-platform compatibility (desktop/mobile)
 
 ## Recent Improvements (Latest)
 - **Date Editing System:** Implemented comprehensive date editing for certificates
@@ -296,10 +345,25 @@ Audit log of certificate scans and validations.
   - **UI Enhancement:** Added inline editing interface with proper validation and real-time feedback
 - **Validation Improvements:** Enhanced date validation requiring enrollment date as mandatory
 - **Error Handling:** Improved error handling for both enrollment and certificate updates with specific error messages
+- **Course Details System:** Comprehensive course detail page implementation
+  - **Backend Integration:** Connected course-details component to `/api/programs/{id}/contents` endpoint
+  - **Dynamic Content Display:** Real-time loading of course information, modules, and contents from database
+  - **Content Organization:** Automatic grouping of course contents by topic with accordion-style display
+  - **WhatsApp Integration:** Direct enrollment functionality with pre-formatted messages including course details
+  - **Navigation Consistency:** Unified navigation from both landing page and courses-grid to course details
+  - **Mobile Optimization:** Responsive design with proper header/footer handling
+- **WhatsApp Enrollment System:**
+  - **Contact Number:** +51 967 634 608 configured for enrollment inquiries
+  - **Message Template:** Pre-formatted messages including course title, category, duration, and price
+  - **Cross-Platform Support:** Works on desktop (WhatsApp Web) and mobile (native app)
+  - **User Experience:** One-click enrollment process from course details page
 
 ## Notes
 - All SQL and Java code follows best practices for scalability and maintainability.
 - The project is ready for future extension (e.g., more user roles, advanced search, analytics).
 - Certificate system includes comprehensive audit trails and security features.
 - **Date Management:** Timezone-aware date handling prevents common date shifting issues in web applications.
+- **Course Navigation:** Unified user experience across all course discovery touchpoints
+- **WhatsApp Integration:** Seamless lead generation and enrollment process
+- **Mobile Optimization:** Responsive design ensures optimal experience on all devices
 - See individual README files for more details on setup and usage.

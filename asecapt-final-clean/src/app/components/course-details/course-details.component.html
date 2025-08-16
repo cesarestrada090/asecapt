@@ -143,55 +143,25 @@
                                 <div>
                                     <div class="row">
                                         <div class="col-lg-12">
-                                            <div id="accordion" class="accordion-style1" *ngIf="getOrganizedContents().length > 0">
-                                                <div class="card" *ngFor="let module of getOrganizedContents(); let i = index">
-                                                    <div class="card-header" [id]="'heading' + i">
-                                                        <h5 class="mb-0">
-                                                            <button class="btn btn-link" data-bs-toggle="collapse" [attr.data-bs-target]="'#collapse' + i" [attr.aria-expanded]="i === 0" [attr.aria-controls]="'collapse' + i">
-                                                                {{module.title}}
-                                                            </button>
-                                                        </h5>
-                                                    </div>
-                                                    <div [id]="'collapse' + i" class="collapse" [class.show]="i === 0" [attr.aria-labelledby]="'heading' + i" data-bs-parent="#accordion">
-                                                        <div class="card-body">
-                                                            <ul class="curriculum-lists">
-                                                                <li *ngFor="let content of module.contents; let j = index">
-                                                                    <div class="titles">
-                                                                        <i [class]="getModuleIcon(content.type)"></i>
-                                                                        <h3>{{content.type | titlecase}} {{j + 1}}</h3>
-                                                                        <h5 class="display-29 display-lg-28 display-xl-27 mb-0">
-                                                                            <a href="#!">{{content.title}}</a>
-                                                                        </h5>
-                                                                        <div class="access-type">
-                                                                            <i class="fas fa-eye" *ngIf="content.type !== 'exam'; else lockIcon"></i>
-                                                                            <ng-template #lockIcon><i class="ti-lock"></i></ng-template>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="intro">
-                                                                        <div class="item">
-                                                                            <p class="alt-font">Duración: {{content.duration || 'N/A'}}</p>
-                                                                        </div>
-                                                                        <div class="item">
-                                                                            <p class="alt-font">Tipo: {{content.type}}</p>
-                                                                            <span class="badge badge-sm" [class]="content.isRequired ? 'badge-primary' : 'badge-secondary'">
-                                                                                {{content.isRequired ? 'Obligatorio' : 'Opcional'}}
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="content-description" *ngIf="content.description">
-                                                                        <p class="text-muted small">{{content.description}}</p>
-                                                                    </div>
-                                                                </li>
-                                                            </ul>
+                                            <div *ngIf="getOrganizedContents().length > 0">
+                                                <div class="content-list">
+                                                    <div class="content-item border rounded p-3 mb-3" *ngFor="let module of getOrganizedContents()">
+                                                        <div *ngFor="let content of module.contents; let isLast = last">
+                                                            <div class="content-header mb-2">
+                                                                <h5 class="mb-1 text-primary">{{content.title}}</h5>
+                                                                <div class="content-meta d-flex align-items-center text-muted small">
+                                                                    <span *ngIf="content.duration" class="me-3">
+                                                                        <i class="fas fa-clock me-1"></i>{{content.duration}}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="content-description" *ngIf="content.description">
+                                                                <p class="text-muted mb-0">{{content.description}}</p>
+                                                            </div>
+                                                            <hr *ngIf="!isLast" class="my-3">
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <!-- Mensaje cuando no hay contenidos -->
-                                            <div *ngIf="getOrganizedContents().length === 0" class="text-center py-5">
-                                                <i class="fas fa-book-open display-1 text-muted mb-3"></i>
-                                                <h4 class="text-muted">Contenido en preparación</h4>
-                                                <p class="text-muted">El contenido de este curso se está preparando y estará disponible próximamente.</p>
                                             </div>
                                         </div>
                                     </div>
