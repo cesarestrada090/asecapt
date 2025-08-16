@@ -2,19 +2,9 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface Complaint {
-  id: string;
-  type: 'reclamo' | 'queja' | 'sugerencia';
-  name: string;
-  email: string;
-  phone: string;
-  document: string;
-  description: string;
-  date: Date;
-  status: 'pendiente' | 'en_proceso' | 'resuelto';
-  response?: string;
-}
+import { ComplaintService, Complaint, CreateComplaintRequest } from '../../services/complaint.service';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-complaints-book',
@@ -25,7 +15,7 @@ interface Complaint {
 })
 export class ComplaintsBookComponent {
   activeTab: 'new' | 'track' = 'new';
-  
+
   // Formulario de nuevo reclamo
   complaintForm = {
     type: 'reclamo',
@@ -35,14 +25,19 @@ export class ComplaintsBookComponent {
     document: '',
     description: ''
   };
-  
+
   // Búsqueda de reclamo
   searchId: string = '';
   searchResult: Complaint | null = null;
   isSearching: boolean = false;
+  hasSearched: boolean = false; // Nueva variable para rastrear si se hizo una búsqueda
   isSubmitting: boolean = false;
   submitSuccess: boolean = false;
   submittedId: string = '';
+  errorMessage: string = '';
+  searchError: string = '';
+
+  constructor(private complaintService: ComplaintService) {}
 
   setActiveTab(tab: 'new' | 'track') {
     this.activeTab = tab;
@@ -52,45 +47,63 @@ export class ComplaintsBookComponent {
   onSubmitComplaint() {
     if (this.isValidForm()) {
       this.isSubmitting = true;
-      
-      // Simular envío (aquí iría la lógica real)
-      setTimeout(() => {
-        this.submittedId = this.generateComplaintId();
-        this.submitSuccess = true;
-        this.isSubmitting = false;
-        this.resetComplaintForm();
-      }, 2000);
+      this.errorMessage = '';
+
+      const complaintRequest: CreateComplaintRequest = {
+        type: this.complaintForm.type,
+        name: this.complaintForm.name,
+        email: this.complaintForm.email,
+        phone: this.complaintForm.phone,
+        document: this.complaintForm.document,
+        description: this.complaintForm.description
+      };
+
+      this.complaintService.createComplaint(complaintRequest)
+        .pipe(
+          catchError(error => {
+            console.error('Error creating complaint:', error);
+            this.errorMessage = 'Error al enviar el reclamo. Por favor, inténtelo nuevamente.';
+            this.isSubmitting = false;
+            return of(null);
+          })
+        )
+        .subscribe(response => {
+          if (response) {
+            this.submittedId = response.complaintNumber;
+            this.submitSuccess = true;
+            this.resetComplaintForm();
+          }
+          this.isSubmitting = false;
+        });
     }
   }
 
   onSearchComplaint() {
     if (this.searchId.trim()) {
       this.isSearching = true;
-      
-      // Simular búsqueda (aquí iría la lógica real)
-      setTimeout(() => {
-        // Simular resultado encontrado o no encontrado
-        const found = Math.random() > 0.3;
-        
-        if (found) {
-          this.searchResult = {
-            id: this.searchId,
-            type: 'reclamo',
-            name: 'María Elena González Vargas',
-            email: 'maria.gonzalez@email.com',
-            phone: '+51 987 654 321',
-            document: '12345678',
-            description: 'Problema con el acceso a la plataforma virtual del curso de SSOMA',
-            date: new Date('2024-01-15'),
-            status: 'en_proceso',
-            response: 'Su reclamo está siendo revisado por nuestro equipo técnico. Le responderemos en un plazo máximo de 48 horas.'
-          };
-        } else {
-          this.searchResult = null;
-        }
-        
-        this.isSearching = false;
-      }, 1500);
+      this.hasSearched = true; // Marcar que se realizó una búsqueda
+      this.searchError = '';
+      this.searchResult = null;
+
+      this.complaintService.getComplaintByNumber(this.searchId.trim())
+        .pipe(
+          catchError(error => {
+            console.error('Error searching complaint:', error);
+            if (error.status === 404) {
+              this.searchError = 'No se encontró ningún reclamo con ese número.';
+            } else {
+              this.searchError = 'Error al buscar el reclamo. Por favor, inténtelo nuevamente.';
+            }
+            this.isSearching = false;
+            return of(null);
+          })
+        )
+        .subscribe(response => {
+          if (response) {
+            this.searchResult = response;
+          }
+          this.isSearching = false;
+        });
     }
   }
 
@@ -98,7 +111,10 @@ export class ComplaintsBookComponent {
     this.resetComplaintForm();
     this.searchId = '';
     this.searchResult = null;
+    this.hasSearched = false; // Resetear también hasSearched
     this.submitSuccess = false;
+    this.errorMessage = '';
+    this.searchError = '';
   }
 
   resetComplaintForm() {
@@ -112,44 +128,53 @@ export class ComplaintsBookComponent {
     };
   }
 
-  resetSearch() {
-    this.searchId = '';
-    this.searchResult = null;
-  }
-
   isValidForm(): boolean {
     return !!(
       this.complaintForm.name.trim() &&
       this.complaintForm.email.trim() &&
-      this.complaintForm.document.trim() &&
       this.complaintForm.description.trim()
     );
   }
 
-  private generateComplaintId(): string {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `LR-${year}${month}${day}-${random}`;
+  generateComplaintId(): string {
+    return 'REC-' + Date.now().toString();
   }
 
   getStatusText(status: string): string {
-    const statusMap: { [key: string]: string } = {
-      'pendiente': 'Pendiente',
-      'en_proceso': 'En Proceso',
-      'resuelto': 'Resuelto'
-    };
-    return statusMap[status] || status;
+    switch (status) {
+      case 'pendiente': return 'Pendiente';
+      case 'en_proceso': return 'En Proceso';
+      case 'resuelto': return 'Resuelto';
+      default: return status;
+    }
   }
 
-  getStatusClass(status: string): string {
-    const classMap: { [key: string]: string } = {
-      'pendiente': 'badge-warning',
-      'en_proceso': 'badge-info',
-      'resuelto': 'badge-success'
-    };
-    return classMap[status] || 'badge-secondary';
+  getStatusBadgeClass(status: string): string {
+    switch (status) {
+      case 'pendiente': return 'badge bg-warning';
+      case 'en_proceso': return 'badge bg-info';
+      case 'resuelto': return 'badge bg-success';
+      default: return 'badge bg-secondary';
+    }
+  }
+
+  formatDate(dateString: string): string {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch {
+      return 'Fecha no disponible';
+    }
+  }
+
+  resetSearch() {
+    this.searchId = '';
+    this.searchResult = null;
+    this.hasSearched = false; // Resetear también hasSearched
+    this.searchError = '';
   }
 }

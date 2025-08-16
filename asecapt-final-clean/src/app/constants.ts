@@ -156,12 +156,16 @@ export const SUCCESS_MESSAGES = {
   }
 };
 
-// Build full API URLs helper
-export const buildApiUrl = (endpoint: string): string => {
-  // Ensure endpoint starts with '/'
-  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  return `${APP_CONFIG.api.baseUrl}${cleanEndpoint}`;
+// Application constants and configuration
+export const ENV = {
+  production: false,
+  development: true
 };
+
+// Helper function to build API URLs
+export function buildApiUrl(endpoint: string): string {
+  return `${APP_CONFIG.api.baseUrl}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+}
 
 // Build verification URL helper
 export const buildVerificationUrl = (token: string): string => {

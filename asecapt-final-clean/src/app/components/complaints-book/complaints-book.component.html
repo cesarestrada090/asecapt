@@ -71,6 +71,11 @@
                 </button>
               </div>
 
+              <!-- Error Message -->
+              <div *ngIf="errorMessage" class="alert alert-danger mb-4">
+                <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMessage }}
+              </div>
+
               <!-- Form -->
               <form *ngIf="!submitSuccess" (ngSubmit)="onSubmitComplaint()">
                 <div class="row">
@@ -179,7 +184,7 @@
                       <input
                         type="text"
                         class="form-control"
-                        placeholder="Ej: LR-20241201-001"
+                        placeholder="Ej: REC-1734567890123"
                         [(ngModel)]="searchId"
                         name="searchId"
                         required>
@@ -198,8 +203,13 @@
                 </form>
               </div>
 
+              <!-- Search Error Message -->
+              <div *ngIf="searchError" class="alert alert-danger mt-3">
+                <i class="fas fa-exclamation-triangle me-2"></i>{{ searchError }}
+              </div>
+
               <!-- Search Results -->
-              <div *ngIf="searchResult" class="result-card result-found">
+              <div *ngIf="searchResult" class="result-card result-found mt-4">
                 <div class="d-flex align-items-center mb-3">
                   <i class="fas fa-file-alt text-success me-3" style="font-size: 24px;"></i>
                   <div>
@@ -211,7 +221,7 @@
                 <div class="complaint-details">
                   <div class="detail-row">
                     <span class="detail-label">Código:</span>
-                    <span class="detail-value">{{ searchResult.id }}</span>
+                    <span class="detail-value">{{ searchResult.complaintNumber }}</span>
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">Tipo:</span>
@@ -219,12 +229,12 @@
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">Fecha:</span>
-                    <span class="detail-value">{{ searchResult.date | date:'dd/MM/yyyy' }}</span>
+                    <span class="detail-value">{{ formatDate(searchResult.createdAt) }}</span>
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">Estado:</span>
                     <span class="detail-value">
-                      <span class="status-badge" [ngClass]="getStatusClass(searchResult.status)">
+                      <span [class]="getStatusBadgeClass(searchResult.status)">
                         {{ getStatusText(searchResult.status) }}
                       </span>
                     </span>
@@ -253,7 +263,7 @@
               </div>
 
               <!-- No Results -->
-              <div *ngIf="searchResult === null && searchId && !isSearching" class="result-card result-not-found">
+              <div *ngIf="hasSearched && !searchResult && !isSearching && !searchError" class="result-card result-not-found mt-4">
                 <div class="d-flex align-items-center mb-3">
                   <i class="fas fa-exclamation-triangle text-danger me-3" style="font-size: 24px;"></i>
                   <div>
