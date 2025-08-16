@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { StudentsComponent } from '../students/students.component';
 import { CoursesComponent } from '../courses/courses.component';
 import { CertificatesComponent } from '../certificates/certificates.component';
+import { ComplaintsManagementComponent } from '../complaints-management/complaints-management.component';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -13,7 +14,8 @@ import { AuthService } from '../../services/auth.service';
     CommonModule,
     StudentsComponent,
     CoursesComponent,
-    CertificatesComponent
+    CertificatesComponent,
+    ComplaintsManagementComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
@@ -56,6 +58,7 @@ export class DashboardComponent implements OnInit {
       case 'students': return 'Gestión de Alumnos';
       case 'courses': return 'Gestión de Programas';
       case 'certificates': return 'Gestión de Certificados';
+      case 'complaints': return 'Gestión de Reclamos';
       default: return 'Dashboard Administrativo';
     }
   }
@@ -65,6 +68,7 @@ export class DashboardComponent implements OnInit {
       case 'students': return 'Visualiza y gestiona información de estudiantes que han completado programas';
       case 'courses': return 'Administra programas, especializaciones y cursos disponibles';
       case 'certificates': return 'Gestiona certificados para estudiantes con programas completados - subir, descargar y generar QR';
+      case 'complaints': return 'Administra reclamos del libro de reclamaciones - responder, cambiar estado y hacer seguimiento';
       default: return 'Panel de administración ASECAPT - Gestión completa de certificados y usuarios';
     }
   }
@@ -121,4 +125,4 @@ export class DashboardComponent implements OnInit {
   getUserTypeText(): string {
     return this.authService.getUserTypeText();
   }
-} 
+}

@@ -11,7 +11,7 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        
+
         <nav class="sidebar-nav">
             <ul class="nav-list">
 
@@ -33,9 +33,15 @@
                         <span>Certificados</span>
                     </a>
                 </li>
+                <li class="nav-item" [class.active]="activeSection === 'complaints'">
+                    <a (click)="setActiveSection('complaints')" class="nav-link">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Reclamos</span>
+                    </a>
+                </li>
             </ul>
         </nav>
-        
+
         <div class="sidebar-footer">
             <button class="btn btn-outline-light btn-sm w-100" (click)="logout()">
                 <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
@@ -63,9 +69,9 @@
                         <small class="text-muted">{{ getUserTypeText() }}</small>
                     </div>
                     <div class="dropdown">
-                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" 
-                                type="button" 
-                                data-bs-toggle="dropdown" 
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                                type="button"
+                                data-bs-toggle="dropdown"
                                 aria-expanded="false">
                             <i class="fas fa-user me-1"></i>
                         </button>
@@ -115,11 +121,16 @@
             <div *ngIf="activeSection === 'certificates'">
                 <app-certificates (message)="onMessage($event)"></app-certificates>
             </div>
+
+            <!-- Complaints Section -->
+            <div *ngIf="activeSection === 'complaints'">
+                <app-complaints-management></app-complaints-management>
+            </div>
         </div>
     </div>
 
     <!-- Mobile Sidebar Overlay -->
-    <div class="sidebar-overlay" 
-         [class.show]="sidebarOpen" 
+    <div class="sidebar-overlay"
+         [class.show]="sidebarOpen"
          (click)="toggleSidebar()"></div>
-</div> 
+</div>

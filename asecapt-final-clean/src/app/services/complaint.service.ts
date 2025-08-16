@@ -41,4 +41,16 @@ export class ComplaintService {
   getComplaintByNumber(complaintNumber: string): Observable<Complaint> {
     return this.http.get<Complaint>(`${this.apiUrl}/${complaintNumber}`);
   }
+
+  getAllComplaints(): Observable<Complaint[]> {
+    return this.http.get<Complaint[]>(this.apiUrl);
+  }
+
+  updateComplaintStatus(id: string, status: string): Observable<Complaint> {
+    return this.http.put<Complaint>(`${this.apiUrl}/${id}/status?status=${status}`, {});
+  }
+
+  addResponse(id: string, response: string): Observable<Complaint> {
+    return this.http.put<Complaint>(`${this.apiUrl}/${id}/response`, { response });
+  }
 }

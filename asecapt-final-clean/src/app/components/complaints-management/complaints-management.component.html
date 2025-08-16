@@ -1,0 +1,316 @@
+<div class="complaints-management">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1">📋 Gestión de Reclamos</h2>
+      <p class="text-muted mb-0">Administra y responde a los reclamos del libro de reclamaciones</p>
+    </div>
+    <button class="btn btn-outline-primary" (click)="loadComplaints()" [disabled]="isLoading">
+      <i class="fas fa-sync-alt me-2" [class.fa-spin]="isLoading"></i>
+      Actualizar
+    </button>
+  </div>
+
+  <!-- Message Alert -->
+  <div *ngIf="message" class="alert" [class.alert-success]="message.type === 'success'" [class.alert-danger]="message.type === 'error'">
+    <i class="fas" [class.fa-check-circle]="message.type === 'success'" [class.fa-exclamation-triangle]="message.type === 'error'"></i>
+    {{ message.text }}
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">Estado</label>
+          <select class="form-select" [(ngModel)]="statusFilter" (change)="onFilterChange()">
+            <option value="">Todos los estados</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="en_proceso">En Proceso</option>
+            <option value="resuelto">Resuelto</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Tipo</label>
+          <select class="form-select" [(ngModel)]="typeFilter" (change)="onFilterChange()">
+            <option value="">Todos los tipos</option>
+            <option value="reclamo">Reclamo</option>
+            <option value="queja">Queja</option>
+            <option value="sugerencia">Sugerencia</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Buscar</label>
+          <input type="text" class="form-control" placeholder="Nombre, código o email..."
+                 [(ngModel)]="searchTerm" (input)="onFilterChange()">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+            <i class="fas fa-times me-1"></i>Limpiar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-warning text-white">
+        <div class="card-body text-center">
+          <h4 class="mb-1">{{ getPendingCount() }}</h4>
+          <small>Pendientes</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body text-center">
+          <h4 class="mb-1">{{ getInProgressCount() }}</h4>
+          <small>En Proceso</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body text-center">
+          <h4 class="mb-1">{{ getResolvedCount() }}</h4>
+          <small>Resueltos</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body text-center">
+          <h4 class="mb-1">{{ getTotalCount() }}</h4>
+          <small>Total</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-3 text-muted">Cargando reclamos...</p>
+  </div>
+
+  <!-- Complaints Table -->
+  <div *ngIf="!isLoading" class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        <i class="fas fa-list me-2"></i>
+        Reclamos ({{ filteredComplaints.length }})
+      </h5>
+      <small class="text-muted">Página {{ currentPage }} de {{ totalPages }}</small>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Código</th>
+              <th>Tipo</th>
+              <th>Solicitante</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let complaint of paginatedComplaints; trackBy: trackByComplaintId">
+              <td>
+                <strong>{{ complaint.complaintNumber }}</strong>
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{ getTypeText(complaint.type) }}</span>
+              </td>
+              <td>
+                <div>
+                  <strong>{{ complaint.name }}</strong>
+                  <br>
+                  <small class="text-muted">{{ complaint.email }}</small>
+                </div>
+              </td>
+              <td>
+                <small>{{ formatDate(complaint.createdAt) }}</small>
+              </td>
+              <td>
+                <span [class]="getStatusBadgeClass(complaint.status)">
+                  {{ getStatusText(complaint.status) }}
+                </span>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <!-- View Details -->
+                  <button class="btn btn-outline-primary"
+                          [attr.data-bs-toggle]="'collapse'"
+                          [attr.data-bs-target]="'#details-' + complaint.id"
+                          title="Ver detalles">
+                    <i class="fas fa-eye"></i>
+                  </button>
+
+                  <!-- Change Status -->
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-success dropdown-toggle"
+                            data-bs-toggle="dropdown"
+                            [disabled]="isUpdating"
+                            title="Cambiar estado">
+                      <i class="fas fa-exchange-alt"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" (click)="updateStatus(complaint, 'pendiente')"
+                             [class.active]="complaint.status === 'pendiente'">
+                        <i class="fas fa-clock text-warning me-2"></i>Pendiente
+                      </a></li>
+                      <li><a class="dropdown-item" (click)="updateStatus(complaint, 'en_proceso')"
+                             [class.active]="complaint.status === 'en_proceso'">
+                        <i class="fas fa-cog text-info me-2"></i>En Proceso
+                      </a></li>
+                      <li><a class="dropdown-item" (click)="updateStatus(complaint, 'resuelto')"
+                             [class.active]="complaint.status === 'resuelto'">
+                        <i class="fas fa-check text-success me-2"></i>Resuelto
+                      </a></li>
+                    </ul>
+                  </div>
+
+                  <!-- Add Response -->
+                  <button class="btn btn-outline-info"
+                          (click)="openResponseModal(complaint)"
+                          title="Agregar/Editar respuesta">
+                    <i class="fas fa-reply"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Complaint Details (Collapsible) -->
+      <div *ngFor="let complaint of paginatedComplaints; trackBy: trackByComplaintId">
+        <div class="collapse" [id]="'details-' + complaint.id">
+          <div class="card-body border-top bg-light">
+            <div class="row">
+              <div class="col-md-6">
+                <h6 class="fw-bold">Información del Solicitante</h6>
+                <p><strong>Nombre:</strong> {{ complaint.name }}</p>
+                <p><strong>Email:</strong> {{ complaint.email }}</p>
+                <p *ngIf="complaint.phone"><strong>Teléfono:</strong> {{ complaint.phone }}</p>
+                <p *ngIf="complaint.document"><strong>Documento:</strong> {{ complaint.document }}</p>
+              </div>
+              <div class="col-md-6">
+                <h6 class="fw-bold">Descripción del {{ getTypeText(complaint.type) }}</h6>
+                <p class="text-muted">{{ complaint.description }}</p>
+
+                <div *ngIf="complaint.response" class="mt-3 p-3 bg-white border-start border-primary border-3">
+                  <h6 class="fw-bold text-primary">Respuesta de ASECAPT</h6>
+                  <p class="mb-0">{{ complaint.response }}</p>
+                </div>
+
+                <div *ngIf="!complaint.response" class="mt-3 p-3 bg-warning bg-opacity-10 border-start border-warning border-3">
+                  <small class="text-muted">
+                    <i class="fas fa-exclamation-triangle text-warning me-1"></i>
+                    Sin respuesta aún
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="card-footer" *ngIf="totalPages > 1">
+      <nav>
+        <ul class="pagination justify-content-center mb-0">
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <a class="page-link" (click)="changePage(currentPage - 1)">Anterior</a>
+          </li>
+
+          <li *ngFor="let page of [].constructor(totalPages); let i = index"
+              class="page-item"
+              [class.active]="currentPage === i + 1">
+            <a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a>
+          </li>
+
+          <li class="page-item" [class.disabled]="currentPage === totalPages">
+            <a class="page-link" (click)="changePage(currentPage + 1)">Siguiente</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && filteredComplaints.length === 0" class="text-center py-5">
+    <i class="fas fa-inbox text-muted" style="font-size: 48px;"></i>
+    <h4 class="text-muted mt-3">No hay reclamos</h4>
+    <p class="text-muted">
+      {{ complaints.length === 0 ? 'Aún no se han registrado reclamos.' : 'No hay reclamos que coincidan con los filtros aplicados.' }}
+    </p>
+    <button *ngIf="complaints.length > 0" class="btn btn-outline-primary" (click)="clearFilters()">
+      Limpiar filtros
+    </button>
+  </div>
+</div>
+
+<!-- Response Modal -->
+<div class="modal fade" [class.show]="showResponseModal" [style.display]="showResponseModal ? 'block' : 'none'"
+     tabindex="-1" *ngIf="showResponseModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-reply me-2"></i>
+          Responder {{ getTypeText(selectedComplaint?.type || '') }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeResponseModal()"></button>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="selectedComplaint" class="mb-4">
+          <div class="card bg-light">
+            <div class="card-body">
+              <h6 class="fw-bold">{{ selectedComplaint.name }}</h6>
+              <p class="mb-0 text-muted">{{ selectedComplaint.description }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Respuesta *</label>
+          <textarea
+            class="form-control"
+            rows="6"
+            placeholder="Escriba su respuesta al reclamo..."
+            [(ngModel)]="responseText"
+            required></textarea>
+          <small class="form-text text-muted">
+            Esta respuesta será visible para el solicitante cuando consulte el estado de su reclamo.
+          </small>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeResponseModal()">
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-primary"
+                (click)="submitResponse()"
+                [disabled]="!responseText.trim() || isUpdating">
+          <span *ngIf="isUpdating" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!isUpdating" class="fas fa-paper-plane me-2"></i>
+          {{ isUpdating ? 'Enviando...' : 'Enviar Respuesta' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade" [class.show]="showResponseModal" *ngIf="showResponseModal"></div>
