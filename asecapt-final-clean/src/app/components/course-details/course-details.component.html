@@ -256,7 +256,7 @@
                             <ul class="course-list">
                                 <li><span><i class="ti-time pe-2"></i>Duración</span>{{getTotalDuration()}}</li>
                                 <li><span><i class="ti-eye pe-2"></i>Créditos</span>{{course.credits || 0}}</li>
-                                <li><span><i class="ti-files pe-2"></i>Contenidos</span>{{getTotalLessons()}}</li>
+                                <li *ngIf="getTotalLessons() > 0"><span><i class="ti-files pe-2"></i>Contenidos</span>{{getTotalLessons()}}</li>
                                 <li><span><i class="ti-user pe-2"></i>Max. Estudiantes</span>{{course.maxStudents || 'Ilimitado'}}</li>
                                 <li><span><i class="ti-medall pe-2"></i>Certificado</span>Sí</li>
                                 <li><span><i class="ti-menu-alt pe-2"></i>Estado</span>{{course.status === 'active' ? 'Activo' : 'Inactivo'}}</li>
