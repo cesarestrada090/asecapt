@@ -27,6 +27,41 @@
   font-size: 0.875rem;
 }
 
+/* Fix for dropdown menus in table */
+.table-responsive {
+  overflow: visible !important;
+}
+
+.btn-group .dropdown-menu {
+  z-index: 1060 !important;
+  position: absolute !important;
+  will-change: transform;
+}
+
+.btn-group {
+  position: relative !important;
+}
+
+.card-body {
+  overflow: visible !important;
+}
+
+/* Ensure dropdowns show above other content */
+.dropdown-menu.show {
+  z-index: 1061 !important;
+}
+
+/* Fix dropdown positioning in table */
+.table .btn-group {
+  position: relative !important;
+}
+
+.table .dropdown-menu {
+  right: auto !important;
+  left: auto !important;
+  transform: none !important;
+}
+
 .modal-backdrop {
   background-color: rgba(0, 0, 0, 0.5);
 }
@@ -55,6 +90,7 @@
 
   .table-responsive {
     font-size: 0.875rem;
+    overflow: visible !important;
   }
 
   .btn-group-sm > .btn {
