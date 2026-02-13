@@ -65,7 +65,7 @@ public class StudentService {
         Person person = new Person();
         person.setFirstName(request.getFirstName());
         person.setLastName(request.getLastName());
-        person.setDocumentNumber(request.getDocumentNumber());
+        person.setDocumentNumber(request.getDocumentNumber() != null ? request.getDocumentNumber().trim() : null);
         person.setDocumentType(request.getDocumentType() != null ? request.getDocumentType() : "DNI");
         person.setEmail(request.getEmail());
         person.setPhoneNumber(request.getPhoneNumber());
@@ -136,10 +136,11 @@ public class StudentService {
             System.out.println("Current person document: " + person.getDocumentNumber());
             System.out.println("Person ID: " + person.getId());
             
+            String trimmedDocument = request.getDocumentNumber().trim();
             // Only check if document is actually changing
-            if (!request.getDocumentNumber().equals(person.getDocumentNumber())) {
+            if (!trimmedDocument.equals(person.getDocumentNumber())) {
                 System.out.println("Document is changing, checking for duplicates...");
-                boolean documentExists = personRepository.existsByDocumentNumberAndIdNot(request.getDocumentNumber(), person.getId());
+                boolean documentExists = personRepository.existsByDocumentNumberAndIdNot(trimmedDocument, person.getId());
                 System.out.println("Document exists for another person: " + documentExists);
                 if (documentExists) {
                     throw new RuntimeException("El número de documento ya está siendo usado por otro usuario");
@@ -147,7 +148,7 @@ public class StudentService {
             } else {
                 System.out.println("Document is the same, skipping validation");
             }
-            person.setDocumentNumber(request.getDocumentNumber());
+            person.setDocumentNumber(trimmedDocument);
         }
         if (request.getDocumentType() != null) {
             person.setDocumentType(request.getDocumentType());

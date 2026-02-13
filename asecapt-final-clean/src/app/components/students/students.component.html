@@ -366,83 +366,12 @@
                     <th>Asistencia %</th>
                     <th>Fecha Matriculación</th>
                     <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let course of studentCourses; trackBy: trackByCourseId"
-                      [class.editing]="editingStudentCourse[course.id]">
-                    <td>
-                      <div class="fw-semibold">{{ course.program?.title || course.program?.name || 'Programa sin título' }}</div>
                       <small class="text-muted">{{ course.program?.duration || 'N/A' }}</small>
-                    </td>
-                    <td>
-                      <!-- View Mode -->
-                      <div *ngIf="!editingStudentCourse[course.id]">
-                        <span class="badge" [class]="getCourseStatusBadgeClass(course.status)">
-                          {{ getCourseStatusText(course.status) }}
-                        </span>
-                        <div class="mt-1" *ngIf="course.completionDate">
-                          <small class="text-success">
-                            <i class="fas fa-check-circle me-1"></i>
-                            {{ formatDate(course.completionDate) }}
-                          </small>
-                        </div>
-                      </div>
-
-                      <!-- Edit Mode -->
-                      <select *ngIf="editingStudentCourse[course.id]"
-                              class="form-select form-select-sm"
                               [(ngModel)]="studentCourseEditForm[course.id].status">
-                        <option value="enrolled">Matriculado</option>
-                        <option value="in_progress">En Progreso</option>
-                        <option value="completed">Completado</option>
-                        <option value="suspended">Suspendido</option>
-                      </select>
-                    </td>
-
-                    <td>
-                      <!-- View Mode - Nota Final -->
-                      <div *ngIf="!editingStudentCourse[course.id]">
-                        <span *ngIf="course.finalGrade !== null && course.finalGrade !== undefined" class="badge" [class]="getGradeBadgeClass(course.finalGrade)">
-                          {{ course.finalGrade }}
-                        </span>
-                        <span *ngIf="course.finalGrade === null || course.finalGrade === undefined" class="text-muted">
-                          <small>Pendiente</small>
-                        </span>
-                      </div>
-
-                      <!-- Edit Mode - Nota Final -->
-                      <input *ngIf="editingStudentCourse[course.id]"
-                             type="number"
-                             class="form-control form-control-sm"
-                             [(ngModel)]="studentCourseEditForm[course.id].finalGrade"
-                             min="0"
-                             max="100"
-                             step="0.1"
                              placeholder="0-100">
-                    </td>
-                    <td>
-                      <!-- View Mode - Asistencia -->
-                      <div *ngIf="!editingStudentCourse[course.id]">
-                        <span *ngIf="course.attendancePercentage !== null && course.attendancePercentage !== undefined" class="text-muted">
                           {{ course.attendancePercentage }}%
-                        </span>
-                        <span *ngIf="course.attendancePercentage === null || course.attendancePercentage === undefined" class="text-muted">
                           N/A
-                        </span>
-                      </div>
-
-                      <!-- Edit Mode - Asistencia -->
-                      <input *ngIf="editingStudentCourse[course.id]"
-                             type="number"
-                             class="form-control form-control-sm"
-                             [(ngModel)]="studentCourseEditForm[course.id].attendancePercentage"
-                             min="0"
-                             max="100"
-                             step="0.1"
                              placeholder="0-100">
-                    </td>
-                    <td>
                       <!-- View Mode - Fecha de Matriculación -->
                       <div *ngIf="!editingStudentCourse[course.id]">
                         <small class="text-muted" *ngIf="course.enrollmentDate">
@@ -459,8 +388,6 @@
                              class="form-control form-control-sm"
                              [(ngModel)]="studentCourseEditForm[course.id].enrollmentDate"
                              [max]="today">
-                    </td>
-                    <td>
                       <!-- View Mode - Acciones -->
                       <div *ngIf="!editingStudentCourse[course.id]" class="btn-group-vertical btn-group-sm">
                         <button
@@ -469,31 +396,92 @@
                           title="Editar matrícula">
                           <i class="fas fa-edit"></i>
                         </button>
-                        <button
-                          *ngIf="course.status !== 'completed'"
                           class="btn btn-outline-success btn-sm mb-1"
-                          (click)="markCourseAsCompleted(course)"
                           title="Completar">
                           <i class="fas fa-check"></i>
-                        </button>
-                        <button
-                          *ngIf="course.status === 'completed'"
                           class="btn btn-outline-warning btn-sm mb-1"
-                          (click)="markCourseAsInProgress(course)"
                           title="En progreso">
                           <i class="fas fa-arrow-rotate-left"></i>
-                        </button>
-                        <button
                           class="btn btn-outline-danger btn-sm"
                           (click)="deleteEnrollment(course)"
                           title="Eliminar matrícula">
                           <i class="fas fa-trash"></i>
+                      <div *ngIf="editingStudentCourse[course.id]" class="btn-group-vertical btn-group-sm">
+                        <button class="btn btn-success btn-sm mb-1"
+                      <input *ngIf="editingStudentCourse[course.id]"
+                             type="number"
+                             class="form-control form-control-sm"
+                             [(ngModel)]="studentCourseEditForm[course.id].finalGrade"
+                             min="0"
+                             max="100"
+                             step="0.1"
+                             placeholder="0-100"
+                             style="width: 80px;">
+                    </td>
+                    <td>
+                      <!-- View Mode - Asistencia -->
+                      <div *ngIf="!editingStudentCourse[course.id]">
+                        <span *ngIf="course.attendancePercentage !== null && course.attendancePercentage !== undefined" class="text-muted">
+                          <small>{{ course.attendancePercentage }}%</small>
+                        </span>
+                        <span *ngIf="course.attendancePercentage === null || course.attendancePercentage === undefined" class="text-muted">
+                          <small>N/A</small>
+                        </span>
+                      </div>
+
+                      <!-- Edit Mode - Asistencia -->
+                      <input *ngIf="editingStudentCourse[course.id]"
+                             type="number"
+                             class="form-control form-control-sm"
+                             [(ngModel)]="studentCourseEditForm[course.id].attendancePercentage"
+                             min="0"
+                             max="100"
+                             step="0.1"
+                             placeholder="0-100%"
+                             style="width: 80px;">
+                    </td>
+                    <td>
+                      <small class="text-muted" *ngIf="course.enrollmentDate">
+                        {{ formatDate(course.enrollmentDate) }}
+                      </small>
+                      <small class="text-muted" *ngIf="!course.enrollmentDate">
+                        No disponible
+                      </small>
+                    </td>
+                    <td>
+                      <!-- Estado del Programa - Botones de cambio de estado -->
+                      <div *ngIf="!editingStudentCourse[course.id]" class="d-flex flex-column gap-1">
+                        <button
+                          *ngIf="course.status !== 'completed'"
+                          class="btn btn-outline-success btn-sm"
+                          (click)="markCourseAsCompleted(course)"
+                          title="Marcar como completado">
+                          <i class="fas fa-check me-1"></i>Completar
+                        </button>
+                        <button
+                          *ngIf="course.status === 'completed'"
+                          class="btn btn-outline-warning btn-sm"
+                          (click)="markCourseAsInProgress(course)"
+                          title="Cambiar a en progreso">
+                          <i class="fas fa-arrow-rotate-left me-1"></i>En Progreso
+                        </button>
+                      </div>
+                    </td>
+                    <td>
+                      <!-- Acciones de Edición/Eliminación -->
+                      <div *ngIf="!editingStudentCourse[course.id]" class="btn-group btn-group-sm">
+                        <button
+                          class="btn btn-outline-primary"
+                          (click)="startEditingStudentCourse(course)"
+                          title="Editar notas y asistencia">
+                          <i class="fas fa-pen-to-square me-1"></i>
+                          <span class="d-none d-md-inline">Editar</span>
                         </button>
                       </div>
 
                       <!-- Edit Mode - Save/Cancel Buttons -->
-                      <div *ngIf="editingStudentCourse[course.id]" class="btn-group-vertical btn-group-sm">
-                        <button class="btn btn-success btn-sm mb-1"
+                      <div *ngIf="editingStudentCourse[course.id]" class="d-flex gap-1 justify-content-center">
+                        <button class="btn btn-success btn-sm"
                                 (click)="saveStudentCourseChanges(course)"
                                 [disabled]="isUpdatingStudentCourse[course.id]"
                                 title="Guardar cambios">
@@ -505,6 +493,18 @@
                                 [disabled]="isUpdatingStudentCourse[course.id]"
                                 title="Cancelar edición">
                           <i class="fas fa-times"></i>
+                        </button>
+                      </div>
+                    </td>
+                    <td>
+                      <!-- Eliminar Matrícula -->
+                      <div *ngIf="!editingStudentCourse[course.id]" class="text-center">
+                        <button
+                          class="btn btn-outline-danger btn-sm"
+                          (click)="deleteEnrollment(course)"
+                          title="Eliminar matrícula del estudiante">
+                          <i class="fas fa-user-minus me-1"></i>
+                          <span class="d-none d-md-inline">Eliminar</span>
                         </button>
                       </div>
                     </td>

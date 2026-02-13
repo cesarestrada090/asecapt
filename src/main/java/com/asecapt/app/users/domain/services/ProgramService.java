@@ -50,8 +50,9 @@ public class ProgramService {
 
     public Program createProgram(CreateProgramRequest request) {
         Program program = new Program();
-        program.setTitle(request.getTitle());
-        program.setName(request.getTitle()); // Map title to required name field
+        String title = request.getTitle() != null ? request.getTitle().trim() : null;
+        program.setTitle(title);
+        program.setName(title); // Map title to required name field
         program.setDescription(request.getDescription());
         program.setType(request.getType());
         program.setCategory(request.getCategory());
@@ -77,8 +78,9 @@ public class ProgramService {
         Optional<Program> optionalProgram = programRepository.findById(id);
         if (optionalProgram.isPresent()) {
             Program program = optionalProgram.get();
-            program.setTitle(request.getTitle());
-            program.setName(request.getTitle()); // Map title to required name field
+            String title = request.getTitle() != null ? request.getTitle().trim() : null;
+            program.setTitle(title);
+            program.setName(title); // Map title to required name field
             program.setDescription(request.getDescription());
             program.setType(request.getType());
             program.setCategory(request.getCategory());
@@ -278,8 +280,9 @@ public class ProgramService {
             
             // Create new program
             Program duplicatedProgram = new Program();
-            duplicatedProgram.setTitle(newTitle);
-            duplicatedProgram.setName(newTitle); // Map title to required name field
+            String trimmedTitle = newTitle != null ? newTitle.trim() : null;
+            duplicatedProgram.setTitle(trimmedTitle);
+            duplicatedProgram.setName(trimmedTitle); // Map title to required name field
             duplicatedProgram.setDescription(originalProgram.getDescription());
             duplicatedProgram.setType(originalProgram.getType());
             duplicatedProgram.setCategory(originalProgram.getCategory());

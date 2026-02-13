@@ -84,7 +84,7 @@ public class Person {
     }
 
     public void setDocumentNumber(String documentNumber) {
-        this.documentNumber = documentNumber;
+        this.documentNumber = documentNumber != null ? documentNumber.trim() : null;
     }
 
     public String getPhoneNumber() {
